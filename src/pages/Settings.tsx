@@ -70,13 +70,13 @@ export default function Settings() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start gap-2" asChild>
-                  <Link to="/ctms/settings/users">
+                  <Link to="/settings/users">
                     <Users className="h-4 w-4" />
                     Gerenciar Usuários
                   </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start gap-2" asChild>
-                  <Link to="/ctms/settings/audit">
+                  <Link to="/settings/audit">
                     <FileText className="h-4 w-4" />
                     Log de Auditoria
                   </Link>
