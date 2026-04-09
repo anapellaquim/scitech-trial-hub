@@ -45,6 +45,19 @@ export default function SteeringDecisions() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Decision | null>(null);
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Decision Code", dbColumn: "decision_code", required: true },
+    { excelHeader: "Description", dbColumn: "description", required: true },
+    { excelHeader: "Meeting Origin", dbColumn: "meeting_origin" },
+    { excelHeader: "Decision Date", dbColumn: "decision_date", transform: (v: any) => v || new Date().toISOString().split("T")[0] },
+    { excelHeader: "Impacted Area", dbColumn: "impacted_area" },
+    { excelHeader: "Responsible", dbColumn: "responsible" },
+    { excelHeader: "Deadline", dbColumn: "deadline" },
+    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "pending" },
+    { excelHeader: "Observations", dbColumn: "observations" },
+  ];
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState({
     decision_code: "", meeting_origin: "", decision_date: new Date().toISOString().split("T")[0],
@@ -94,7 +107,7 @@ export default function SteeringDecisions() {
   return (
     <ModulePageLayout title="Steering Committee Decisions" subtitle="Track strategic decisions and implementation status"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="steering_decisions"
-      actions={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Decision</Button>}
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Decision</Button></div>}
     >
       <Card>
         <CardHeader>

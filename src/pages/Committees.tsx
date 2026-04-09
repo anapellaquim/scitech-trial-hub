@@ -50,6 +50,16 @@ export default function Committees() {
   const [editing, setEditing] = useState<Committee | null>(null);
   const [selectedCommittee, setSelectedCommittee] = useState<Committee | null>(null);
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Committee Type", dbColumn: "committee_type", required: true, transform: (v: any) => v || "CEC" },
+    { excelHeader: "Meeting Number", dbColumn: "meeting_number", required: true, transform: (v: any) => parseInt(v) || 1 },
+    { excelHeader: "Meeting Date", dbColumn: "meeting_date", required: true },
+    { excelHeader: "Agenda", dbColumn: "agenda" },
+    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "planned" },
+    { excelHeader: "Next Meeting Date", dbColumn: "next_meeting_date" },
+  ];
   const [typeFilter, setTypeFilter] = useState("all");
   const [form, setForm] = useState({ committee_type: "CEC", meeting_number: 1, meeting_date: "", agenda: "", status: "planned", next_meeting_date: "" });
   const [newAttendee, setNewAttendee] = useState("");
@@ -121,7 +131,7 @@ export default function Committees() {
   return (
     <ModulePageLayout title="Committee Management" subtitle="CEC and DMC meetings, deliberations, and minutes"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="committees"
-      actions={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Meeting</Button>}
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Meeting</Button></div>}
     >
       <Card>
         <CardHeader>

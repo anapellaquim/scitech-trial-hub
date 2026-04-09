@@ -62,6 +62,20 @@ export default function Qualifications() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Qualification | null>(null);
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Name", dbColumn: "name", required: true },
+    { excelHeader: "Vendor Type", dbColumn: "vendor_type", transform: (v: any) => v || "site" },
+    { excelHeader: "Qualification Status", dbColumn: "qualification_status", transform: (v: any) => v || "pending" },
+    { excelHeader: "Feasibility Date", dbColumn: "feasibility_date" },
+    { excelHeader: "Score", dbColumn: "score", transform: (v: any) => v ? parseFloat(v) : null },
+    { excelHeader: "Next Qualification Date", dbColumn: "next_qualification_date" },
+    { excelHeader: "Responsible", dbColumn: "responsible" },
+    { excelHeader: "Contract Status", dbColumn: "contract_status", transform: (v: any) => v || "negotiating" },
+    { excelHeader: "Documents URL", dbColumn: "documents_url" },
+    { excelHeader: "Notes", dbColumn: "notes" },
+  ];
   const [typeFilter, setTypeFilter] = useState("all");
   const [form, setForm] = useState({
     name: "", vendor_type: "site", qualification_status: "pending", feasibility_date: "",
@@ -147,7 +161,7 @@ export default function Qualifications() {
   return (
     <ModulePageLayout title="Site & Vendor Qualifications" subtitle="Manage feasibility and qualification of sites and vendors"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="qualifications"
-      actions={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Entry</Button>}
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Entry</Button></div>}
     >
       <Card>
         <CardHeader>

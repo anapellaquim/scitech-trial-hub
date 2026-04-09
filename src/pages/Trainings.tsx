@@ -49,6 +49,15 @@ export default function Trainings() {
   const [editing, setEditing] = useState<Training | null>(null);
   const [selectedTraining, setSelectedTraining] = useState<Training | null>(null);
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Title", dbColumn: "title", required: true },
+    { excelHeader: "Description", dbColumn: "description" },
+    { excelHeader: "Required", dbColumn: "is_required", transform: (v: any) => v === "Yes" || v === true || v === "true" },
+    { excelHeader: "Delegate Role", dbColumn: "delegate_role" },
+    { excelHeader: "Due Date", dbColumn: "due_date" },
+  ];
   const [form, setForm] = useState({ title: "", description: "", is_required: true, delegate_role: "", due_date: "" });
   const [recordForm, setRecordForm] = useState({ user_name: "", status: "pending", completed_at: "", certificate_url: "" });
 
@@ -136,7 +145,7 @@ export default function Trainings() {
   return (
     <ModulePageLayout title="Training Management" subtitle="Track required and completed trainings by study"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="trainings"
-      actions={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Training</Button>}
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Training</Button></div>}
     >
       <Card>
         <CardHeader>

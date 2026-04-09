@@ -62,6 +62,21 @@ export default function RiskManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Risk | null>(null);
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Risk Code", dbColumn: "risk_code", required: true },
+    { excelHeader: "Description", dbColumn: "description", required: true },
+    { excelHeader: "Category", dbColumn: "category", transform: (v: any) => v || "operational" },
+    { excelHeader: "Probability", dbColumn: "probability", required: true, transform: (v: any) => parseInt(v) || 3 },
+    { excelHeader: "Impact", dbColumn: "impact", required: true, transform: (v: any) => parseInt(v) || 3 },
+    { excelHeader: "Risk Score", dbColumn: "risk_score", transform: (v: any) => parseInt(v) || null },
+    { excelHeader: "Mitigation Plan", dbColumn: "mitigation_plan" },
+    { excelHeader: "Responsible", dbColumn: "responsible" },
+    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "open" },
+    { excelHeader: "Identified At", dbColumn: "identified_at", transform: (v: any) => v || new Date().toISOString().split("T")[0] },
+    { excelHeader: "Review Date", dbColumn: "review_date" },
+  ];
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState({ risk_code: "", description: "", category: "operational", probability: 3, impact: 3, mitigation_plan: "", responsible: "", status: "open", identified_at: new Date().toISOString().split("T")[0], review_date: "" });
 
@@ -118,7 +133,7 @@ export default function RiskManagement() {
   return (
     <ModulePageLayout title="Risk Management" subtitle="Identify, assess, and mitigate study risks"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="risks"
-      actions={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Risk</Button>}
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Risk</Button></div>}
     >
       <Tabs defaultValue="list">
         <TabsList className="mb-4"><TabsTrigger value="list">List View</TabsTrigger><TabsTrigger value="matrix">Risk Matrix</TabsTrigger></TabsList>
