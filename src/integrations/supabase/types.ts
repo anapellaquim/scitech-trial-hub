@@ -3134,7 +3134,6 @@ export type Database = {
         Returns: {
           project_id: string
           role: Database["public"]["Enums"]["app_role"]
-          study_id: string
         }[]
       }
       has_any_role: {
