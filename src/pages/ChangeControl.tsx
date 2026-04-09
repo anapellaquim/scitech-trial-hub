@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, History } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, History, Upload } from "lucide-react";
+import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface ChangeControlRecord {
@@ -57,6 +58,18 @@ export default function ChangeControl() {
   const [editing, setEditing] = useState<ChangeControlRecord | null>(null);
   const [selectedCC, setSelectedCC] = useState<ChangeControlRecord | null>(null);
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Change Code", dbColumn: "change_code", required: true },
+    { excelHeader: "Description", dbColumn: "description", required: true },
+    { excelHeader: "Type", dbColumn: "change_type", transform: (v: any) => v || "operational" },
+    { excelHeader: "Impact Assessment", dbColumn: "impact_assessment" },
+    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "open" },
+    { excelHeader: "Responsible", dbColumn: "responsible" },
+    { excelHeader: "Opened At", dbColumn: "opened_at", transform: (v: any) => v || new Date().toISOString().split("T")[0] },
+    { excelHeader: "Resolved At", dbColumn: "resolved_at" },
+  ];
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState({ change_code: "", description: "", change_type: "operational", impact_assessment: "", status: "open", responsible: "", opened_at: new Date().toISOString().split("T")[0], resolved_at: "" });
   const [approvalForm, setApprovalForm] = useState({ approver_name: "", decision: "pending", decision_date: "", comments: "" });
@@ -122,7 +135,7 @@ export default function ChangeControl() {
   return (
     <ModulePageLayout title="Change Control" subtitle="Track protocol, regulatory, and operational changes"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="change_control"
-      actions={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button>}
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button></div>}
     >
       <Card>
         <CardHeader>
@@ -220,6 +233,7 @@ export default function ChangeControl() {
           <DialogFooter><Button variant="outline" onClick={() => setApprovalDialogOpen(false)}>Cancel</Button><Button onClick={handleAddApproval}>Add</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="change_controls" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }

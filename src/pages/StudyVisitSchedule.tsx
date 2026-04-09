@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Upload } from "lucide-react";
+import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { format } from "date-fns";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
@@ -45,6 +46,18 @@ export default function StudyVisitSchedule() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<VisitSchedule | null>(null);
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Site", dbColumn: "site_name", required: true },
+    { excelHeader: "Visit Number", dbColumn: "visit_number", required: true, transform: (v: any) => parseInt(v) || 1 },
+    { excelHeader: "Planned Date", dbColumn: "planned_date" },
+    { excelHeader: "Window Start", dbColumn: "window_start" },
+    { excelHeader: "Window End", dbColumn: "window_end" },
+    { excelHeader: "Actual Date", dbColumn: "actual_date" },
+    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "planned" },
+    { excelHeader: "Observations", dbColumn: "observations" },
+  ];
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState({
     site_name: "", visit_number: 1, planned_date: "", window_start: "", window_end: "",
@@ -150,7 +163,7 @@ export default function StudyVisitSchedule() {
       onProjectChange={setSelectedProject}
       exportData={exportData}
       exportFileName="visit_schedule"
-      actions={<Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Visit</Button>}
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Visit</Button></div>}
     >
       <Card>
         <CardHeader>
@@ -250,6 +263,7 @@ export default function StudyVisitSchedule() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="study_visit_schedule" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }
