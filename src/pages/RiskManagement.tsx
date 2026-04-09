@@ -265,6 +265,7 @@ export default function RiskManagement() {
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={handleSave}>{editing ? "Update" : "Create"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="risks" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }

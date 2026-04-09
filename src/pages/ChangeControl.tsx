@@ -233,6 +233,7 @@ export default function ChangeControl() {
           <DialogFooter><Button variant="outline" onClick={() => setApprovalDialogOpen(false)}>Cancel</Button><Button onClick={handleAddApproval}>Add</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="change_controls" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }

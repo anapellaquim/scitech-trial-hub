@@ -182,6 +182,7 @@ export default function SteeringDecisions() {
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={handleSave}>{editing ? "Update" : "Create"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="steering_decisions" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }
