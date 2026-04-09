@@ -12,7 +12,6 @@ export type Permission = "read" | "write" | "delete" | "approve" | "full";
 interface UserRole {
   role: AppRole;
   project_id: string | null;
-  study_id: string | null;
 }
 
 const permissionMatrix: Record<AppRole, Record<Module, Permission[]>> = {
