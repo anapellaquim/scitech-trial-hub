@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import CTMSNav from "@/components/CTMSNav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { format, addDays, differenceInDays, isAfter, isBefore, startOfToday, subDays, isWithinInterval } from "date-fns";
-import { enUS, ptBR } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 interface Project {
   id: string;
@@ -66,14 +65,12 @@ interface UpcomingItem {
 
 type PeriodPreset = "7d" | "30d" | "90d" | "custom";
 
+const locale = enUS;
+const dateFormat = "MM/dd/yyyy";
+const shortDateFormat = "MM/dd";
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation("dashboard");
-  const { t: tCommon } = useTranslation("common");
-  
-  const locale = i18n.language === 'pt-BR' ? ptBR : enUS;
-  const dateFormat = i18n.language === 'pt-BR' ? "dd/MM/yyyy" : "MM/dd/yyyy";
-  const shortDateFormat = i18n.language === 'pt-BR' ? "dd/MM" : "MM/dd";
 
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -86,69 +83,38 @@ const Dashboard = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const [stats, setStats] = useState<DashboardStats>({
-    totalProjects: 0,
-    activeProjects: 0,
-    totalTasks: 0,
-    overdueTasks: 0,
-    tasksNext7Days: 0,
-    tasksNext30Days: 0,
-    totalVisits: 0,
-    overdueVisits: 0,
-    visitsNext7Days: 0,
-    visitsNext30Days: 0,
-    completedVisits: 0,
-    openFindings: 0,
-    criticalFindings: 0,
-    findingsAging: [],
-    siteChecklistCompletion: [],
+    totalProjects: 0, activeProjects: 0, totalTasks: 0, overdueTasks: 0,
+    tasksNext7Days: 0, tasksNext30Days: 0, totalVisits: 0, overdueVisits: 0,
+    visitsNext7Days: 0, visitsNext30Days: 0, completedVisits: 0,
+    openFindings: 0, criticalFindings: 0, findingsAging: [], siteChecklistCompletion: [],
   });
   const [upcomingItems, setUpcomingItems] = useState<UpcomingItem[]>([]);
 
+  useEffect(() => { checkAuth(); }, []);
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  useEffect(() => {
-    if (projects.length > 0 || !loading) {
-      loadDashboardData();
-    }
+    if (projects.length > 0 || !loading) loadDashboardData();
   }, [selectedProject, dateRange]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
+    if (!session) { navigate("/auth"); return; }
     await fetchProjects();
     await loadDashboardData();
   };
 
   const fetchProjects = async () => {
-    const { data } = await supabase
-      .from("projects")
-      .select("id, title, protocol_number, status")
-      .order("title");
+    const { data } = await supabase.from("projects").select("id, title, protocol_number, status").order("title");
     setProjects(data || []);
   };
 
   const handlePeriodChange = (preset: PeriodPreset) => {
     setPeriodPreset(preset);
     const today = startOfToday();
-    
     switch (preset) {
-      case "7d":
-        setDateRange({ from: subDays(today, 7), to: addDays(today, 7) });
-        break;
-      case "30d":
-        setDateRange({ from: subDays(today, 30), to: addDays(today, 30) });
-        break;
-      case "90d":
-        setDateRange({ from: subDays(today, 90), to: addDays(today, 90) });
-        break;
-      case "custom":
-        setCalendarOpen(true);
-        break;
+      case "7d": setDateRange({ from: subDays(today, 7), to: addDays(today, 7) }); break;
+      case "30d": setDateRange({ from: subDays(today, 30), to: addDays(today, 30) }); break;
+      case "90d": setDateRange({ from: subDays(today, 90), to: addDays(today, 90) }); break;
+      case "custom": setCalendarOpen(true); break;
     }
   };
 
@@ -179,10 +145,7 @@ const Dashboard = () => {
 
       const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes] = await Promise.all([
         supabase.from("projects").select("id, status"),
-        tasksQuery,
-        visitsQuery,
-        findingsQuery,
-        checklistQuery,
+        tasksQuery, visitsQuery, findingsQuery, checklistQuery,
       ]);
 
       let projectsData = projectsRes.data || [];
@@ -199,57 +162,40 @@ const Dashboard = () => {
 
       const isInDateRange = (dateStr: string) => {
         if (!dateStr) return false;
-        const date = new Date(dateStr);
-        return isWithinInterval(date, { start: dateRange.from, end: dateRange.to });
+        return isWithinInterval(new Date(dateStr), { start: dateRange.from, end: dateRange.to });
       };
 
       const incompleteTasks = tasks.filter(t => t.status !== "completed");
       const tasksInRange = incompleteTasks.filter(t => t.due_date && isInDateRange(t.due_date));
       const overdueTasks = incompleteTasks.filter(t => t.due_date && isBefore(new Date(t.due_date), today));
-      const tasksNext7Days = incompleteTasks.filter(t => 
-        t.due_date && isAfter(new Date(t.due_date), today) && isBefore(new Date(t.due_date), in7Days)
-      );
-      const tasksNext30Days = incompleteTasks.filter(t => 
-        t.due_date && isAfter(new Date(t.due_date), today) && isBefore(new Date(t.due_date), in30Days)
-      );
+      const tasksNext7Days = incompleteTasks.filter(t => t.due_date && isAfter(new Date(t.due_date), today) && isBefore(new Date(t.due_date), in7Days));
+      const tasksNext30Days = incompleteTasks.filter(t => t.due_date && isAfter(new Date(t.due_date), today) && isBefore(new Date(t.due_date), in30Days));
 
       const visitsInRange = visits.filter(v => isInDateRange(v.scheduled_date));
       const pendingVisits = visits.filter(v => v.status !== "completed" && v.status !== "cancelled");
       const overdueVisits = pendingVisits.filter(v => isBefore(new Date(v.scheduled_date), today));
-      const visitsNext7Days = pendingVisits.filter(v => 
-        isAfter(new Date(v.scheduled_date), today) && isBefore(new Date(v.scheduled_date), in7Days)
-      );
-      const visitsNext30Days = pendingVisits.filter(v => 
-        isAfter(new Date(v.scheduled_date), today) && isBefore(new Date(v.scheduled_date), in30Days)
-      );
+      const visitsNext7Days = pendingVisits.filter(v => isAfter(new Date(v.scheduled_date), today) && isBefore(new Date(v.scheduled_date), in7Days));
+      const visitsNext30Days = pendingVisits.filter(v => isAfter(new Date(v.scheduled_date), today) && isBefore(new Date(v.scheduled_date), in30Days));
       const completedVisits = visitsInRange.filter(v => v.status === "completed").length;
 
       const openFindings = findings.filter(f => f.status === "open");
       const criticalFindings = openFindings.filter(f => f.severity === "critical");
       
       const findingsAging = [
-        { range: t("findingsAging.ranges.0to7"), count: openFindings.filter(f => differenceInDays(today, new Date(f.created_at)) <= 7).length },
-        { range: t("findingsAging.ranges.8to30"), count: openFindings.filter(f => { const days = differenceInDays(today, new Date(f.created_at)); return days > 7 && days <= 30; }).length },
-        { range: t("findingsAging.ranges.31to60"), count: openFindings.filter(f => { const days = differenceInDays(today, new Date(f.created_at)); return days > 30 && days <= 60; }).length },
-        { range: t("findingsAging.ranges.over60"), count: openFindings.filter(f => differenceInDays(today, new Date(f.created_at)) > 60).length },
+        { range: "0–7 days", count: openFindings.filter(f => differenceInDays(today, new Date(f.created_at)) <= 7).length },
+        { range: "8–30 days", count: openFindings.filter(f => { const d = differenceInDays(today, new Date(f.created_at)); return d > 7 && d <= 30; }).length },
+        { range: "31–60 days", count: openFindings.filter(f => { const d = differenceInDays(today, new Date(f.created_at)); return d > 30 && d <= 60; }).length },
+        { range: "> 60 days", count: openFindings.filter(f => differenceInDays(today, new Date(f.created_at)) > 60).length },
       ];
 
       const siteChecklistMap = new Map<string, { siteCode: string; siteName: string; total: number; completed: number }>();
-      
       for (const item of checklistItems) {
         const siteId = item.visit?.site_id;
         if (!siteId) continue;
-        
         if (!siteChecklistMap.has(siteId)) {
           const visitWithSite = visits.find(v => v.site?.site_code && v.site?.id === siteId);
-          siteChecklistMap.set(siteId, {
-            siteCode: visitWithSite?.site?.site_code || "Unknown",
-            siteName: visitWithSite?.site?.name || "Unknown",
-            total: 0,
-            completed: 0,
-          });
+          siteChecklistMap.set(siteId, { siteCode: visitWithSite?.site?.site_code || "Unknown", siteName: visitWithSite?.site?.name || "Unknown", total: 0, completed: 0 });
         }
-        
         const siteData = siteChecklistMap.get(siteId)!;
         siteData.total++;
         if (item.completed) siteData.completed++;
@@ -260,51 +206,23 @@ const Dashboard = () => {
         .sort((a, b) => a.completion - b.completion);
 
       const upcoming: UpcomingItem[] = [];
-      
       [...overdueTasks, ...tasksNext7Days].slice(0, 5).forEach(task => {
-        upcoming.push({
-          id: task.id,
-          title: task.title,
-          type: "task",
-          dueDate: task.due_date,
-          projectCode: "",
-          siteCode: task.site?.site_code,
-          priority: task.priority,
-        });
+        upcoming.push({ id: task.id, title: task.title, type: "task", dueDate: task.due_date, projectCode: "", siteCode: task.site?.site_code, priority: task.priority });
       });
-
       [...overdueVisits, ...visitsNext7Days].slice(0, 5).forEach(visit => {
-        upcoming.push({
-          id: visit.id,
-          title: `${visit.visit_type} - ${visit.site?.name || "Site"}`,
-          type: "visit",
-          dueDate: visit.scheduled_date,
-          projectCode: visit.project?.protocol_number || visit.project?.title || "",
-          siteCode: visit.site?.site_code,
-          visitType: visit.visit_type,
-        });
+        upcoming.push({ id: visit.id, title: `${visit.visit_type} - ${visit.site?.name || "Site"}`, type: "visit", dueDate: visit.scheduled_date, projectCode: visit.project?.protocol_number || visit.project?.title || "", siteCode: visit.site?.site_code, visitType: visit.visit_type });
       });
-
       upcoming.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
       setStats({
-        totalProjects: projectsData.length,
-        activeProjects: projectsData.filter(s => s.status === "active").length,
-        totalTasks: tasksInRange.length,
-        overdueTasks: overdueTasks.length,
-        tasksNext7Days: tasksNext7Days.length,
-        tasksNext30Days: tasksNext30Days.length,
-        totalVisits: visitsInRange.length,
-        overdueVisits: overdueVisits.length,
-        visitsNext7Days: visitsNext7Days.length,
-        visitsNext30Days: visitsNext30Days.length,
-        completedVisits,
-        openFindings: openFindings.length,
-        criticalFindings: criticalFindings.length,
-        findingsAging,
-        siteChecklistCompletion,
+        totalProjects: projectsData.length, activeProjects: projectsData.filter(s => s.status === "active").length,
+        totalTasks: tasksInRange.length, overdueTasks: overdueTasks.length,
+        tasksNext7Days: tasksNext7Days.length, tasksNext30Days: tasksNext30Days.length,
+        totalVisits: visitsInRange.length, overdueVisits: overdueVisits.length,
+        visitsNext7Days: visitsNext7Days.length, visitsNext30Days: visitsNext30Days.length,
+        completedVisits, openFindings: openFindings.length, criticalFindings: criticalFindings.length,
+        findingsAging, siteChecklistCompletion,
       });
-
       setUpcomingItems(upcoming.slice(0, 8));
     } catch (error) {
       console.error("Error loading dashboard:", error);
@@ -314,15 +232,14 @@ const Dashboard = () => {
   };
 
   const isOverdue = (dateStr: string) => isBefore(new Date(dateStr), startOfToday());
-
   const selectedProjectData = projects.find(s => s.id === selectedProject);
 
   if (loading && projects.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-      <CTMSNav />
+        <CTMSNav />
         <div className="flex items-center justify-center h-[calc(100vh-80px)]">
-          <div className="animate-pulse text-muted-foreground">{tCommon("messages.loading")}</div>
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
         </div>
       </div>
     );
@@ -331,15 +248,14 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <CTMSNav />
-      
       <main className="container mx-auto px-4 py-8 animate-fade-in">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-1">{t("title")}</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-1">Dashboard</h2>
             <p className="text-muted-foreground">
               {selectedProject !== "all" 
-                ? `${t("filtering")}: ${selectedProjectData?.protocol_number || selectedProjectData?.title}` 
-                : t("subtitle")}
+                ? `Filtering: ${selectedProjectData?.protocol_number || selectedProjectData?.title}` 
+                : "Overview of all studies and activities"}
             </p>
           </div>
         </div>
@@ -350,17 +266,15 @@ const Dashboard = () => {
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{t("filters.label")}:</span>
+                <span className="text-sm font-medium">Filters:</span>
               </div>
-              
               <div className="flex flex-wrap gap-3 flex-1">
-                {/* Project Filter */}
                 <Select value={selectedProject} onValueChange={setSelectedProject}>
                   <SelectTrigger className="w-[220px]">
-                    <SelectValue placeholder={t("filters.selectStudy")} />
+                    <SelectValue placeholder="Select study" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("filters.allStudies")}</SelectItem>
+                    <SelectItem value="all">All Studies</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.protocol_number || project.title}
@@ -369,12 +283,11 @@ const Dashboard = () => {
                   </SelectContent>
                 </Select>
 
-                {/* Period Presets */}
                 <div className="flex gap-1 border rounded-lg p-1">
                   {[
-                    { value: "7d", label: t("filters.periods.7days") },
-                    { value: "30d", label: t("filters.periods.30days") },
-                    { value: "90d", label: t("filters.periods.90days") },
+                    { value: "7d", label: "7 days" },
+                    { value: "30d", label: "30 days" },
+                    { value: "90d", label: "90 days" },
                   ].map((preset) => (
                     <Button
                       key={preset.value}
@@ -385,19 +298,13 @@ const Dashboard = () => {
                       {preset.label}
                     </Button>
                   ))}
-                  
-                  {/* Custom Date Range */}
                   <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant={periodPreset === "custom" ? "default" : "ghost"}
-                        size="sm"
-                        className="gap-1"
-                      >
+                      <Button variant={periodPreset === "custom" ? "default" : "ghost"} size="sm" className="gap-1">
                         <CalendarIcon className="h-4 w-4" />
                         {periodPreset === "custom" 
                           ? `${format(dateRange.from, shortDateFormat)} - ${format(dateRange.to, shortDateFormat)}`
-                          : t("filters.periods.custom")
+                          : "Custom"
                         }
                       </Button>
                     </PopoverTrigger>
@@ -420,16 +327,13 @@ const Dashboard = () => {
                   </Popover>
                 </div>
 
-                {/* Clear Filters */}
                 {hasActiveFilters && (
                   <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
                     <X className="h-4 w-4" />
-                    {tCommon("buttons.clear")}
+                    Clear
                   </Button>
                 )}
               </div>
-
-              {/* Period Label */}
               <div className="text-xs text-muted-foreground">
                 {format(dateRange.from, dateFormat, { locale })} - {format(dateRange.to, dateFormat, { locale })}
               </div>
@@ -448,7 +352,7 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-destructive">{stats.overdueTasks}</p>
-                    <p className="text-sm text-muted-foreground">{t("alerts.overdueTasks")}</p>
+                    <p className="text-sm text-muted-foreground">Overdue Tasks</p>
                   </div>
                 </CardContent>
               </Card>
@@ -461,7 +365,7 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-warning">{stats.overdueVisits}</p>
-                    <p className="text-sm text-muted-foreground">{t("alerts.overdueVisits")}</p>
+                    <p className="text-sm text-muted-foreground">Overdue Visits</p>
                   </div>
                 </CardContent>
               </Card>
@@ -474,7 +378,7 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-destructive">{stats.criticalFindings}</p>
-                    <p className="text-sm text-muted-foreground">{t("alerts.criticalFindings")}</p>
+                    <p className="text-sm text-muted-foreground">Critical Findings</p>
                   </div>
                 </CardContent>
               </Card>
@@ -486,57 +390,50 @@ const Dashboard = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("stats.studies")}</CardTitle>
+              <CardTitle className="text-sm font-medium">Studies</CardTitle>
               <FlaskConical className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalProjects}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.activeProjects} {t("stats.active")}
-              </p>
+              <p className="text-xs text-muted-foreground">{stats.activeProjects} active</p>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("stats.visitsInPeriod")}</CardTitle>
+              <CardTitle className="text-sm font-medium">Visits in Period</CardTitle>
               <CalendarClock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalVisits}</div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-success">{stats.completedVisits} {t("stats.completed")}</span>
+                <span className="text-success">{stats.completedVisits} completed</span>
                 <span className="text-muted-foreground">•</span>
-                <span className="text-warning">{stats.visitsNext7Days} {t("stats.in7d")}</span>
+                <span className="text-warning">{stats.visitsNext7Days} in 7d</span>
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("stats.pendingTasks")}</CardTitle>
+              <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
               <ListChecks className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalTasks}</div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-destructive">{stats.overdueTasks} {t("stats.overdue")}</span>
+                <span className="text-destructive">{stats.overdueTasks} overdue</span>
                 <span className="text-muted-foreground">•</span>
-                <span className="text-warning">{stats.tasksNext7Days} {t("stats.in7d")}</span>
+                <span className="text-warning">{stats.tasksNext7Days} in 7d</span>
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t("stats.openFindings")}</CardTitle>
+              <CardTitle className="text-sm font-medium">Open Findings</CardTitle>
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.openFindings}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.criticalFindings} {t("stats.critical")}
-              </p>
+              <p className="text-xs text-muted-foreground">{stats.criticalFindings} critical</p>
             </CardContent>
           </Card>
         </div>
@@ -547,17 +444,15 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-primary" />
-                {t("upcoming.title")}
+                Upcoming Activities
               </CardTitle>
-              <CardDescription>
-                {t("upcoming.description")}
-              </CardDescription>
+              <CardDescription>Tasks and visits due soon</CardDescription>
             </CardHeader>
             <CardContent>
               {upcomingItems.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckCircle2 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>{t("upcoming.noItems")}</p>
+                  <p>No upcoming activities</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -570,15 +465,8 @@ const Dashboard = () => {
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "p-2 rounded-full",
-                          item.type === "visit" ? "bg-primary/10" : "bg-secondary/50"
-                        )}>
-                          {item.type === "visit" ? (
-                            <CalendarClock className="h-4 w-4 text-primary" />
-                          ) : (
-                            <ListChecks className="h-4 w-4 text-secondary-foreground" />
-                          )}
+                        <div className={cn("p-2 rounded-full", item.type === "visit" ? "bg-primary/10" : "bg-secondary/50")}>
+                          {item.type === "visit" ? <CalendarClock className="h-4 w-4 text-primary" /> : <ListChecks className="h-4 w-4 text-secondary-foreground" />}
                         </div>
                         <div>
                           <p className="font-medium text-sm">{item.title}</p>
@@ -587,25 +475,19 @@ const Dashboard = () => {
                             {item.siteCode && (
                               <>
                                 <span>•</span>
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3" />
-                                  {item.siteCode}
-                                </span>
+                                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{item.siteCode}</span>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={cn(
-                          "text-sm font-medium",
-                          isOverdue(item.dueDate) ? "text-destructive" : "text-foreground"
-                        )}>
+                        <p className={cn("text-sm font-medium", isOverdue(item.dueDate) ? "text-destructive" : "text-foreground")}>
                           {format(new Date(item.dueDate), shortDateFormat, { locale })}
                         </p>
                         {item.priority && (
                           <Badge variant={item.priority === "high" ? "destructive" : "secondary"} className="text-xs">
-                            {item.priority === "high" ? tCommon("priority.high") : item.priority === "medium" ? tCommon("priority.medium") : tCommon("priority.low")}
+                            {item.priority === "high" ? "High" : item.priority === "medium" ? "Medium" : "Low"}
                           </Badge>
                         )}
                       </div>
@@ -621,11 +503,9 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                {t("findingsAging.title")}
+                Findings Aging
               </CardTitle>
-              <CardDescription>
-                {t("findingsAging.description")}
-              </CardDescription>
+              <CardDescription>Open findings by age</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -635,10 +515,7 @@ const Dashboard = () => {
                       <span className="text-muted-foreground">{aging.range}</span>
                       <span className="font-medium">{aging.count}</span>
                     </div>
-                    <Progress 
-                      value={stats.openFindings > 0 ? (aging.count / stats.openFindings) * 100 : 0} 
-                      className="h-2"
-                    />
+                    <Progress value={stats.openFindings > 0 ? (aging.count / stats.openFindings) * 100 : 0} className="h-2" />
                   </div>
                 ))}
               </div>
@@ -652,11 +529,9 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                {t("checklist.title")}
+                Site Checklist Completion
               </CardTitle>
-              <CardDescription>
-                {t("checklist.description")}
-              </CardDescription>
+              <CardDescription>Completion rate per site</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -665,22 +540,17 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-sm">{site.siteCode}</p>
-                        <p className="text-xs text-muted-foreground truncate max-w-[150px]">
-                          {site.siteName}
-                        </p>
+                        <p className="text-xs text-muted-foreground truncate max-w-[150px]">{site.siteName}</p>
                       </div>
                       <span className={cn(
                         "text-sm font-bold",
-                        site.completion >= 80 ? "text-success" :
-                        site.completion >= 50 ? "text-warning" : "text-destructive"
+                        site.completion >= 80 ? "text-success" : site.completion >= 50 ? "text-warning" : "text-destructive"
                       )}>
                         {site.completion}%
                       </span>
                     </div>
                     <Progress value={site.completion} className="h-2" />
-                    <p className="text-xs text-muted-foreground text-right">
-                      {site.completed}/{site.total} {t("checklist.items")}
-                    </p>
+                    <p className="text-xs text-muted-foreground text-right">{site.completed}/{site.total} items</p>
                   </div>
                 ))}
               </div>
