@@ -5,7 +5,6 @@ const STORAGE_KEY = "selected_filters";
 interface SelectedFilters {
   projectId: string | null;
   centerId: string | null;
-  centerManagementProjectId: string | null;
 }
 
 export const usePersistedFilters = () => {
@@ -18,7 +17,7 @@ export const usePersistedFilters = () => {
     } catch (e) {
       console.error("Error reading persisted filters:", e);
     }
-    return { projectId: null, centerId: null, centerManagementProjectId: null };
+    return { projectId: null, centerId: null };
   });
 
   useEffect(() => {
@@ -37,16 +36,10 @@ export const usePersistedFilters = () => {
     setFilters(prev => ({ ...prev, centerId }));
   };
 
-  const setCenterManagementProjectId = (centerManagementProjectId: string | null) => {
-    setFilters(prev => ({ ...prev, centerManagementProjectId }));
-  };
-
   return {
     projectId: filters.projectId,
     centerId: filters.centerId,
-    centerManagementProjectId: filters.centerManagementProjectId,
     setProjectId,
     setCenterId,
-    setCenterManagementProjectId,
   };
 };
