@@ -8,7 +8,6 @@ import {
   Calendar,
   ListTodo,
   Briefcase,
-  
   FileText,
   DollarSign,
   Library,
@@ -16,6 +15,13 @@ import {
   LogOut,
   MessageSquare,
   Activity,
+  CalendarCheck,
+  ShieldCheck,
+  GraduationCap,
+  GitBranch,
+  AlertTriangle,
+  Users2,
+  Gavel,
 } from "lucide-react";
 
 interface CTMSNavProps {
@@ -43,7 +49,14 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     { to: "/agenda", icon: Calendar, label: "Agenda" },
     { to: "/tasks", icon: ListTodo, label: "Tasks" },
     { to: "/projects", icon: Briefcase, label: "Studies" },
-    
+    { to: "/visits", icon: CalendarCheck, label: "Visits" },
+    { to: "/visit-schedule", icon: Calendar, label: "Visit Schedule" },
+    { to: "/qualifications", icon: ShieldCheck, label: "Qualifications" },
+    { to: "/trainings", icon: GraduationCap, label: "Trainings" },
+    { to: "/change-control", icon: GitBranch, label: "Change Control" },
+    { to: "/risks", icon: AlertTriangle, label: "Risks" },
+    { to: "/committees", icon: Users2, label: "Committees" },
+    { to: "/steering", icon: Gavel, label: "Steering" },
     { to: "/regulatory", icon: FileText, label: "Regulatory" },
     { to: "/payments", icon: DollarSign, label: "Payments" },
     { to: "/library", icon: Library, label: "Library" },
@@ -98,7 +111,7 @@ export default function CTMSNav({ className }: CTMSNavProps) {
         </div>
 
         <div className="flex md:hidden overflow-x-auto pb-2 gap-1">
-          {navItems.slice(0, 6).map(({ to, icon: Icon, label }) => (
+          {navItems.map(({ to, icon: Icon, label }) => (
             <Button
               key={to}
               variant={isActive(to) ? "secondary" : "ghost"}

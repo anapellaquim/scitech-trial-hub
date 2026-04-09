@@ -112,6 +112,100 @@ export type Database = {
           },
         ]
       }
+      change_control_approvals: {
+        Row: {
+          approver_name: string
+          change_control_id: string
+          comments: string | null
+          created_at: string
+          decision: string
+          decision_date: string | null
+          id: string
+        }
+        Insert: {
+          approver_name: string
+          change_control_id: string
+          comments?: string | null
+          created_at?: string
+          decision?: string
+          decision_date?: string | null
+          id?: string
+        }
+        Update: {
+          approver_name?: string
+          change_control_id?: string
+          comments?: string | null
+          created_at?: string
+          decision?: string
+          decision_date?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_control_approvals_change_control_id_fkey"
+            columns: ["change_control_id"]
+            isOneToOne: false
+            referencedRelation: "change_controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      change_controls: {
+        Row: {
+          change_code: string
+          change_type: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          impact_assessment: string | null
+          opened_at: string
+          project_id: string
+          resolved_at: string | null
+          responsible: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          change_code: string
+          change_type?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          impact_assessment?: string | null
+          opened_at?: string
+          project_id: string
+          resolved_at?: string | null
+          responsible?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          change_code?: string
+          change_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          impact_assessment?: string | null
+          opened_at?: string
+          project_id?: string
+          resolved_at?: string | null
+          responsible?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_controls_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_templates: {
         Row: {
           created_at: string
@@ -141,6 +235,114 @@ export type Database = {
           visit_type?: Database["public"]["Enums"]["visit_type"]
         }
         Relationships: []
+      }
+      committee_attendees: {
+        Row: {
+          committee_id: string
+          created_at: string
+          id: string
+          member_name: string
+          present: boolean
+        }
+        Insert: {
+          committee_id: string
+          created_at?: string
+          id?: string
+          member_name: string
+          present?: boolean
+        }
+        Update: {
+          committee_id?: string
+          created_at?: string
+          id?: string
+          member_name?: string
+          present?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "committee_attendees_committee_id_fkey"
+            columns: ["committee_id"]
+            isOneToOne: false
+            referencedRelation: "committees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      committee_deliberations: {
+        Row: {
+          committee_id: string
+          content: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          committee_id: string
+          content: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          committee_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "committee_deliberations_committee_id_fkey"
+            columns: ["committee_id"]
+            isOneToOne: false
+            referencedRelation: "committees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      committees: {
+        Row: {
+          agenda: string | null
+          committee_type: string
+          created_at: string
+          id: string
+          meeting_date: string
+          meeting_number: number
+          next_meeting_date: string | null
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agenda?: string | null
+          committee_type?: string
+          created_at?: string
+          id?: string
+          meeting_date: string
+          meeting_number: number
+          next_meeting_date?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agenda?: string | null
+          committee_type?: string
+          created_at?: string
+          id?: string
+          meeting_date?: string
+          meeting_number?: number
+          next_meeting_date?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "committees_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crf_audit_log: {
         Row: {
@@ -1591,6 +1793,68 @@ export type Database = {
           },
         ]
       }
+      risks: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          identified_at: string
+          impact: number
+          mitigation_plan: string | null
+          probability: number
+          project_id: string
+          responsible: string | null
+          review_date: string | null
+          risk_code: string
+          risk_score: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          identified_at?: string
+          impact?: number
+          mitigation_plan?: string | null
+          probability?: number
+          project_id: string
+          responsible?: string | null
+          review_date?: string | null
+          risk_code: string
+          risk_score?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          identified_at?: string
+          impact?: number
+          mitigation_plan?: string | null
+          probability?: number
+          project_id?: string
+          responsible?: string | null
+          review_date?: string | null
+          risk_code?: string
+          risk_score?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       safety_events: {
         Row: {
           causality: string | null
@@ -1662,6 +1926,121 @@ export type Database = {
           },
           {
             foreignKeyName: "safety_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_vendor_qualifications: {
+        Row: {
+          contract_status: string
+          created_at: string
+          documents_url: string | null
+          feasibility_date: string | null
+          id: string
+          name: string
+          next_qualification_date: string | null
+          notes: string | null
+          project_id: string
+          qualification_status: string
+          responsible: string | null
+          score: number | null
+          updated_at: string
+          vendor_type: string
+        }
+        Insert: {
+          contract_status?: string
+          created_at?: string
+          documents_url?: string | null
+          feasibility_date?: string | null
+          id?: string
+          name: string
+          next_qualification_date?: string | null
+          notes?: string | null
+          project_id: string
+          qualification_status?: string
+          responsible?: string | null
+          score?: number | null
+          updated_at?: string
+          vendor_type?: string
+        }
+        Update: {
+          contract_status?: string
+          created_at?: string
+          documents_url?: string | null
+          feasibility_date?: string | null
+          id?: string
+          name?: string
+          next_qualification_date?: string | null
+          notes?: string | null
+          project_id?: string
+          qualification_status?: string
+          responsible?: string | null
+          score?: number | null
+          updated_at?: string
+          vendor_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_vendor_qualifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      steering_decisions: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          decision_code: string
+          decision_date: string
+          description: string
+          id: string
+          impacted_area: string | null
+          meeting_origin: string | null
+          observations: string | null
+          project_id: string
+          responsible: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          decision_code: string
+          decision_date?: string
+          description: string
+          id?: string
+          impacted_area?: string | null
+          meeting_origin?: string | null
+          observations?: string | null
+          project_id: string
+          responsible?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          decision_code?: string
+          decision_date?: string
+          description?: string
+          id?: string
+          impacted_area?: string | null
+          meeting_origin?: string | null
+          observations?: string | null
+          project_id?: string
+          responsible?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "steering_decisions_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -1835,6 +2214,62 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "task_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_visit_schedule: {
+        Row: {
+          actual_date: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          observations: string | null
+          planned_date: string | null
+          project_id: string
+          site_name: string
+          status: string
+          updated_at: string
+          visit_number: number
+          window_end: string | null
+          window_start: string | null
+        }
+        Insert: {
+          actual_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          observations?: string | null
+          planned_date?: string | null
+          project_id: string
+          site_name: string
+          status?: string
+          updated_at?: string
+          visit_number: number
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          actual_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          observations?: string | null
+          planned_date?: string | null
+          project_id?: string
+          site_name?: string
+          status?: string
+          updated_at?: string
+          visit_number?: number
+          window_end?: string | null
+          window_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_visit_schedule_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -2589,6 +3024,94 @@ export type Database = {
           zone_number?: string
         }
         Relationships: []
+      }
+      training_records: {
+        Row: {
+          certificate_url: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          status: string
+          training_id: string
+          updated_at: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          training_id: string
+          updated_at?: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          certificate_url?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          training_id?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_records_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trainings: {
+        Row: {
+          created_at: string
+          delegate_role: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          is_required: boolean
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delegate_role?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_required?: boolean
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delegate_role?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_required?: boolean
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
