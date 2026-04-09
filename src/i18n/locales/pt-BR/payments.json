@@ -1,0 +1,44 @@
+{
+  "title": "Pagamentos",
+  "subtitle": "Gerencie os pagamentos dos participantes",
+  "newPayment": "Novo Pagamento",
+  "registerPayment": "Registrar Pagamento",
+  "noPayments": "Nenhum pagamento encontrado",
+  "fields": {
+    "participant": "Participante",
+    "project": "Estudo",
+    "amount": "Valor",
+    "paymentDate": "Data do Pagamento",
+    "status": "Status",
+    "notes": "Observações",
+    "visits": "Visitas"
+  },
+  "status": {
+    "pending": "Pendente",
+    "paid": "Pago",
+    "cancelled": "Cancelado"
+  },
+  "tabs": {
+    "participants": "Participantes",
+    "history": "Histórico de Pagamentos",
+    "vendors": "Fornecedores"
+  },
+  "stats": {
+    "totalPending": "Total Pendente",
+    "totalPaid": "Total Pago",
+    "participantsWithPending": "Participantes com Pendências"
+  },
+  "config": {
+    "title": "Configuração de Pagamentos",
+    "valuePerVisit": "Valor por Visita",
+    "totalVisits": "Total de Visitas",
+    "currency": "Moeda"
+  },
+  "messages": {
+    "registerSuccess": "Pagamento registrado com sucesso",
+    "registerError": "Erro ao registrar pagamento",
+    "updateSuccess": "Pagamento atualizado com sucesso",
+    "updateError": "Erro ao atualizar pagamento",
+    "confirmPayment": "Confirmar Pagamento"
+  }
+}

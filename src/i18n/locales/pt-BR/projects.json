@@ -1,0 +1,53 @@
+{
+  "title": "Estudos",
+  "subtitle": "Gerencie seus estudos clínicos",
+  "newProject": "Novo Estudo",
+  "editProject": "Editar Estudo",
+  "deleteProject": "Excluir Estudo",
+  "noProjects": "Nenhum estudo encontrado",
+  "createFirst": "Crie seu primeiro estudo para começar",
+  "fields": {
+    "title": "Título",
+    "description": "Descrição",
+    "protocolNumber": "Número do Protocolo",
+    "sponsor": "Patrocinador",
+    "phase": "Fase",
+    "therapeuticArea": "Área Terapêutica",
+    "principalInvestigator": "Investigador Principal",
+    "startDate": "Data de Início",
+    "endDate": "Data de Término",
+    "status": "Status",
+    "budget": "Orçamento",
+    "costCenter": "Centro de Custo",
+    "targetEnrollment": "Meta de Recrutamento",
+    "currentEnrollment": "Recrutamento Atual"
+  },
+  "status": {
+    "planning": "Planejamento",
+    "active": "Ativo",
+    "on_hold": "Em Espera",
+    "completed": "Concluído",
+    "cancelled": "Cancelado"
+  },
+  "phases": {
+    "phase1": "Fase I",
+    "phase2": "Fase II",
+    "phase3": "Fase III",
+    "phase4": "Fase IV"
+  },
+  "schedule": {
+    "title": "Cronograma do Projeto",
+    "gantt": "Gráfico de Gantt",
+    "list": "Lista de Tarefas",
+    "raci": "Matriz RACI"
+  },
+  "messages": {
+    "createSuccess": "Estudo criado com sucesso",
+    "updateSuccess": "Estudo atualizado com sucesso",
+    "deleteSuccess": "Estudo excluído com sucesso",
+    "createError": "Erro ao criar estudo",
+    "updateError": "Erro ao atualizar estudo",
+    "deleteError": "Erro ao excluir estudo",
+    "confirmDelete": "Tem certeza que deseja excluir este estudo?"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "dashboard": "Dashboard",
+  "agenda": "Agenda",
+  "studies": "Estudos",
+  "tasks": "Tarefas",
+  "visits": "Visitas",
+  "payments": "Pagamentos",
+  "library": "Biblioteca",
+  "regulatory": "Regulatório",
+  "centers": "Centros",
+  "edc": "EDC",
+  "etmf": "eTMF",
+  "admin": "Admin",
+  "users": "Usuários",
+  "audit": "Auditoria",
+  "communications": "Comunicação",
+  "settings": "Configurações",
+  "logout": "Sair"
+}

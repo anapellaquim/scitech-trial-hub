@@ -1,0 +1,56 @@
+{
+  "title": "Dashboard de Monitorias",
+  "subtitle": "Visão geral de todos os estudos",
+  "filtering": "Filtrando",
+  "filters": {
+    "label": "Filtros",
+    "selectStudy": "Selecionar estudo",
+    "allStudies": "Todos os estudos",
+    "periods": {
+      "7days": "7 dias",
+      "30days": "30 dias",
+      "90days": "90 dias",
+      "custom": "Período"
+    }
+  },
+  "alerts": {
+    "overdueTasks": "Tarefas atrasadas",
+    "overdueVisits": "Visitas atrasadas",
+    "criticalFindings": "Achados críticos"
+  },
+  "stats": {
+    "studies": "Estudos",
+    "active": "ativos",
+    "visitsInPeriod": "Visitas no Período",
+    "completed": "concluídas",
+    "in7d": "em 7d",
+    "pendingTasks": "Tarefas Pendentes",
+    "overdue": "atrasadas",
+    "openFindings": "Achados Abertos",
+    "critical": "críticos"
+  },
+  "upcoming": {
+    "title": "Próximos Compromissos",
+    "description": "Tarefas e visitas dos próximos 7 dias",
+    "noItems": "Nenhum compromisso próximo!"
+  },
+  "findingsAging": {
+    "title": "Aging de Achados",
+    "description": "Tempo de abertura dos achados",
+    "ranges": {
+      "0to7": "0-7 dias",
+      "8to30": "8-30 dias",
+      "31to60": "31-60 dias",
+      "over60": ">60 dias"
+    }
+  },
+  "checklist": {
+    "title": "Progresso de Checklist por Centro",
+    "description": "Taxa de conclusão dos itens de checklist",
+    "items": "itens"
+  },
+  "messages": {
+    "loading": "Carregando dashboard...",
+    "error": "Erro ao carregar dados"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "title": "Tarefas",
+  "subtitle": "Gerencie suas tarefas",
+  "newTask": "Nova Tarefa",
+  "editTask": "Editar Tarefa",
+  "deleteTask": "Excluir Tarefa",
+  "noTasks": "Nenhuma tarefa encontrada",
+  "createFirst": "Crie sua primeira tarefa",
+  "fields": {
+    "title": "Título",
+    "description": "Descrição",
+    "project": "Projeto",
+    "assignedTo": "Atribuído a",
+    "startDate": "Data de Início",
+    "endDate": "Data de Vencimento",
+    "status": "Status",
+    "priority": "Prioridade",
+    "progress": "Progresso"
+  },
+  "status": {
+    "pending": "Pendente",
+    "in_progress": "Em Andamento",
+    "completed": "Concluída",
+    "cancelled": "Cancelada"
+  },
+  "priority": {
+    "low": "Baixa",
+    "medium": "Média",
+    "high": "Alta"
+  },
+  "views": {
+    "list": "Lista",
+    "kanban": "Kanban",
+    "grouped": "Por Projeto"
+  },
+  "kanban": {
+    "pending": "Pendentes",
+    "inProgress": "Em Andamento",
+    "completed": "Concluídas",
+    "cancelled": "Canceladas"
+  },
+  "filters": {
+    "myTasks": "Minhas Tarefas",
+    "allTasks": "Todas as Tarefas",
+    "overdue": "Atrasadas",
+    "dueToday": "Vencem Hoje",
+    "dueThisWeek": "Vencem Esta Semana"
+  },
+  "subtasks": {
+    "title": "Subtarefas",
+    "add": "Adicionar Subtarefa",
+    "completed": "concluídas"
+  },
+  "messages": {
+    "createSuccess": "Tarefa criada com sucesso",
+    "updateSuccess": "Tarefa atualizada com sucesso",
+    "deleteSuccess": "Tarefa excluída com sucesso",
+    "statusChanged": "Status da tarefa atualizado",
+    "createError": "Erro ao criar tarefa",
+    "updateError": "Erro ao atualizar tarefa",
+    "deleteError": "Erro ao excluir tarefa",
+    "confirmDelete": "Tem certeza que deseja excluir esta tarefa?"
+  }
+}

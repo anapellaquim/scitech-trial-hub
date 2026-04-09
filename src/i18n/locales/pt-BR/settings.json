@@ -1,0 +1,31 @@
+{
+  "title": "Configurações",
+  "subtitle": "Configure suas preferências",
+  "sections": {
+    "language": "Idioma",
+    "appearance": "Aparência",
+    "notifications": "Notificações",
+    "account": "Conta"
+  },
+  "language": {
+    "title": "Idioma",
+    "description": "Selecione seu idioma preferido",
+    "current": "Idioma atual",
+    "options": {
+      "en": "Inglês",
+      "pt-BR": "Português (Brasil)"
+    }
+  },
+  "appearance": {
+    "title": "Aparência",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "messages": {
+    "saveSuccess": "Configurações salvas com sucesso",
+    "saveError": "Erro ao salvar configurações",
+    "languageChanged": "Idioma alterado com sucesso"
+  }
+}

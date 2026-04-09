@@ -1,0 +1,55 @@
+{
+  "title": "Centros de Pesquisa",
+  "subtitle": "Gerencie centros e sites de pesquisa",
+  "newCenter": "Novo Centro",
+  "editCenter": "Editar Centro",
+  "nocenters": "Nenhum centro encontrado",
+  "fields": {
+    "code": "Código do Site",
+    "name": "Nome",
+    "project": "Estudo",
+    "piName": "Investigador Principal",
+    "piEmail": "Email do IP",
+    "piPhone": "Telefone do IP",
+    "coordinatorName": "Coordenador",
+    "coordinatorEmail": "Email do Coordenador",
+    "coordinatorPhone": "Telefone do Coordenador",
+    "recruitmentStatus": "Status do Recrutamento",
+    "targetEnrollment": "Meta de Recrutamento",
+    "notes": "Observações"
+  },
+  "findings": {
+    "title": "Findings",
+    "new": "Novo Finding",
+    "edit": "Editar Finding",
+    "noFindings": "Nenhum finding encontrado",
+    "status": {
+      "open": "Aberto",
+      "in_progress": "Em Andamento",
+      "resolved": "Resolvido",
+      "closed": "Fechado"
+    },
+    "severity": {
+      "minor": "Menor",
+      "major": "Maior",
+      "critical": "Crítico"
+    },
+    "history": "Histórico do Finding"
+  },
+  "forms": {
+    "title": "Formulários do Estudo",
+    "manage": "Gerenciar Formulários"
+  },
+  "import": {
+    "title": "Importar Findings",
+    "fromFile": "Importar de Arquivo"
+  },
+  "messages": {
+    "createSuccess": "Centro criado com sucesso",
+    "updateSuccess": "Centro atualizado com sucesso",
+    "deleteSuccess": "Centro excluído com sucesso",
+    "createError": "Erro ao criar centro",
+    "updateError": "Erro ao atualizar centro",
+    "deleteError": "Erro ao excluir centro"
+  }
+}

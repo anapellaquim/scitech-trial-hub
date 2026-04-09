@@ -1,0 +1,54 @@
+{
+  "title": "eTMF - Arquivo Mestre do Estudo Eletrônico",
+  "subtitle": "Gerencie documentos do arquivo mestre do estudo",
+  "upload": "Upload de Documento",
+  "noDocuments": "Nenhum documento encontrado",
+  "fields": {
+    "name": "Nome do Documento",
+    "project": "Estudo",
+    "zone": "Zona",
+    "section": "Seção",
+    "artifact": "Artefato",
+    "version": "Versão",
+    "status": "Status",
+    "uploadedBy": "Enviado Por",
+    "uploadedAt": "Enviado Em"
+  },
+  "zones": {
+    "zone1": "Zona 1 - Gestão do Estudo",
+    "zone2": "Zona 2 - Documentos Centrais do Estudo",
+    "zone3": "Zona 3 - Regulatório",
+    "zone4": "Zona 4 - CEP/CONEP",
+    "zone5": "Zona 5 - Gestão de Sites",
+    "zone6": "Zona 6 - PI e Suprimentos",
+    "zone7": "Zona 7 - Relatos de Segurança",
+    "zone8": "Zona 8 - Testes Centrais e Locais",
+    "zone9": "Zona 9 - Terceiros",
+    "zone10": "Zona 10 - Gestão de Dados",
+    "zone11": "Zona 11 - Estatística"
+  },
+  "status": {
+    "pending": "Pendente de Revisão",
+    "approved": "Aprovado",
+    "rejected": "Rejeitado",
+    "archived": "Arquivado"
+  },
+  "stats": {
+    "totalDocuments": "Total de Documentos",
+    "pendingReview": "Pendentes de Revisão",
+    "approved": "Aprovados"
+  },
+  "viewer": {
+    "title": "Visualizador de Documentos",
+    "download": "Download",
+    "approve": "Aprovar",
+    "reject": "Rejeitar"
+  },
+  "messages": {
+    "uploadSuccess": "Documento enviado com sucesso",
+    "uploadError": "Erro ao enviar documento",
+    "approveSuccess": "Documento aprovado",
+    "rejectSuccess": "Documento rejeitado",
+    "deleteSuccess": "Documento excluído"
+  }
+}

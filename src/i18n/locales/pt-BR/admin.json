@@ -1,0 +1,106 @@
+{
+  "title": "Administração",
+  "users": {
+    "title": "Gestão de Usuários",
+    "subtitle": "Gerencie usuários e permissões do sistema",
+    "newUser": "Novo Usuário",
+    "editUser": "Editar Usuário",
+    "noUsers": "Nenhum usuário encontrado",
+    "fields": {
+      "name": "Nome",
+      "email": "Email",
+      "role": "Função",
+      "status": "Status",
+      "createdAt": "Criado Em",
+      "lastLogin": "Último Login"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "site_coordinator": "Coordenador de Site (S1)",
+      "investigator": "Investigador (S2)",
+      "cra_monitor": "CRA/Monitor (M1)",
+      "data_manager": "Gerente de Dados (D1)",
+      "data_lead": "Líder de Dados (D2)",
+      "study_builder": "Study Builder (A1)",
+      "medical_monitor": "Monitor Médico (O1)",
+      "statistician": "Estatístico (O2)",
+      "auditor": "Auditor (O3)",
+      "project_manager": "Gerente de Projeto",
+      "monitor": "Monitor",
+      "regulatory": "Regulatório",
+      "quality": "Qualidade",
+      "finance": "Financeiro",
+      "viewer": "Visualizador"
+    },
+    "actions": {
+      "changeRole": "Alterar Função",
+      "viewAudit": "Ver Log de Auditoria",
+      "deactivate": "Desativar",
+      "activate": "Ativar"
+    }
+  },
+  "audit": {
+    "title": "Log de Auditoria",
+    "subtitle": "Visualize o registro de atividades do sistema",
+    "noLogs": "Nenhum log encontrado",
+    "fields": {
+      "user": "Usuário",
+      "action": "Ação",
+      "entity": "Entidade",
+      "module": "Módulo",
+      "timestamp": "Data/Hora",
+      "ipAddress": "Endereço IP",
+      "details": "Detalhes"
+    },
+    "actions": {
+      "create": "Criar",
+      "update": "Atualizar",
+      "delete": "Excluir",
+      "view": "Visualizar",
+      "login": "Login",
+      "logout": "Logout"
+    },
+    "filters": {
+      "user": "Filtrar por Usuário",
+      "action": "Filtrar por Ação",
+      "module": "Filtrar por Módulo",
+      "dateRange": "Período"
+    }
+  },
+  "messages": {
+    "roleChanged": "Função do usuário atualizada com sucesso",
+    "userDeactivated": "Usuário desativado com sucesso",
+    "userActivated": "Usuário ativado com sucesso",
+    "error": "Ocorreu um erro"
+  },
+  "siteAccess": {
+    "title": "Gerenciar Acesso a Sites",
+    "description": "Configurar acesso de",
+    "addNew": "Adicionar Novo Acesso",
+    "projectOptional": "Projeto (opcional)",
+    "allProjects": "Todos os projetos",
+    "siteRequired": "Site *",
+    "selectSite": "Selecionar site",
+    "temporaryAccess": "Acesso temporário",
+    "addAccess": "Adicionar Acesso",
+    "currentAccess": "Acessos Atuais",
+    "noAccess": "Nenhum acesso a sites configurado",
+    "site": "Site",
+    "project": "Projeto",
+    "expiration": "Expiração",
+    "global": "Global",
+    "expired": "Expirado",
+    "permanent": "Permanente",
+    "siteNotFound": "Site não encontrado",
+    "loadError": "Não foi possível carregar os dados de acesso",
+    "selectSiteError": "Selecione um site",
+    "accessExists": "Acesso já existe",
+    "accessExistsDesc": "O usuário já possui acesso a este site",
+    "accessAdded": "Acesso adicionado",
+    "accessAddedDesc": "O acesso ao site foi concedido com sucesso",
+    "addError": "Não foi possível adicionar o acesso",
+    "accessRemoved": "Acesso removido",
+    "accessRemovedDesc": "O acesso ao site foi revogado com sucesso",
+    "removeError": "Não foi possível remover o acesso"
+  }
+}
