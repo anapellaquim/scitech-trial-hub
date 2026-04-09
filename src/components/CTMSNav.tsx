@@ -111,7 +111,7 @@ export default function CTMSNav({ className }: CTMSNavProps) {
         </div>
 
         <div className="flex md:hidden overflow-x-auto pb-2 gap-1">
-          {navItems.slice(0, 6).map(({ to, icon: Icon, label }) => (
+          {navItems.map(({ to, icon: Icon, label }) => (
             <Button
               key={to}
               variant={isActive(to) ? "secondary" : "ghost"}
