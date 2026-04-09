@@ -8,7 +8,7 @@ import {
   Calendar,
   ListTodo,
   Briefcase,
-  Building2,
+  
   FileText,
   DollarSign,
   Library,
@@ -43,7 +43,7 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     { to: "/agenda", icon: Calendar, label: "Agenda" },
     { to: "/tasks", icon: ListTodo, label: "Tasks" },
     { to: "/projects", icon: Briefcase, label: "Studies" },
-    { to: "/centers", icon: Building2, label: "Centers" },
+    
     { to: "/regulatory", icon: FileText, label: "Regulatory" },
     { to: "/payments", icon: DollarSign, label: "Payments" },
     { to: "/library", icon: Library, label: "Library" },

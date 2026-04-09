@@ -13,7 +13,7 @@ import Visits from "./pages/Visits";
 import Payments from "./pages/Payments";
 import Library from "./pages/Library";
 import Regulatory from "./pages/Regulatory";
-import CenterManagement from "./pages/CenterManagement";
+
 import NotFound from "./pages/NotFound";
 import ProjectSchedule from "./pages/ProjectSchedule";
 import AdminUsers from "./pages/AdminUsers";
@@ -40,7 +40,7 @@ function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:projectId/schedule" element={<ProjectSchedule />} />
-            <Route path="/centers" element={<CenterManagement />} />
+            
             <Route path="/regulatory" element={<Regulatory />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/library" element={<Library />} />
