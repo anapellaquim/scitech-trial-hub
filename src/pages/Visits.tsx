@@ -722,7 +722,7 @@ export default function Visits() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <EDCNav />
+        <CTMSNav />
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
           <p className="text-muted-foreground">Carregando...</p>
         </div>
@@ -732,7 +732,7 @@ export default function Visits() {
 
   return (
     <div className="min-h-screen bg-background">
-      <EDCNav />
+      <CTMSNav />
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
