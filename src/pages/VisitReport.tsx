@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import EDCNav from "@/components/EDCNav";
+import CTMSNav from "@/components/CTMSNav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -252,7 +252,7 @@ export default function VisitReport() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <EDCNav />
+        <CTMSNav />
         <main className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/3" />
@@ -267,7 +267,7 @@ export default function VisitReport() {
 
   return (
     <div className="min-h-screen bg-background">
-      <EDCNav />
+      <CTMSNav />
       
       <main className="container mx-auto px-4 py-8">
         {/* Header */}

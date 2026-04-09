@@ -38,20 +38,20 @@ export default function CTMSNav({ className }: CTMSNavProps) {
   };
 
   const navItems = [
-    { to: "/ctms", icon: LayoutDashboard, label: t("dashboard") },
-    { to: "/ctms/communications", icon: MessageSquare, label: t("communications") },
-    { to: "/ctms/agenda", icon: Calendar, label: t("agenda") },
-    { to: "/ctms/tasks", icon: ListTodo, label: t("tasks") },
-    { to: "/ctms/projects", icon: Briefcase, label: t("studies") },
-    { to: "/ctms/centers", icon: Building2, label: t("centers") },
-    { to: "/ctms/regulatory", icon: FileText, label: t("regulatory") },
-    { to: "/ctms/payments", icon: DollarSign, label: t("payments") },
-    { to: "/ctms/library", icon: Library, label: t("library") },
-    { to: "/ctms/settings", icon: Settings, label: t("settings") },
+    { to: "/", icon: LayoutDashboard, label: t("dashboard") },
+    { to: "/communications", icon: MessageSquare, label: t("communications") },
+    { to: "/agenda", icon: Calendar, label: t("agenda") },
+    { to: "/tasks", icon: ListTodo, label: t("tasks") },
+    { to: "/projects", icon: Briefcase, label: t("studies") },
+    { to: "/centers", icon: Building2, label: t("centers") },
+    { to: "/regulatory", icon: FileText, label: t("regulatory") },
+    { to: "/payments", icon: DollarSign, label: t("payments") },
+    { to: "/library", icon: Library, label: t("library") },
+    { to: "/settings", icon: Settings, label: t("settings") },
   ];
 
   const isActive = (path: string) => {
-    if (path === "/ctms") return location.pathname === "/ctms";
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
@@ -59,7 +59,7 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     <nav className={`border-b bg-card/50 backdrop-blur-sm ${className}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo - Links to Home */}
+          {/* Logo */}
           <Link 
             to="/" 
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
