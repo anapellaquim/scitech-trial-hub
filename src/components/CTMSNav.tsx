@@ -8,7 +8,6 @@ import {
   Calendar,
   ListTodo,
   Briefcase,
-  
   FileText,
   DollarSign,
   Library,
@@ -16,6 +15,13 @@ import {
   LogOut,
   MessageSquare,
   Activity,
+  CalendarCheck,
+  ShieldCheck,
+  GraduationCap,
+  GitBranch,
+  AlertTriangle,
+  Users2,
+  Gavel,
 } from "lucide-react";
 
 interface CTMSNavProps {

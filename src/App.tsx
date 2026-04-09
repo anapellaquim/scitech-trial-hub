@@ -13,13 +13,19 @@ import Visits from "./pages/Visits";
 import Payments from "./pages/Payments";
 import Library from "./pages/Library";
 import Regulatory from "./pages/Regulatory";
-
 import NotFound from "./pages/NotFound";
 import ProjectSchedule from "./pages/ProjectSchedule";
 import AdminUsers from "./pages/AdminUsers";
 import AdminAudit from "./pages/AdminAudit";
 import Communications from "./pages/Communications";
 import Settings from "./pages/Settings";
+import StudyVisitSchedule from "./pages/StudyVisitSchedule";
+import Qualifications from "./pages/Qualifications";
+import Trainings from "./pages/Trainings";
+import ChangeControl from "./pages/ChangeControl";
+import RiskManagement from "./pages/RiskManagement";
+import Committees from "./pages/Committees";
+import SteeringDecisions from "./pages/SteeringDecisions";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +55,15 @@ function App() {
             <Route path="/settings/audit" element={<AdminAudit />} />
             <Route path="/visits" element={<Visits />} />
             <Route path="/visits/:id" element={<VisitReport />} />
+
+            {/* New CTMS Modules */}
+            <Route path="/visit-schedule" element={<StudyVisitSchedule />} />
+            <Route path="/qualifications" element={<Qualifications />} />
+            <Route path="/trainings" element={<Trainings />} />
+            <Route path="/change-control" element={<ChangeControl />} />
+            <Route path="/risks" element={<RiskManagement />} />
+            <Route path="/committees" element={<Committees />} />
+            <Route path="/steering" element={<SteeringDecisions />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
