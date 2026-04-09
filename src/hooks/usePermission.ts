@@ -50,24 +50,23 @@ export const usePermission = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const hasRole = useCallback((role: AppRole, projectId?: string, studyId?: string): boolean => {
+  const hasRole = useCallback((role: AppRole, projectId?: string): boolean => {
     return roles.some(r => {
       if (r.role !== role) return false;
-      if (!r.project_id && !r.study_id) return true;
+      if (!r.project_id) return true;
       if (projectId && r.project_id === projectId) return true;
-      if (studyId && r.study_id === studyId) return true;
       return false;
     });
   }, [roles]);
 
-  const hasAnyRole = useCallback((checkRoles: AppRole[], projectId?: string, studyId?: string): boolean => {
-    return checkRoles.some(role => hasRole(role, projectId, studyId));
+  const hasAnyRole = useCallback((checkRoles: AppRole[], projectId?: string): boolean => {
+    return checkRoles.some(role => hasRole(role, projectId));
   }, [hasRole]);
 
-  const can = useCallback((permission: Permission, module: Module, projectId?: string, studyId?: string): boolean => {
+  const can = useCallback((permission: Permission, module: Module, projectId?: string): boolean => {
     if (roles.length === 0) return false;
     for (const userRole of roles) {
-      const roleApplies = (!userRole.project_id && !userRole.study_id) || (projectId && userRole.project_id === projectId) || (studyId && userRole.study_id === studyId);
+      const roleApplies = !userRole.project_id || (projectId && userRole.project_id === projectId);
       if (!roleApplies) continue;
       const permissions = permissionMatrix[userRole.role]?.[module] || [];
       if (permissions.includes("full")) return true;
