@@ -1,8 +1,8 @@
-import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePermission } from "@/hooks/usePermission";
 import {
   LayoutDashboard,
   Calendar,
@@ -23,32 +23,36 @@ interface CTMSNavProps {
 }
 
 export default function CTMSNav({ className }: CTMSNavProps) {
-  const { t } = useTranslation("navigation");
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAdmin, loading: permLoading } = usePermission();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error(t("logoutError", { ns: "common", defaultValue: "Error signing out" }));
+      toast.error("Error signing out");
     } else {
-      toast.success(t("logoutSuccess", { ns: "common", defaultValue: "Signed out successfully" }));
+      toast.success("Signed out successfully");
       navigate("/auth");
     }
   };
 
-  const navItems = [
-    { to: "/", icon: LayoutDashboard, label: t("dashboard") },
-    { to: "/communications", icon: MessageSquare, label: t("communications") },
-    { to: "/agenda", icon: Calendar, label: t("agenda") },
-    { to: "/tasks", icon: ListTodo, label: t("tasks") },
-    { to: "/projects", icon: Briefcase, label: t("studies") },
-    { to: "/centers", icon: Building2, label: t("centers") },
-    { to: "/regulatory", icon: FileText, label: t("regulatory") },
-    { to: "/payments", icon: DollarSign, label: t("payments") },
-    { to: "/library", icon: Library, label: t("library") },
-    { to: "/settings", icon: Settings, label: t("settings") },
+  const baseNavItems = [
+    { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/communications", icon: MessageSquare, label: "Communications" },
+    { to: "/agenda", icon: Calendar, label: "Agenda" },
+    { to: "/tasks", icon: ListTodo, label: "Tasks" },
+    { to: "/projects", icon: Briefcase, label: "Studies" },
+    { to: "/centers", icon: Building2, label: "Centers" },
+    { to: "/regulatory", icon: FileText, label: "Regulatory" },
+    { to: "/payments", icon: DollarSign, label: "Payments" },
+    { to: "/library", icon: Library, label: "Library" },
   ];
+
+  // Only show Settings for admins
+  const navItems = !permLoading && isAdmin()
+    ? [...baseNavItems, { to: "/settings", icon: Settings, label: "Settings" }]
+    : baseNavItems;
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -59,7 +63,6 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     <nav className={`border-b bg-card/50 backdrop-blur-sm ${className}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link 
             to="/" 
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -70,7 +73,6 @@ export default function CTMSNav({ className }: CTMSNavProps) {
             <span className="font-bold text-lg text-foreground hidden sm:inline">CTMS</span>
           </Link>
 
-          {/* Navigation Items */}
           <div className="flex items-center gap-1 overflow-x-auto">
             {navItems.map(({ to, icon: Icon, label }) => (
               <Button
@@ -88,7 +90,6 @@ export default function CTMSNav({ className }: CTMSNavProps) {
             ))}
           </div>
 
-          {/* Actions */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={handleLogout}>
               <LogOut className="h-4 w-4" />
@@ -96,7 +97,6 @@ export default function CTMSNav({ className }: CTMSNavProps) {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         <div className="flex md:hidden overflow-x-auto pb-2 gap-1">
           {navItems.slice(0, 6).map(({ to, icon: Icon, label }) => (
             <Button

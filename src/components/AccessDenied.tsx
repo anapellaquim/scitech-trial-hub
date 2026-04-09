@@ -15,50 +15,44 @@ interface AccessDeniedProps {
 
 const moduleLabels: Record<Module, string> = {
   dashboard: "Dashboard",
-  studies: "Estudos",
-  visits: "Visitas",
-  edc: "EDC",
-  etmf: "eTMF",
-  regulatory: "Regulatório",
-  payments: "Pagamentos",
-  users: "Usuários",
+  studies: "Studies",
+  visits: "Visits",
+  regulatory: "Regulatory",
+  payments: "Payments",
+  users: "Users",
   audit: "Audit Trail",
 };
 
 const permissionLabels: Record<Permission, string> = {
-  read: "visualizar",
-  write: "editar",
-  delete: "excluir",
-  approve: "aprovar",
-  full: "gerenciar",
+  read: "view",
+  write: "edit",
+  delete: "delete",
+  approve: "approve",
+  full: "manage",
 };
 
 const AccessDenied = ({
   requiredRoles,
   module,
   permission,
-  title = "Acesso Negado",
+  title = "Access Denied",
   description,
 }: AccessDeniedProps) => {
   const getDescription = () => {
     if (description) return description;
-
     if (requiredRoles && requiredRoles.length > 0) {
       const roles = requiredRoles.map(r => roleLabels[r]).join(", ");
-      return `Você precisa ter um dos seguintes papéis para acessar esta página: ${roles}`;
+      return `You need one of the following roles to access this page: ${roles}`;
     }
-
     if (module && permission) {
-      return `Você não tem permissão para ${permissionLabels[permission]} no módulo ${moduleLabels[module]}.`;
+      return `You don't have permission to ${permissionLabels[permission]} in the ${moduleLabels[module]} module.`;
     }
-
-    return "Você não tem permissão para acessar esta página.";
+    return "You don't have permission to access this page.";
   };
 
   return (
     <div className="min-h-screen bg-background">
       <CTMSNav />
-      
       <div className="container mx-auto px-4 py-16 flex items-center justify-center">
         <Card className="max-w-md w-full text-center">
           <CardHeader className="space-y-4">
@@ -66,25 +60,18 @@ const AccessDenied = ({
               <ShieldX className="h-8 w-8 text-destructive" />
             </div>
             <CardTitle className="text-2xl">{title}</CardTitle>
-            <CardDescription className="text-base">
-              {getDescription()}
-            </CardDescription>
+            <CardDescription className="text-base">{getDescription()}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Se você acredita que deveria ter acesso a esta página, entre em contato com um administrador do sistema.
+              If you believe you should have access to this page, contact a system administrator.
             </p>
-            
             <div className="flex items-center justify-center gap-4 pt-4">
               <Button variant="outline" asChild>
-                <Link to="/" className="flex items-center gap-2">
-                  <Home className="h-4 w-4" />
-                  Dashboard
-                </Link>
+                <Link to="/" className="flex items-center gap-2"><Home className="h-4 w-4" />Dashboard</Link>
               </Button>
               <Button variant="ghost" onClick={() => window.history.back()}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
+                <ArrowLeft className="h-4 w-4 mr-2" />Back
               </Button>
             </div>
           </CardContent>
