@@ -72,6 +72,14 @@ const Auth = () => {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
+              <div className="text-center">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
             </form>
           </CardContent>
         </Card>
