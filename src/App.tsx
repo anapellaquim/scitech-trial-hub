@@ -40,6 +40,8 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* CTMS Routes (root level) */}
             <Route path="/" element={<Dashboard />} />
