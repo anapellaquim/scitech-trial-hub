@@ -97,7 +97,11 @@ export default function Qualifications() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from("site_vendor_qualifications").select("*").eq("project_id", selectedProject).order("name");
+    let query = supabase.from("site_vendor_qualifications").select("*").order("name");
+    if (selectedProject && selectedProject !== "all") {
+      query = query.eq("project_id", selectedProject);
+    }
+    const { data } = await query;
     setRecords(data || []);
     setLoading(false);
   }, [selectedProject]);
