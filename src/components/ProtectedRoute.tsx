@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { usePermission, AppRole, Module, Permission } from "@/hooks/usePermission";
+import { usePermission, AppRole, ModuleKey, ModuleAction } from "@/hooks/usePermission";
 import { Skeleton } from "@/components/ui/skeleton";
 import AccessDenied from "@/components/AccessDenied";
 
@@ -8,8 +8,8 @@ interface ProtectedRouteProps {
   children: ReactNode;
   requiredRoles?: AppRole[];
   requiredPermission?: {
-    permission: Permission;
-    module: Module;
+    action: ModuleAction;
+    module: ModuleKey;
   };
   projectId?: string;
   fallback?: ReactNode;
@@ -22,7 +22,7 @@ const ProtectedRoute = ({
   projectId,
   fallback,
 }: ProtectedRouteProps) => {
-  const { loading, isAuthenticated, hasAnyRole, can } = usePermission();
+  const { loading, isAuthenticated, hasRole, canModule } = usePermission();
 
   if (loading) {
     return (
@@ -41,17 +41,16 @@ const ProtectedRoute = ({
   }
 
   if (requiredRoles && requiredRoles.length > 0) {
-    const hasAccess = hasAnyRole(requiredRoles, projectId);
+    const hasAccess = requiredRoles.some((r) => hasRole(r, projectId));
     if (!hasAccess) {
       return fallback || <AccessDenied requiredRoles={requiredRoles} />;
     }
   }
 
   if (requiredPermission) {
-    const { permission, module } = requiredPermission;
-    const hasAccess = can(permission, module, projectId);
-    if (!hasAccess) {
-      return fallback || <AccessDenied module={module} permission={permission} />;
+    const { action, module } = requiredPermission;
+    if (!canModule(module, action, projectId)) {
+      return fallback || <AccessDenied module={module} action={action} />;
     }
   }
 

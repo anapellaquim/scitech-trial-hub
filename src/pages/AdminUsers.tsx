@@ -41,7 +41,7 @@ interface Project {
 
 const roleConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   admin: { label: "Administrator", icon: ShieldCheck, color: "bg-red-500" },
-  viewer: { label: "Collaborator", icon: Eye, color: "bg-gray-500" },
+  collaborator: { label: "Collaborator", icon: Eye, color: "bg-gray-500" },
 };
 
 const AdminUsers = () => {

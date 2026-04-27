@@ -1,13 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "viewer";
-
-export type Module = 
-  | "dashboard" | "studies" | "visits" | "regulatory" 
-  | "payments" | "users" | "audit";
-
-export type Permission = "read" | "write" | "delete" | "approve" | "full";
+// Two-role model: Administrator (unrestricted) and Collaborator (custom per-module access)
+export type AppRole = "admin" | "collaborator";
 
 // Module-level permission system (matches DB enum module_key)
 export type ModuleKey =
@@ -55,17 +50,6 @@ interface ModulePermissionRow {
   project_id: string | null;
 }
 
-const permissionMatrix: Record<AppRole, Record<Module, Permission[]>> = {
-  admin: {
-    dashboard: ["full"], studies: ["full"], visits: ["full"],
-    regulatory: ["full"], payments: ["full"], users: ["full"], audit: ["full"],
-  },
-  viewer: {
-    dashboard: ["read"], studies: ["read", "write"], visits: ["read", "write"],
-    regulatory: ["read", "write"], payments: ["read", "write"], users: [], audit: [],
-  },
-};
-
 export const usePermission = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
@@ -105,30 +89,14 @@ export const usePermission = () => {
     });
   }, [roles]);
 
-  const hasAnyRole = useCallback((checkRoles: AppRole[], projectId?: string): boolean => {
-    return checkRoles.some(role => hasRole(role, projectId));
-  }, [hasRole]);
-
-  const can = useCallback((permission: Permission, module: Module, projectId?: string): boolean => {
-    if (roles.length === 0) return false;
-    for (const userRole of roles) {
-      const roleApplies = !userRole.project_id || (projectId && userRole.project_id === projectId);
-      if (!roleApplies) continue;
-      const permissions = permissionMatrix[userRole.role]?.[module] || [];
-      if (permissions.includes("full")) return true;
-      if (permissions.includes(permission)) return true;
-    }
-    return false;
-  }, [roles]);
-
   const isAdmin = useCallback((): boolean => hasRole("admin"), [hasRole]);
+  const isCollaborator = useCallback((): boolean => hasRole("collaborator"), [hasRole]);
 
   // Module-level permission check (view / create)
+  // Admin: unrestricted. Collaborator: only what the Administrator granted.
   const canModule = useCallback(
     (module: ModuleKey, action: ModuleAction, projectId?: string): boolean => {
       if (isAdmin()) return true;
-      // Collaborators (viewer role) get view + create on all non-admin modules by default
-      if (hasRole("viewer", projectId)) return true;
       const matches = (row: ModulePermissionRow) =>
         row.module === module &&
         (row.project_id === null || (projectId && row.project_id === projectId));
@@ -138,26 +106,27 @@ export const usePermission = () => {
       if (action === "view" && modulePerms.some((r) => matches(r) && r.action === "create")) return true;
       return false;
     },
-    [isAdmin, hasRole, modulePerms]
+    [isAdmin, modulePerms]
   );
-
-  const getUserRoles = useCallback((): AppRole[] => [...new Set(roles.map(r => r.role))], [roles]);
 
   const getPrimaryRole = useCallback((): AppRole | null => {
     if (hasRole("admin")) return "admin";
-    if (hasRole("viewer")) return "viewer";
+    if (hasRole("collaborator")) return "collaborator";
     return null;
   }, [hasRole]);
 
-  return { userId, roles, modulePerms, loading, isAuthenticated, hasRole, hasAnyRole, can, canModule, isAdmin, getUserRoles, getPrimaryRole };
+  return {
+    userId, roles, modulePerms, loading, isAuthenticated,
+    hasRole, isAdmin, isCollaborator, canModule, getPrimaryRole,
+  };
 };
 
 export const roleLabels: Record<AppRole, string> = {
   admin: "Administrator",
-  viewer: "Collaborator",
+  collaborator: "Collaborator",
 };
 
 export const roleColors: Record<AppRole, string> = {
   admin: "bg-red-500",
-  viewer: "bg-gray-500",
+  collaborator: "bg-gray-500",
 };

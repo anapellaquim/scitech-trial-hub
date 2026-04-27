@@ -77,7 +77,7 @@ const moduleConfig: Record<string, { label: string; color: string }> = {
 
 const AdminAudit = () => {
   const navigate = useNavigate();
-  const { can, loading: permLoading } = usePermission();
+  const { isAdmin, loading: permLoading } = usePermission();
   const [loading, setLoading] = useState(true);
   const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
