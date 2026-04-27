@@ -3946,33 +3946,39 @@ export type Database = {
       }
       training_records: {
         Row: {
+          assigned_at: string | null
           certificate_url: string | null
           completed_at: string | null
           created_at: string
           id: string
           status: string
+          team_role: string | null
           training_id: string
           updated_at: string
           user_id: string
           user_name: string
         }
         Insert: {
+          assigned_at?: string | null
           certificate_url?: string | null
           completed_at?: string | null
           created_at?: string
           id?: string
           status?: string
+          team_role?: string | null
           training_id: string
           updated_at?: string
           user_id: string
           user_name: string
         }
         Update: {
+          assigned_at?: string | null
           certificate_url?: string | null
           completed_at?: string | null
           created_at?: string
           id?: string
           status?: string
+          team_role?: string | null
           training_id?: string
           updated_at?: string
           user_id?: string
@@ -3994,10 +4000,15 @@ export type Database = {
           delegate_role: string | null
           description: string | null
           due_date: string | null
+          duration_hours: number | null
           id: string
+          instructor: string | null
           is_required: boolean
+          planned_date: string | null
           project_id: string
+          status: string
           title: string
+          training_type: string
           updated_at: string
         }
         Insert: {
@@ -4005,10 +4016,15 @@ export type Database = {
           delegate_role?: string | null
           description?: string | null
           due_date?: string | null
+          duration_hours?: number | null
           id?: string
+          instructor?: string | null
           is_required?: boolean
+          planned_date?: string | null
           project_id: string
+          status?: string
           title: string
+          training_type?: string
           updated_at?: string
         }
         Update: {
@@ -4016,10 +4032,15 @@ export type Database = {
           delegate_role?: string | null
           description?: string | null
           due_date?: string | null
+          duration_hours?: number | null
           id?: string
+          instructor?: string | null
           is_required?: boolean
+          planned_date?: string | null
           project_id?: string
+          status?: string
           title?: string
+          training_type?: string
           updated_at?: string
         }
         Relationships: [
