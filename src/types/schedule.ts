@@ -31,7 +31,16 @@ export interface TaskRACI {
   task_id: string;
   user_id: string | null;
   department_id: string | null;
+  stakeholder_id: string | null;
   role: string;
+}
+
+export interface Stakeholder {
+  id: string;
+  name: string;
+  organization: string | null;
+  stakeholder_type: string;
+  project_id: string;
 }
 
 export interface Profile {
