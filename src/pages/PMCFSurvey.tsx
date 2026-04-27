@@ -390,20 +390,18 @@ export default function PMCFSurvey() {
             <div className="col-span-2"><Label>Description</Label><Textarea value={surveyForm.description ?? ""} onChange={e => setSurveyForm({ ...surveyForm, description: e.target.value })} /></div>
             <div className="col-span-2"><Label>Form Link</Label><Input type="url" placeholder="https://…" value={surveyForm.form_link ?? ""} onChange={e => setSurveyForm({ ...surveyForm, form_link: e.target.value })} /></div>
             <div><Label>Target Audience</Label><Input value={surveyForm.target_audience ?? ""} onChange={e => setSurveyForm({ ...surveyForm, target_audience: e.target.value })} /></div>
-            <div><Label>Expected Monthly Fills</Label><Input type="number" value={surveyForm.expected_monthly_fills ?? 0} onChange={e => setSurveyForm({ ...surveyForm, expected_monthly_fills: parseInt(e.target.value) || 0 })} /></div>
-            <div><Label>Start Date</Label><Input type="date" value={surveyForm.start_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, start_date: e.target.value })} /></div>
-            <div><Label>End Date</Label><Input type="date" value={surveyForm.end_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, end_date: e.target.value })} /></div>
-            <div className="col-span-2"><Label>Responsible</Label><Input value={surveyForm.responsible ?? ""} onChange={e => setSurveyForm({ ...surveyForm, responsible: e.target.value })} /></div>
-            <div className="col-span-2">
-              <Label>Manual Target (optional)</Label>
+            <div>
+              <Label>Sample Size</Label>
               <Input
                 type="number"
-                placeholder="Leave empty to auto-calculate from Expected/mo × months elapsed"
+                placeholder="Total expected fills"
                 value={surveyForm.manual_target ?? ""}
                 onChange={e => setSurveyForm({ ...surveyForm, manual_target: e.target.value === "" ? null : parseInt(e.target.value) || 0 })}
               />
-              <p className="text-xs text-muted-foreground mt-1">Override the cumulative fill target used for progress tracking.</p>
             </div>
+            <div><Label>Start Date</Label><Input type="date" value={surveyForm.start_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, start_date: e.target.value })} /></div>
+            <div><Label>End Date</Label><Input type="date" value={surveyForm.end_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, end_date: e.target.value })} /></div>
+            <div className="col-span-2"><Label>Responsible</Label><Input value={surveyForm.responsible ?? ""} onChange={e => setSurveyForm({ ...surveyForm, responsible: e.target.value })} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSurveyDialogOpen(false)}>Cancel</Button>
