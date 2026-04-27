@@ -140,12 +140,24 @@ export default function ChangeControl() {
     check();
   }, []);
 
-  useEffect(() => { if (selectedProject) { setProjectId(selectedProject); loadData(); } }, [selectedProject]);
+  useEffect(() => {
+    supabase.from("projects").select("id, title, protocol_number").order("title").then(({ data }) => setProjects(data || []));
+  }, []);
+
+  useEffect(() => {
+    if (selectedProject) { setProjectId(selectedProject); loadData(); }
+  }, [selectedProject]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    let query = supabase.from("change_controls").select("*").order("opened_at", { ascending: false });
+    if (selectedProject === GENERAL_VALUE) {
+      query = query.is("project_id", null);
+    } else if (selectedProject && selectedProject !== "all") {
+      query = query.eq("project_id", selectedProject);
+    }
     const [{ data: cc }, { data: ap }, { data: acts }] = await Promise.all([
-      supabase.from("change_controls").select("*").eq("project_id", selectedProject).order("opened_at", { ascending: false }),
+      query,
       supabase.from("change_control_approvals").select("*").order("created_at"),
       supabase.from("change_control_actions" as any).select("*").order("display_order"),
     ]);
