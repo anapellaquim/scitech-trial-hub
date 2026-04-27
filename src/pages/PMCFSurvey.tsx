@@ -265,6 +265,7 @@ export default function PMCFSurvey() {
                     <TableHead>Title</TableHead>
                     <TableHead>Audience</TableHead>
                     <TableHead>Expected/mo</TableHead>
+                    <TableHead>Progress</TableHead>
                     <TableHead>Period</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Link</TableHead>
@@ -272,23 +273,38 @@ export default function PMCFSurvey() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {surveys.map(s => (
-                    <TableRow key={s.id}>
-                      <TableCell className="font-mono text-sm">{s.survey_code}</TableCell>
-                      <TableCell>{s.title}</TableCell>
-                      <TableCell>{s.target_audience}</TableCell>
-                      <TableCell>{s.expected_monthly_fills}</TableCell>
-                      <TableCell className="text-xs">{s.start_date ? format(new Date(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(new Date(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
-                      <TableCell><Badge className={statusColors[s.status]}>{s.status}</Badge></TableCell>
-                      <TableCell>{s.form_link && <a href={s.form_link} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 text-primary" /></a>}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="sm" variant="ghost" onClick={() => openNewCheck(s.id)}><ClipboardCheck className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost" onClick={() => openEditSurvey(s)}><Pencil className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost" onClick={() => deleteSurvey(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {!surveys.length && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">{loading ? "Loading…" : "No surveys registered"}</TableCell></TableRow>}
+                  {surveys.map(s => {
+                    const t = trackingMap[s.id];
+                    const pct = t?.progressPct ?? 0;
+                    const barColor = pct >= 90 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
+                    const pctColor = pct >= 90 ? "text-green-700" : pct >= 60 ? "text-yellow-700" : "text-red-700";
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-mono text-sm">{s.survey_code}</TableCell>
+                        <TableCell>{s.title}</TableCell>
+                        <TableCell>{s.target_audience}</TableCell>
+                        <TableCell>{s.expected_monthly_fills}</TableCell>
+                        <TableCell className="min-w-[160px]">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
+                              <div className={`h-full ${barColor} transition-all`} style={{ width: `${Math.min(100, pct)}%` }} />
+                            </div>
+                            <span className={`text-xs font-semibold ${pctColor}`}>{pct.toFixed(0)}%</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{t?.totalFills ?? 0} / {t?.cumulativeTarget ?? 0}</p>
+                        </TableCell>
+                        <TableCell className="text-xs">{s.start_date ? format(new Date(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(new Date(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
+                        <TableCell><Badge className={statusColors[s.status]}>{s.status}</Badge></TableCell>
+                        <TableCell>{s.form_link && <a href={s.form_link} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 text-primary" /></a>}</TableCell>
+                        <TableCell className="text-right">
+                          <Button size="sm" variant="ghost" onClick={() => openNewCheck(s.id)}><ClipboardCheck className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => openEditSurvey(s)}><Pencil className="h-4 w-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => deleteSurvey(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {!surveys.length && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">{loading ? "Loading…" : "No surveys registered"}</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </CardContent>
