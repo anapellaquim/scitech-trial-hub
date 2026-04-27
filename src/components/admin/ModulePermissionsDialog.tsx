@@ -10,8 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, ShieldCheck, Info } from "lucide-react";
+import { Shield, ShieldCheck, Info, Sparkles } from "lucide-react";
 import { MODULE_KEYS, MODULE_LABELS, type ModuleKey, type ModuleAction } from "@/hooks/usePermission";
+import { ROLE_TEMPLATES } from "./rolePermissionTemplates";
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Profile { id: string; full_name: string; }
 interface Project { id: string; title: string; }
