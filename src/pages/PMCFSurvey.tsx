@@ -13,7 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, ExternalLink, ClipboardCheck, FileText, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Plus, Pencil, Trash2, ExternalLink, ClipboardCheck, FileText, AlertTriangle, CheckCircle2, Target, TrendingUp } from "lucide-react";
 
 interface Survey {
   id: string;
