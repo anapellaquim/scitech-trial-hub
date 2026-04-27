@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 
