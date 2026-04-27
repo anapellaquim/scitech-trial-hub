@@ -19,7 +19,7 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface ChangeControlRecord {
   id: string;
-  project_id: string;
+  project_id: string | null;
   change_code: string;
   description: string;
   change_type: string;
