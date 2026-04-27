@@ -9,8 +9,50 @@ export type Module =
 
 export type Permission = "read" | "write" | "delete" | "approve" | "full";
 
+// Module-level permission system (matches DB enum module_key)
+export type ModuleKey =
+  | "dashboard" | "communications" | "projects" | "agenda" | "tasks"
+  | "visits" | "site_monitoring" | "pmcf_survey"
+  | "qualifications" | "trainings" | "change_control" | "risks"
+  | "committees" | "steering" | "regulatory" | "payments" | "library";
+
+export type ModuleAction = "view" | "create";
+
+export const MODULE_KEYS: ModuleKey[] = [
+  "dashboard", "communications", "projects", "agenda", "tasks",
+  "visits", "site_monitoring", "pmcf_survey",
+  "qualifications", "trainings", "change_control", "risks",
+  "committees", "steering", "regulatory", "payments", "library",
+];
+
+export const MODULE_LABELS: Record<ModuleKey, string> = {
+  dashboard: "Dashboard",
+  communications: "Communications",
+  projects: "Studies",
+  agenda: "Agenda",
+  tasks: "Tasks",
+  visits: "Visits",
+  site_monitoring: "Site Monitoring",
+  pmcf_survey: "PMCF Survey",
+  qualifications: "Qualifications",
+  trainings: "Trainings",
+  change_control: "Change Control",
+  risks: "Risks",
+  committees: "Committees",
+  steering: "Steering",
+  regulatory: "Regulatory",
+  payments: "Payments",
+  library: "Library",
+};
+
 interface UserRole {
   role: AppRole;
+  project_id: string | null;
+}
+
+interface ModulePermissionRow {
+  module: ModuleKey;
+  action: ModuleAction;
   project_id: string | null;
 }
 
