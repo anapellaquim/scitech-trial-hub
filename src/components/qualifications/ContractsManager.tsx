@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import ContractAmendments from "./ContractAmendments";
+import ContractBudgetItems from "./ContractBudgetItems";
 
 interface Contract {
   id: string;
@@ -25,6 +26,7 @@ interface Contract {
   signed_date: string | null;
   value: number | null;
   currency: string | null;
+  payment_terms: string | null;
   description: string | null;
   document_url: string | null;
   notes: string | null;
@@ -49,7 +51,8 @@ const statusColors: Record<string, string> = {
 const emptyForm = {
   contract_number: "", title: "", contract_type: "", status: "negotiating",
   start_date: "", end_date: "", signed_date: "",
-  value: "", currency: "BRL", description: "", document_url: "", notes: "",
+  value: "", currency: "BRL", payment_terms: "",
+  description: "", document_url: "", notes: "",
 };
 
 interface Props {
@@ -88,6 +91,7 @@ export default function ContractsManager({ qualificationId }: Props) {
       contract_number: c.contract_number, title: c.title, contract_type: c.contract_type || "",
       status: c.status, start_date: c.start_date || "", end_date: c.end_date || "",
       signed_date: c.signed_date || "", value: c.value?.toString() || "", currency: c.currency || "BRL",
+      payment_terms: c.payment_terms || "",
       description: c.description || "", document_url: c.document_url || "", notes: c.notes || "",
     });
     setOpen(true);
@@ -108,6 +112,7 @@ export default function ContractsManager({ qualificationId }: Props) {
       signed_date: form.signed_date || null,
       value: form.value ? parseFloat(form.value) : null,
       currency: form.currency || "BRL",
+      payment_terms: form.payment_terms.trim() || null,
       description: form.description.trim() || null,
       document_url: form.document_url.trim() || null,
       notes: form.notes.trim() || null,
@@ -187,6 +192,7 @@ export default function ContractsManager({ qualificationId }: Props) {
                         <Trash2 className="h-3 w-3 mr-1 text-destructive" />Delete
                       </Button>
                     </div>
+                    <ContractBudgetItems contractId={c.id} qualificationId={qualificationId} currency={c.currency || "USD"} />
                     <ContractAmendments qualificationId={qualificationId} contractId={c.id} />
                   </div>
                 </AccordionContent>
@@ -226,6 +232,7 @@ export default function ContractsManager({ qualificationId }: Props) {
               <div className="col-span-2"><Label>Value</Label><Input type="number" step="0.01" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} /></div>
               <div><Label>Currency</Label><Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} /></div>
             </div>
+            <div><Label>Payment Terms</Label><Textarea rows={2} value={form.payment_terms} onChange={e => setForm({ ...form, payment_terms: e.target.value })} placeholder="Net 30, milestones, ..." /></div>
             <div><Label>Document URL</Label><Input value={form.document_url} onChange={e => setForm({ ...form, document_url: e.target.value })} /></div>
             <div><Label>Notes</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
