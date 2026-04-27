@@ -264,7 +264,7 @@ export default function PMCFSurvey() {
                     <TableHead>Code</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Audience</TableHead>
-                    <TableHead>Target</TableHead>
+                    <TableHead>Sample Size</TableHead>
                     <TableHead>Progress</TableHead>
                     <TableHead>Period</TableHead>
                     <TableHead>Status</TableHead>
