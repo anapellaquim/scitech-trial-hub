@@ -39,9 +39,10 @@ interface Props {
   contractId: string;
   qualificationId: string;
   currency?: string;
+  onTotalChange?: (total: number) => void;
 }
 
-export default function ContractBudgetItems({ contractId, qualificationId, currency = "USD" }: Props) {
+export default function ContractBudgetItems({ contractId, qualificationId, currency = "USD", onTotalChange }: Props) {
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,14 +56,17 @@ export default function ContractBudgetItems({ contractId, qualificationId, curre
       .eq("contract_id", contractId)
       .order("display_order", { ascending: true });
     if (error) { toast.error("Failed to load budget"); setLoading(false); return; }
-    setItems(((data as any) || []).map((d: any) => ({
+    const loaded = ((data as any) || []).map((d: any) => ({
       id: d.id, category: d.category, description: d.description,
       quantity: Number(d.quantity), unit_value: Number(d.unit_value),
       notes: d.notes || "", display_order: d.display_order || 0,
-    })));
+    }));
+    setItems(loaded);
     setToDelete([]);
     setLoading(false);
-  }, [contractId]);
+    const t = loaded.reduce((s: number, it: any) => s + it.quantity * it.unit_value, 0);
+    onTotalChange?.(t);
+  }, [contractId, onTotalChange]);
 
   useEffect(() => { load(); }, [load]);
 
