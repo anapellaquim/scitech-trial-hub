@@ -13,6 +13,9 @@ interface ModulePageLayoutProps {
   children: ReactNode;
   actions?: ReactNode;
   showAllOption?: boolean;
+  showGeneralOption?: boolean;
+  generalValue?: string;
+  generalLabel?: string;
 }
 
 export default function ModulePageLayout({
