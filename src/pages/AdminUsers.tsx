@@ -92,6 +92,7 @@ const AdminUsers = () => {
 
   const handleAddRole = (user: Profile) => { setSelectedUser(user); setRoleDialogOpen(true); };
   const handleViewAudit = (user: Profile) => { setSelectedUser(user); setAuditDialogOpen(true); };
+  const handleManagePerms = (user: Profile) => { setSelectedUser(user); setPermsDialogOpen(true); };
   const handleRoleSuccess = () => { setRoleDialogOpen(false); fetchData(); };
 
   const handleDeleteRole = async (roleId: string) => {
