@@ -88,6 +88,31 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
     return raciAssignments.filter(r => r.task_id === taskId && r.department_id === deptId);
   };
 
+  const getRaciForStakeholderCell = (taskId: string, stakeholderId: string): TaskRACI[] => {
+    return raciAssignments.filter(r => r.task_id === taskId && r.stakeholder_id === stakeholderId);
+  };
+
+  const handleAddRaciStakeholder = async (taskId: string, stakeholderId: string, role: string) => {
+    setLoading(`${taskId}-${stakeholderId}`);
+    try {
+      const { error } = await supabase
+        .from("task_raci")
+        .insert({ task_id: taskId, stakeholder_id: stakeholderId, role });
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("Este papel já está atribuído para este stakeholder");
+        } else throw error;
+      } else {
+        toast.success("Papel RACI adicionado");
+        onRefresh();
+      }
+    } catch (error: any) {
+      toast.error("Erro ao adicionar: " + error.message);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const handleAddRaciUser = async (taskId: string, userId: string, role: string) => {
     setLoading(`${taskId}-${userId}`);
     try {
