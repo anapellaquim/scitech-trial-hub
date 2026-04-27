@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { usePermission } from "@/hooks/usePermission";
+import { usePermission, type ModuleKey } from "@/hooks/usePermission";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
