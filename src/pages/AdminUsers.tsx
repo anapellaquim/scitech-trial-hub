@@ -208,9 +208,14 @@ const AdminUsers = () => {
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         {isAdmin && (
-                          <Button variant="outline" size="sm" onClick={() => handleAddRole(user)}>
-                            <Plus className="h-4 w-4 mr-1" />Role
-                          </Button>
+                          <>
+                            <Button variant="outline" size="sm" onClick={() => handleAddRole(user)}>
+                              <Plus className="h-4 w-4 mr-1" />Role
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleManagePerms(user)}>
+                              <Lock className="h-4 w-4 mr-1" />Permissions
+                            </Button>
+                          </>
                         )}
                         <Button variant="ghost" size="sm" onClick={() => handleViewAudit(user)}>
                           <History className="h-4 w-4" />
@@ -229,8 +234,10 @@ const AdminUsers = () => {
         <>
           <UserRoleDialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen} user={selectedUser} projects={projects} studies={[]} onSuccess={handleRoleSuccess} />
           <UserAuditDialog open={auditDialogOpen} onOpenChange={setAuditDialogOpen} user={selectedUser} />
+          <ModulePermissionsDialog open={permsDialogOpen} onOpenChange={setPermsDialogOpen} user={selectedUser} projects={projects} />
         </>
       )}
+
     </div>
   );
 };
