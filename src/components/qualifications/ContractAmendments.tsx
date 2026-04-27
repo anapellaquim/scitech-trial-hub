@@ -100,6 +100,7 @@ export default function ContractAmendments({ qualificationId, contractId }: Prop
     }
     const payload = {
       qualification_id: qualificationId,
+      contract_id: contractId ?? null,
       amendment_number: form.amendment_number.trim(),
       title: form.title.trim(),
       description: form.description.trim() || null,
