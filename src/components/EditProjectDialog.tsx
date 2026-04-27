@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Building2 } from "lucide-react";
 import YearlyBudgetManager from "./YearlyBudgetManager";
 import DetailedBudgetManager from "./DetailedBudgetManager";
+import StakeholderList from "./communications/StakeholderList";
 
 const centerSchema = z.object({
   id: z.string().optional(),
@@ -480,6 +481,13 @@ const EditProjectDialog = ({ project, open, onOpenChange, onProjectUpdated }: Ed
             {/* Detailed Budget Section */}
             {project && (
               <DetailedBudgetManager projectId={project.id} />
+            )}
+
+            <Separator />
+
+            {/* Stakeholders Section */}
+            {project && (
+              <StakeholderList projectId={project.id} />
             )}
 
             <Separator />
