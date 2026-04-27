@@ -51,7 +51,8 @@ const statusColors: Record<string, string> = {
 const emptyForm = {
   contract_number: "", title: "", contract_type: "", status: "negotiating",
   start_date: "", end_date: "", signed_date: "",
-  value: "", currency: "BRL", description: "", document_url: "", notes: "",
+  value: "", currency: "BRL", payment_terms: "",
+  description: "", document_url: "", notes: "",
 };
 
 interface Props {
