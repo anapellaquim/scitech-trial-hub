@@ -120,6 +120,13 @@ export default function PMCFSurvey() {
     loadData();
   };
 
+  const updateManualTarget = async (id: string, value: number | null) => {
+    const { error } = await supabase.from("pmcf_surveys" as any).update({ manual_target: value }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(value == null ? "Target reset to auto" : "Target updated");
+    loadData();
+  };
+
   const openNewCheck = (surveyId?: string) => {
     setEditingCheck(null);
     const survey = surveys.find(s => s.id === surveyId);
