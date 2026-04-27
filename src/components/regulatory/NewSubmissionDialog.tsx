@@ -72,11 +72,13 @@ export default function NewSubmissionDialog({
     try {
       const { error } = await supabase.from("regulatory_submissions").insert({
         project_id: formData.project_id,
+        site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
         submission_type: formData.submission_type,
         planned_date: formData.planned_date || null,
         notes: formData.notes || null,
+        compliance_response: formData.compliance_response || null,
         status: "pending",
-      });
+      } as any);
 
       if (error) throw error;
 
@@ -85,7 +87,7 @@ export default function NewSubmissionDialog({
         description: "Submissão criada com sucesso",
       });
       onOpenChange(false);
-      setFormData({ project_id: "", submission_type: "", planned_date: "", notes: "" });
+      setFormData({ project_id: "", site_id: "none", submission_type: "", planned_date: "", notes: "", compliance_response: "" });
       onSuccess();
     } catch (error: any) {
       toast({
