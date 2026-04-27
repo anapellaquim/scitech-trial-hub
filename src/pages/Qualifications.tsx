@@ -275,6 +275,13 @@ export default function Qualifications() {
             <div><Label>Responsible</Label><Input value={form.responsible} onChange={e => setForm({...form, responsible: e.target.value})} /></div>
             <div><Label>Documents URL</Label><Input value={form.documents_url} onChange={e => setForm({...form, documents_url: e.target.value})} /></div>
             <div><Label>Notes</Label><Textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
+            {editing && (
+              <QualificationScorecard
+                projectId={editing.project_id}
+                qualificationId={editing.id}
+                onTotalChange={(pct) => setForm(prev => ({ ...prev, score: pct.toFixed(1) }))}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
