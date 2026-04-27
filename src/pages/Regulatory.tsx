@@ -19,21 +19,29 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 import EditSubmissionDialog from "@/components/regulatory/EditSubmissionDialog";
 import EditReportDialog from "@/components/regulatory/EditReportDialog";
+import ReportSchedulesManager from "@/components/regulatory/ReportSchedulesManager";
 
 interface Project {
   id: string;
   title: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
+
+interface Site { id: string; site_code: string; name: string; project_id: string; }
 
 interface Submission {
   id: string;
   project_id: string | null;
+  site_id: string | null;
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
   status: string;
   notes: string | null;
+  compliance_response: string | null;
   project?: Project;
+  site?: Site;
 }
 
 interface Report {
