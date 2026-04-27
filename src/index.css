@@ -216,11 +216,9 @@ All colors MUST be HSL.
   :root {
     --ctms-sidebar-w: 240px;
   }
-  body > #root main,
-  body > #root .min-h-screen.bg-background > main,
-  body > #root .min-h-screen.bg-background > .container,
-  body > #root .min-h-screen.bg-background > div.container {
-    padding-left: calc(var(--ctms-sidebar-w, 240px) + 1rem);
+  .min-h-screen.bg-background {
+    padding-left: var(--ctms-sidebar-w, 240px);
     transition: padding-left 200ms ease;
   }
 }
+
