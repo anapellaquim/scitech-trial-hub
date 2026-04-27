@@ -248,7 +248,6 @@ export default function PMCFSurvey() {
       <Tabs defaultValue="surveys">
         <TabsList>
           <TabsTrigger value="surveys">Surveys</TabsTrigger>
-          <TabsTrigger value="tracking">Target Tracking</TabsTrigger>
           <TabsTrigger value="checks">Monthly Checks</TabsTrigger>
         </TabsList>
 
