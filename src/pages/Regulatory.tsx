@@ -355,6 +355,7 @@ export default function Regulatory() {
                     <TableRow>
                       <TableHead>Estudo</TableHead>
                       <TableHead>Tipo</TableHead>
+                      <TableHead>Centro</TableHead>
                       <TableHead>Data Planejada</TableHead>
                       <TableHead>Data Submissão</TableHead>
                       <TableHead>Status</TableHead>
@@ -364,7 +365,7 @@ export default function Regulatory() {
                   <TableBody>
                     {filteredSubmissions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           Nenhuma submissão encontrada
                         </TableCell>
                       </TableRow>
@@ -386,6 +387,9 @@ export default function Regulatory() {
                               </div>
                             </TableCell>
                             <TableCell>{sub.submission_type}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {sub.site ? `${sub.site.site_code} · ${sub.site.name}` : "—"}
+                            </TableCell>
                             <TableCell>
                               {sub.planned_date ? format(new Date(sub.planned_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
