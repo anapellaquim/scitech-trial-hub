@@ -1666,6 +1666,7 @@ export type Database = {
           expected_monthly_fills: number
           form_link: string | null
           id: string
+          manual_target: number | null
           project_id: string
           responsible: string | null
           start_date: string | null
@@ -1683,6 +1684,7 @@ export type Database = {
           expected_monthly_fills?: number
           form_link?: string | null
           id?: string
+          manual_target?: number | null
           project_id: string
           responsible?: string | null
           start_date?: string | null
@@ -1700,6 +1702,7 @@ export type Database = {
           expected_monthly_fills?: number
           form_link?: string | null
           id?: string
+          manual_target?: number | null
           project_id?: string
           responsible?: string | null
           start_date?: string | null
