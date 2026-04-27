@@ -47,6 +47,7 @@ const statusColors: Record<string, string> = {
 
 interface Props {
   qualificationId: string;
+  contractId?: string;
 }
 
 const emptyForm = {
@@ -55,7 +56,7 @@ const emptyForm = {
   financial_impact: "", document_url: "", notes: "",
 };
 
-export default function ContractAmendments({ qualificationId }: Props) {
+export default function ContractAmendments({ qualificationId, contractId }: Props) {
   const [items, setItems] = useState<Amendment[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -64,14 +65,15 @@ export default function ContractAmendments({ qualificationId }: Props) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    let q = supabase
       .from("qualification_contract_amendments" as any)
       .select("*")
-      .eq("qualification_id", qualificationId)
-      .order("created_at", { ascending: false });
+      .eq("qualification_id", qualificationId);
+    if (contractId) q = q.eq("contract_id", contractId);
+    const { data } = await q.order("created_at", { ascending: false });
     setItems((data as any) || []);
     setLoading(false);
-  }, [qualificationId]);
+  }, [qualificationId, contractId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -98,6 +100,7 @@ export default function ContractAmendments({ qualificationId }: Props) {
     }
     const payload = {
       qualification_id: qualificationId,
+      contract_id: contractId ?? null,
       amendment_number: form.amendment_number.trim(),
       title: form.title.trim(),
       description: form.description.trim() || null,

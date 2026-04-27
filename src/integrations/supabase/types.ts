@@ -1807,6 +1807,7 @@ export type Database = {
       qualification_contract_amendments: {
         Row: {
           amendment_number: string
+          contract_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -1824,6 +1825,7 @@ export type Database = {
         }
         Insert: {
           amendment_number: string
+          contract_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -1841,6 +1843,7 @@ export type Database = {
         }
         Update: {
           amendment_number?: string
+          contract_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -1855,6 +1858,66 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      qualification_contracts: {
+        Row: {
+          contract_number: string
+          contract_type: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          document_url: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          qualification_id: string
+          signed_date: string | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          contract_number: string
+          contract_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          document_url?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          qualification_id: string
+          signed_date?: string | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          contract_number?: string
+          contract_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          document_url?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          qualification_id?: string
+          signed_date?: string | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          value?: number | null
         }
         Relationships: []
       }
