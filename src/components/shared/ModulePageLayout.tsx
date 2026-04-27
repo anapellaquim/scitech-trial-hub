@@ -42,7 +42,7 @@ export default function ModulePageLayout({
             {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <GlobalStudySelector value={selectedProject} onChange={onProjectChange} showAllOption={showAllOption} />
+            <GlobalStudySelector value={selectedProject} onChange={onProjectChange} showAllOption={showAllOption} showGeneralOption={showGeneralOption} generalValue={generalValue} generalLabel={generalLabel} />
             {exportData && exportFileName && (
               <ExcelExportButton data={exportData} fileName={exportFileName} />
             )}
