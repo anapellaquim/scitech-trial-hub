@@ -181,7 +181,8 @@ export default function Regulatory() {
       sub.project?.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || sub.status === statusFilter;
     const matchesProject = projectFilter === "all" || sub.project_id === projectFilter;
-    return matchesSearch && matchesStatus && matchesProject;
+    const matchesSite = siteFilter === "all" || sub.site_id === siteFilter;
+    return matchesSearch && matchesStatus && matchesProject && matchesSite;
   });
 
   const filteredReports = reports.filter(rep => {
