@@ -217,6 +217,11 @@ export default function PMCFSurvey() {
     });
   }, [surveys, checks]);
 
+  const trackingMap = useMemo(
+    () => Object.fromEntries(tracking.map(t => [t.survey.id, t])),
+    [tracking]
+  );
+
   const exportData = checks.map(c => ({
     Survey: surveyMap[c.survey_id]?.title ?? "",
     Code: surveyMap[c.survey_id]?.survey_code ?? "",
