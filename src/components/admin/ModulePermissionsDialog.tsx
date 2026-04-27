@@ -249,6 +249,52 @@ const ModulePermissionsDialog = ({ open, onOpenChange, user, projects, onSuccess
           </p>
         </div>
 
+        <div className="space-y-2">
+          <Label className="flex items-center gap-1">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            Quick start: apply role template
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            <TooltipProvider delayDuration={200}>
+              {ROLE_TEMPLATES.map((tpl) => (
+                <Tooltip key={tpl.id}>
+                  <TooltipTrigger asChild>
+                    <div className="inline-flex rounded-md border bg-background overflow-hidden">
+                      <button
+                        type="button"
+                        disabled={userIsAdmin || loading || saving}
+                        onClick={() => applyTemplate(tpl.id, "replace")}
+                        className="px-3 py-1.5 text-xs font-medium hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {tpl.name}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={userIsAdmin || loading || saving}
+                        onClick={() => applyTemplate(tpl.id, "merge")}
+                        title="Merge with existing selections"
+                        className="px-2 py-1.5 text-xs border-l hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs">
+                    <p className="font-medium">{tpl.name}</p>
+                    <p className="text-xs opacity-90">{tpl.description}</p>
+                    <p className="text-xs opacity-70 mt-1">
+                      Click name to replace selections · "+" to merge
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Templates only prefill the grid above — nothing is saved until you click "Save changes".
+          </p>
+        </div>
+
         <ScrollArea className="h-[360px] rounded-md border">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card border-b">
