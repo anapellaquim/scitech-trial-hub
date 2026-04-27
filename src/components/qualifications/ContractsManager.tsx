@@ -191,11 +191,12 @@ export default function ContractsManager({ qualificationId }: Props) {
                     <Badge className={statusColors[c.status] || ""}>
                       {statusOptions.find(s => s.value === c.status)?.label || c.status}
                     </Badge>
-                    {c.value != null && (
-                      <span className="text-sm text-muted-foreground ml-auto">
-                        {c.currency} {c.value.toLocaleString()}
+                    <span className="text-sm ml-auto">
+                      <span className="text-muted-foreground">Items total: </span>
+                      <span className="font-medium text-primary">
+                        {new Intl.NumberFormat("en-US", { style: "currency", currency: c.currency || "USD" }).format(budgetTotals[c.id] || 0)}
                       </span>
-                    )}
+                    </span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
@@ -214,7 +215,12 @@ export default function ContractsManager({ qualificationId }: Props) {
                         <Trash2 className="h-3 w-3 mr-1 text-destructive" />Delete
                       </Button>
                     </div>
-                    <ContractBudgetItems contractId={c.id} qualificationId={qualificationId} currency={c.currency || "USD"} />
+                    <ContractBudgetItems
+                      contractId={c.id}
+                      qualificationId={qualificationId}
+                      currency={c.currency || "USD"}
+                      onTotalChange={() => refreshContractTotal(c.id)}
+                    />
                     <ContractAmendments qualificationId={qualificationId} contractId={c.id} />
                   </div>
                 </AccordionContent>
