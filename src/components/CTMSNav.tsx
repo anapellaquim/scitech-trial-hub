@@ -23,6 +23,7 @@ import {
   Users2,
   Gavel,
   Eye,
+  ClipboardList,
 } from "lucide-react";
 
 interface CTMSNavProps {
