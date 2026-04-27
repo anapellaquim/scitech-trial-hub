@@ -136,7 +136,7 @@ export default function PMCFSurvey() {
       survey_id: surveyId,
       reference_month: refMonth,
       fills_count: 0,
-      expected_count: survey?.expected_monthly_fills ?? 0,
+      expected_count: survey?.manual_target ?? 0,
       status: "compliant",
       checked_at: format(now, "yyyy-MM-dd"),
     });
