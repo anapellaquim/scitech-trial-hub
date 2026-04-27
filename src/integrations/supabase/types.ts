@@ -112,6 +112,50 @@ export type Database = {
           },
         ]
       }
+      change_control_actions: {
+        Row: {
+          action_description: string
+          change_control_id: string
+          created_at: string
+          display_order: number
+          due_date: string | null
+          id: string
+          responsible: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_description: string
+          change_control_id: string
+          created_at?: string
+          display_order?: number
+          due_date?: string | null
+          id?: string
+          responsible?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_description?: string
+          change_control_id?: string
+          created_at?: string
+          display_order?: number
+          due_date?: string | null
+          id?: string
+          responsible?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "change_control_actions_change_control_id_fkey"
+            columns: ["change_control_id"]
+            isOneToOne: false
+            referencedRelation: "change_controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_control_approvals: {
         Row: {
           approver_name: string
@@ -152,45 +196,63 @@ export type Database = {
       }
       change_controls: {
         Row: {
+          affected_documents: string | null
           change_code: string
+          change_reason: string | null
           change_type: string
           created_at: string
           created_by: string | null
           description: string
           id: string
+          impact_areas: string[] | null
           impact_assessment: string | null
           opened_at: string
           project_id: string
+          requester: string | null
+          requires_communication: boolean
+          requires_training: boolean
           resolved_at: string | null
           responsible: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          affected_documents?: string | null
           change_code: string
+          change_reason?: string | null
           change_type?: string
           created_at?: string
           created_by?: string | null
           description: string
           id?: string
+          impact_areas?: string[] | null
           impact_assessment?: string | null
           opened_at?: string
           project_id: string
+          requester?: string | null
+          requires_communication?: boolean
+          requires_training?: boolean
           resolved_at?: string | null
           responsible?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          affected_documents?: string | null
           change_code?: string
+          change_reason?: string | null
           change_type?: string
           created_at?: string
           created_by?: string | null
           description?: string
           id?: string
+          impact_areas?: string[] | null
           impact_assessment?: string | null
           opened_at?: string
           project_id?: string
+          requester?: string | null
+          requires_communication?: boolean
+          requires_training?: boolean
           resolved_at?: string | null
           responsible?: string | null
           status?: string
