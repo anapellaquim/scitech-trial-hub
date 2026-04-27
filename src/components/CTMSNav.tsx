@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   Users2,
   Gavel,
+  Eye,
 } from "lucide-react";
 
 interface CTMSNavProps {
