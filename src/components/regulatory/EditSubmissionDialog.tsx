@@ -13,14 +13,18 @@ interface Project {
   title: string;
 }
 
+interface Site { id: string; site_code: string; name: string; }
+
 interface Submission {
   id: string;
   project_id: string | null;
+  site_id?: string | null;
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
   status: string;
   notes: string | null;
+  compliance_response?: string | null;
 }
 
 interface EditSubmissionDialogProps {
@@ -61,27 +65,37 @@ export default function EditSubmissionDialog({
   onSuccess,
 }: EditSubmissionDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     submission_type: "",
     planned_date: "",
     submission_date: "",
     status: "pending",
     notes: "",
+    compliance_response: "",
   });
 
   useEffect(() => {
     if (submission && open) {
       setFormData({
         project_id: submission.project_id || "",
+        site_id: (submission as any).site_id || "none",
         submission_type: submission.submission_type,
         planned_date: submission.planned_date || "",
         submission_date: submission.submission_date || "",
         status: submission.status,
         notes: submission.notes || "",
+        compliance_response: (submission as any).compliance_response || "",
       });
     }
   }, [submission, open]);
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,12 +114,14 @@ export default function EditSubmissionDialog({
         .from("regulatory_submissions")
         .update({
           project_id: formData.project_id,
+          site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
           submission_type: formData.submission_type,
           planned_date: formData.planned_date || null,
           submission_date: formData.submission_date || null,
           status: formData.status as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
-        })
+          compliance_response: formData.compliance_response || null,
+        } as any)
         .eq("id", submission.id);
 
       if (error) throw error;
@@ -244,12 +260,34 @@ export default function EditSubmissionDialog({
           </div>
 
           <div className="space-y-2">
+            <Label>Centro de Pesquisa</Label>
+            <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Observações adicionais..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="compliance_response">Atendimento de Exigência</Label>
+            <Textarea
+              id="compliance_response"
+              value={formData.compliance_response}
+              onChange={(e) => setFormData({ ...formData, compliance_response: e.target.value })}
+              placeholder="Descreva exigências recebidas e como foram atendidas..."
               rows={3}
             />
           </div>

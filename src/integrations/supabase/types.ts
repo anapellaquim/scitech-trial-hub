@@ -2085,6 +2085,65 @@ export type Database = {
           },
         ]
       }
+      regulatory_report_schedules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          custom_start_date: string | null
+          description: string | null
+          end_date: string | null
+          first_due_offset_days: number
+          id: string
+          is_active: boolean
+          notes: string | null
+          project_id: string
+          recurrence: string
+          report_type: string
+          start_event: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          custom_start_date?: string | null
+          description?: string | null
+          end_date?: string | null
+          first_due_offset_days?: number
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          project_id: string
+          recurrence?: string
+          report_type: string
+          start_event?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          custom_start_date?: string | null
+          description?: string | null
+          end_date?: string | null
+          first_due_offset_days?: number
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          project_id?: string
+          recurrence?: string
+          report_type?: string
+          start_event?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulatory_report_schedules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       regulatory_reports: {
         Row: {
           created_at: string
@@ -2147,36 +2206,42 @@ export type Database = {
       }
       regulatory_submissions: {
         Row: {
+          compliance_response: string | null
           created_at: string
           flow_step_id: string | null
           id: string
           notes: string | null
           planned_date: string | null
           project_id: string | null
+          site_id: string | null
           status: Database["public"]["Enums"]["regulatory_status"]
           submission_date: string | null
           submission_type: string
           updated_at: string
         }
         Insert: {
+          compliance_response?: string | null
           created_at?: string
           flow_step_id?: string | null
           id?: string
           notes?: string | null
           planned_date?: string | null
           project_id?: string | null
+          site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_date?: string | null
           submission_type: string
           updated_at?: string
         }
         Update: {
+          compliance_response?: string | null
           created_at?: string
           flow_step_id?: string | null
           id?: string
           notes?: string | null
           planned_date?: string | null
           project_id?: string | null
+          site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_date?: string | null
           submission_type?: string
@@ -2195,6 +2260,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "regulatory_submissions_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "study_sites"
             referencedColumns: ["id"]
           },
         ]

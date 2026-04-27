@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface Site { id: string; site_code: string; name: string; }
 
 interface Project {
   id: string;
@@ -40,12 +42,20 @@ export default function NewSubmissionDialog({
   onSuccess,
 }: NewSubmissionDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     submission_type: "",
     planned_date: "",
     notes: "",
+    compliance_response: "",
   });
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,11 +72,13 @@ export default function NewSubmissionDialog({
     try {
       const { error } = await supabase.from("regulatory_submissions").insert({
         project_id: formData.project_id,
+        site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
         submission_type: formData.submission_type,
         planned_date: formData.planned_date || null,
         notes: formData.notes || null,
+        compliance_response: formData.compliance_response || null,
         status: "pending",
-      });
+      } as any);
 
       if (error) throw error;
 
@@ -75,7 +87,7 @@ export default function NewSubmissionDialog({
         description: "Submissão criada com sucesso",
       });
       onOpenChange(false);
-      setFormData({ project_id: "", submission_type: "", planned_date: "", notes: "" });
+      setFormData({ project_id: "", site_id: "none", submission_type: "", planned_date: "", notes: "", compliance_response: "" });
       onSuccess();
     } catch (error: any) {
       toast({
@@ -144,12 +156,34 @@ export default function NewSubmissionDialog({
           </div>
 
           <div className="space-y-2">
+            <Label>Centro de Pesquisa</Label>
+            <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Observações adicionais..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="compliance_response">Atendimento de Exigência</Label>
+            <Textarea
+              id="compliance_response"
+              value={formData.compliance_response}
+              onChange={(e) => setFormData({ ...formData, compliance_response: e.target.value })}
+              placeholder="Descreva exigências recebidas e como foram atendidas..."
               rows={3}
             />
           </div>

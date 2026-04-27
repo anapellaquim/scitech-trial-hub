@@ -19,21 +19,29 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 import EditSubmissionDialog from "@/components/regulatory/EditSubmissionDialog";
 import EditReportDialog from "@/components/regulatory/EditReportDialog";
+import ReportSchedulesManager from "@/components/regulatory/ReportSchedulesManager";
 
 interface Project {
   id: string;
   title: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
+
+interface Site { id: string; site_code: string; name: string; project_id: string; }
 
 interface Submission {
   id: string;
   project_id: string | null;
+  site_id: string | null;
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
   status: string;
   notes: string | null;
+  compliance_response: string | null;
   project?: Project;
+  site?: Site;
 }
 
 interface Report {
@@ -71,12 +79,14 @@ export default function Regulatory() {
   const { projectId: persistedProjectId, setProjectId: setPersistedProjectId } = usePersistedFilters();
   
   const [projects, setProjects] = useState<Project[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
+  const [siteFilter, setSiteFilter] = useState<string>("all");
   const [showNewSubmission, setShowNewSubmission] = useState(false);
   const [showNewReport, setShowNewReport] = useState(false);
   
@@ -101,32 +111,38 @@ export default function Regulatory() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [projectsRes, submissionsRes, reportsRes] = await Promise.all([
-        supabase.from("projects").select("id, title").order("title"),
+      const [projectsRes, sitesRes, submissionsRes, reportsRes] = await Promise.all([
+        supabase.from("projects").select("id, title, start_date, end_date").order("title"),
+        supabase.from("study_sites").select("id, site_code, name, project_id").order("site_code"),
         supabase.from("regulatory_submissions").select("*").order("planned_date", { ascending: true }),
         supabase.from("regulatory_reports").select("*").order("due_date", { ascending: true }),
       ]);
 
       if (projectsRes.error) throw projectsRes.error;
+      if (sitesRes.error) throw sitesRes.error;
       if (submissionsRes.error) throw submissionsRes.error;
       if (reportsRes.error) throw reportsRes.error;
 
       const projectsData = projectsRes.data || [];
       setProjects(projectsData);
-      
+      const sitesData = sitesRes.data || [];
+      setSites(sitesData);
+
       // Set default project filter if persisted
       if (persistedProjectId && projectsData.some(p => p.id === persistedProjectId) && projectFilter === "all") {
         setProjectFilter(persistedProjectId);
       }
 
-      // Map projects to submissions and reports
+      // Map projects/sites to submissions and reports
       const projectMap = new Map(projectsData.map(p => [p.id, p]));
-      
-      setSubmissions((submissionsRes.data || []).map(s => ({
+      const siteMap = new Map(sitesData.map(s => [s.id, s]));
+
+      setSubmissions(((submissionsRes.data as any) || []).map((s: any) => ({
         ...s,
-        project: s.project_id ? projectMap.get(s.project_id) : undefined
+        project: s.project_id ? projectMap.get(s.project_id) : undefined,
+        site: s.site_id ? siteMap.get(s.site_id) : undefined,
       })));
-      
+
       setReports((reportsRes.data || []).map(r => ({
         ...r,
         project: r.project_id ? projectMap.get(r.project_id) : undefined
@@ -165,7 +181,8 @@ export default function Regulatory() {
       sub.project?.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || sub.status === statusFilter;
     const matchesProject = projectFilter === "all" || sub.project_id === projectFilter;
-    return matchesSearch && matchesStatus && matchesProject;
+    const matchesSite = siteFilter === "all" || sub.site_id === siteFilter;
+    return matchesSearch && matchesStatus && matchesProject && matchesSite;
   });
 
   const filteredReports = reports.filter(rep => {
@@ -294,6 +311,17 @@ export default function Regulatory() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={siteFilter} onValueChange={setSiteFilter} disabled={projectFilter === "all"}>
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder={projectFilter === "all" ? "Selecione um estudo" : "Filtrar por centro"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os centros</SelectItem>
+              {sites.filter(s => s.project_id === projectFilter).map(s => (
+                <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full md:w-[200px]">
               <SelectValue placeholder="Filtrar por status" />
@@ -312,7 +340,12 @@ export default function Regulatory() {
           <TabsList>
             <TabsTrigger value="submissions">Submissões ({filteredSubmissions.length})</TabsTrigger>
             <TabsTrigger value="reports">Relatórios ({filteredReports.length})</TabsTrigger>
+            <TabsTrigger value="schedule">Cronograma</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="schedule">
+            <ReportSchedulesManager projects={projects} />
+          </TabsContent>
 
           <TabsContent value="submissions">
             <Card>
@@ -322,6 +355,7 @@ export default function Regulatory() {
                     <TableRow>
                       <TableHead>Estudo</TableHead>
                       <TableHead>Tipo</TableHead>
+                      <TableHead>Centro</TableHead>
                       <TableHead>Data Planejada</TableHead>
                       <TableHead>Data Submissão</TableHead>
                       <TableHead>Status</TableHead>
@@ -331,7 +365,7 @@ export default function Regulatory() {
                   <TableBody>
                     {filteredSubmissions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           Nenhuma submissão encontrada
                         </TableCell>
                       </TableRow>
@@ -353,6 +387,9 @@ export default function Regulatory() {
                               </div>
                             </TableCell>
                             <TableCell>{sub.submission_type}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {sub.site ? `${sub.site.site_code} · ${sub.site.name}` : "—"}
+                            </TableCell>
                             <TableCell>
                               {sub.planned_date ? format(new Date(sub.planned_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
