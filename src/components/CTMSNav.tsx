@@ -53,6 +53,7 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     { to: "/projects", icon: Briefcase, label: "Studies" },
     { to: "/visits", icon: CalendarCheck, label: "Visits" },
     { to: "/site-monitoring", icon: Eye, label: "Site Monitoring" },
+    { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey" },
     
     { to: "/qualifications", icon: ShieldCheck, label: "Qualifications" },
     { to: "/trainings", icon: GraduationCap, label: "Trainings" },
