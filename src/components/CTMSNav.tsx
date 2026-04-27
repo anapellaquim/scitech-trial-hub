@@ -45,6 +45,7 @@ interface NavItem {
   to: string;
   icon: LucideIcon;
   label: string;
+  module?: ModuleKey; // gated by canModule('view') when set
   adminOnly?: boolean;
   restrictMode?: RestrictMode; // overrides group/default behavior
   restrictedTooltip?: string;
@@ -59,54 +60,55 @@ interface NavGroup {
 }
 
 const DEFAULT_RESTRICTED_TOOLTIP = "Requires administrator access";
+const DEFAULT_MODULE_RESTRICTED_TOOLTIP = "You don't have access to this module";
 const DEFAULT_RESTRICT_MODE: RestrictMode = "hide";
 
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [
-      { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-      { to: "/communications", icon: MessageSquare, label: "Communications" },
+      { to: "/", icon: LayoutDashboard, label: "Dashboard", module: "dashboard" },
+      { to: "/communications", icon: MessageSquare, label: "Communications", module: "communications" },
     ],
   },
   {
     label: "Planning",
     items: [
-      { to: "/projects", icon: Briefcase, label: "Studies" },
-      { to: "/agenda", icon: Calendar, label: "Agenda" },
-      { to: "/tasks", icon: ListTodo, label: "Tasks" },
+      { to: "/projects", icon: Briefcase, label: "Studies", module: "projects" },
+      { to: "/agenda", icon: Calendar, label: "Agenda", module: "agenda" },
+      { to: "/tasks", icon: ListTodo, label: "Tasks", module: "tasks" },
     ],
   },
   {
     label: "Execution",
     items: [
-      { to: "/visits", icon: CalendarCheck, label: "Visits" },
-      { to: "/site-monitoring", icon: Eye, label: "Site Monitoring" },
-      { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey" },
+      { to: "/visits", icon: CalendarCheck, label: "Visits", module: "visits" },
+      { to: "/site-monitoring", icon: Eye, label: "Site Monitoring", module: "site_monitoring" },
+      { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey", module: "pmcf_survey" },
     ],
   },
   {
     label: "Quality & Compliance",
     items: [
-      { to: "/qualifications", icon: ShieldCheck, label: "Qualifications" },
-      { to: "/trainings", icon: GraduationCap, label: "Trainings" },
-      { to: "/change-control", icon: GitBranch, label: "Change Control" },
-      { to: "/risks", icon: AlertTriangle, label: "Risks" },
+      { to: "/qualifications", icon: ShieldCheck, label: "Qualifications", module: "qualifications" },
+      { to: "/trainings", icon: GraduationCap, label: "Trainings", module: "trainings" },
+      { to: "/change-control", icon: GitBranch, label: "Change Control", module: "change_control" },
+      { to: "/risks", icon: AlertTriangle, label: "Risks", module: "risks" },
     ],
   },
   {
     label: "Governance",
     items: [
-      { to: "/committees", icon: Users2, label: "Committees" },
-      { to: "/steering", icon: Gavel, label: "Steering" },
-      { to: "/regulatory", icon: FileText, label: "Regulatory" },
+      { to: "/committees", icon: Users2, label: "Committees", module: "committees" },
+      { to: "/steering", icon: Gavel, label: "Steering", module: "steering" },
+      { to: "/regulatory", icon: FileText, label: "Regulatory", module: "regulatory" },
     ],
   },
   {
     label: "Operations",
     items: [
-      { to: "/payments", icon: DollarSign, label: "Payments" },
-      { to: "/library", icon: Library, label: "Library" },
+      { to: "/payments", icon: DollarSign, label: "Payments", module: "payments" },
+      { to: "/library", icon: Library, label: "Library", module: "library" },
     ],
   },
   {
