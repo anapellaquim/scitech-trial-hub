@@ -1804,6 +1804,60 @@ export type Database = {
           },
         ]
       }
+      qualification_contract_amendments: {
+        Row: {
+          amendment_number: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_url: string | null
+          effective_date: string | null
+          financial_impact: number | null
+          id: string
+          notes: string | null
+          qualification_id: string
+          requested_date: string | null
+          signed_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amendment_number: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_url?: string | null
+          effective_date?: string | null
+          financial_impact?: number | null
+          id?: string
+          notes?: string | null
+          qualification_id: string
+          requested_date?: string | null
+          signed_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amendment_number?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_url?: string | null
+          effective_date?: string | null
+          financial_impact?: number | null
+          id?: string
+          notes?: string | null
+          qualification_id?: string
+          requested_date?: string | null
+          signed_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       qualification_scorecard_criteria: {
         Row: {
           category: string | null
