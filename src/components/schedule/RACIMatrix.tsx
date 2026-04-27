@@ -340,125 +340,126 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
                     {task.title}
                   </div>
                 </TableCell>
-                {viewMode === "users" ? (
-                  displayUsers.map(user => {
-                    const cellRaci = getRaciForUserCell(task.id, user.id);
-                    const isLoading = loading === `${task.id}-${user.id}`;
-
-                    return (
-                      <TableCell key={user.id} className="text-center">
-                        <div className="flex items-center justify-center gap-1 flex-wrap">
-                          {cellRaci.map(raci => {
-                            const roleInfo = RACI_ROLES.find(r => r.value === raci.role);
-                            return (
-                              <Badge
-                                key={raci.id}
-                                className={`${roleInfo?.color || "bg-muted"} text-white cursor-pointer`}
-                                onClick={() => handleRemoveRaci(raci.id)}
-                                title={`${roleInfo?.fullLabel} - Clique para remover`}
-                              >
-                                {roleInfo?.label || raci.role[0].toUpperCase()}
-                                <X className="h-3 w-3 ml-1" />
-                              </Badge>
-                            );
-                          })}
-                          
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                disabled={isLoading}
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              {RACI_ROLES.filter(
-                                role => !cellRaci.some(r => r.role === role.value)
-                              ).map(role => (
-                                <DropdownMenuItem
-                                  key={role.value}
-                                  onClick={() => handleAddRaciUser(task.id, user.id, role.value)}
-                                >
-                                  <Badge className={`${role.color} text-white mr-2`}>
-                                    {role.label}
-                                  </Badge>
-                                  {role.fullLabel}
-                                </DropdownMenuItem>
-                              ))}
-                              {cellRaci.length === RACI_ROLES.length && (
-                                <DropdownMenuItem disabled>
-                                  Todos os papéis atribuídos
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    );
-                  })
-                ) : (
-                  displayDepts.map(dept => {
-                    const cellRaci = getRaciForDeptCell(task.id, dept.id);
-                    const isLoading = loading === `${task.id}-${dept.id}`;
-
-                    return (
-                      <TableCell key={dept.id} className="text-center">
-                        <div className="flex items-center justify-center gap-1 flex-wrap">
-                          {cellRaci.map(raci => {
-                            const roleInfo = RACI_ROLES.find(r => r.value === raci.role);
-                            return (
-                              <Badge
-                                key={raci.id}
-                                className={`${roleInfo?.color || "bg-muted"} text-white cursor-pointer`}
-                                onClick={() => handleRemoveRaci(raci.id)}
-                                title={`${roleInfo?.fullLabel} - Clique para remover`}
-                              >
-                                {roleInfo?.label || raci.role[0].toUpperCase()}
-                                <X className="h-3 w-3 ml-1" />
-                              </Badge>
-                            );
-                          })}
-                          
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6"
-                                disabled={isLoading}
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              {RACI_ROLES.filter(
-                                role => !cellRaci.some(r => r.role === role.value)
-                              ).map(role => (
-                                <DropdownMenuItem
-                                  key={role.value}
-                                  onClick={() => handleAddRaciDept(task.id, dept.id, role.value)}
-                                >
-                                  <Badge className={`${role.color} text-white mr-2`}>
-                                    {role.label}
-                                  </Badge>
-                                  {role.fullLabel}
-                                </DropdownMenuItem>
-                              ))}
-                              {cellRaci.length === RACI_ROLES.length && (
-                                <DropdownMenuItem disabled>
-                                  Todos os papéis atribuídos
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    );
-                  })
-                )}
+                {viewMode === "users" && displayUsers.map(user => {
+                  const cellRaci = getRaciForUserCell(task.id, user.id);
+                  const isLoading = loading === `${task.id}-${user.id}`;
+                  return (
+                    <TableCell key={user.id} className="text-center">
+                      <div className="flex items-center justify-center gap-1 flex-wrap">
+                        {cellRaci.map(raci => {
+                          const roleInfo = RACI_ROLES.find(r => r.value === raci.role);
+                          return (
+                            <Badge key={raci.id}
+                              className={`${roleInfo?.color || "bg-muted"} text-white cursor-pointer`}
+                              onClick={() => handleRemoveRaci(raci.id)}
+                              title={`${roleInfo?.fullLabel} - Clique para remover`}>
+                              {roleInfo?.label || raci.role[0].toUpperCase()}
+                              <X className="h-3 w-3 ml-1" />
+                            </Badge>
+                          );
+                        })}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isLoading}>
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            {RACI_ROLES.filter(role => !cellRaci.some(r => r.role === role.value)).map(role => (
+                              <DropdownMenuItem key={role.value} onClick={() => handleAddRaciUser(task.id, user.id, role.value)}>
+                                <Badge className={`${role.color} text-white mr-2`}>{role.label}</Badge>
+                                {role.fullLabel}
+                              </DropdownMenuItem>
+                            ))}
+                            {cellRaci.length === RACI_ROLES.length && (
+                              <DropdownMenuItem disabled>Todos os papéis atribuídos</DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  );
+                })}
+                {viewMode === "departments" && displayDepts.map(dept => {
+                  const cellRaci = getRaciForDeptCell(task.id, dept.id);
+                  const isLoading = loading === `${task.id}-${dept.id}`;
+                  return (
+                    <TableCell key={dept.id} className="text-center">
+                      <div className="flex items-center justify-center gap-1 flex-wrap">
+                        {cellRaci.map(raci => {
+                          const roleInfo = RACI_ROLES.find(r => r.value === raci.role);
+                          return (
+                            <Badge key={raci.id}
+                              className={`${roleInfo?.color || "bg-muted"} text-white cursor-pointer`}
+                              onClick={() => handleRemoveRaci(raci.id)}
+                              title={`${roleInfo?.fullLabel} - Clique para remover`}>
+                              {roleInfo?.label || raci.role[0].toUpperCase()}
+                              <X className="h-3 w-3 ml-1" />
+                            </Badge>
+                          );
+                        })}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isLoading}>
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            {RACI_ROLES.filter(role => !cellRaci.some(r => r.role === role.value)).map(role => (
+                              <DropdownMenuItem key={role.value} onClick={() => handleAddRaciDept(task.id, dept.id, role.value)}>
+                                <Badge className={`${role.color} text-white mr-2`}>{role.label}</Badge>
+                                {role.fullLabel}
+                              </DropdownMenuItem>
+                            ))}
+                            {cellRaci.length === RACI_ROLES.length && (
+                              <DropdownMenuItem disabled>Todos os papéis atribuídos</DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  );
+                })}
+                {viewMode === "stakeholders" && displayStakeholders.map(stk => {
+                  const cellRaci = getRaciForStakeholderCell(task.id, stk.id);
+                  const isLoading = loading === `${task.id}-${stk.id}`;
+                  return (
+                    <TableCell key={stk.id} className="text-center">
+                      <div className="flex items-center justify-center gap-1 flex-wrap">
+                        {cellRaci.map(raci => {
+                          const roleInfo = RACI_ROLES.find(r => r.value === raci.role);
+                          return (
+                            <Badge key={raci.id}
+                              className={`${roleInfo?.color || "bg-muted"} text-white cursor-pointer`}
+                              onClick={() => handleRemoveRaci(raci.id)}
+                              title={`${roleInfo?.fullLabel} - Clique para remover`}>
+                              {roleInfo?.label || raci.role[0].toUpperCase()}
+                              <X className="h-3 w-3 ml-1" />
+                            </Badge>
+                          );
+                        })}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isLoading}>
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            {RACI_ROLES.filter(role => !cellRaci.some(r => r.role === role.value)).map(role => (
+                              <DropdownMenuItem key={role.value} onClick={() => handleAddRaciStakeholder(task.id, stk.id, role.value)}>
+                                <Badge className={`${role.color} text-white mr-2`}>{role.label}</Badge>
+                                {role.fullLabel}
+                              </DropdownMenuItem>
+                            ))}
+                            {cellRaci.length === RACI_ROLES.length && (
+                              <DropdownMenuItem disabled>Todos os papéis atribuídos</DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableBody>
