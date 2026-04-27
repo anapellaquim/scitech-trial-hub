@@ -29,6 +29,7 @@ interface Survey {
   end_date: string | null;
   status: string;
   responsible: string | null;
+  manual_target: number | null;
 }
 
 interface MonthlyCheck {
@@ -119,6 +120,13 @@ export default function PMCFSurvey() {
     loadData();
   };
 
+  const updateManualTarget = async (id: string, value: number | null) => {
+    const { error } = await supabase.from("pmcf_surveys" as any).update({ manual_target: value }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(value == null ? "Target reset to auto" : "Target updated");
+    loadData();
+  };
+
   const openNewCheck = (surveyId?: string) => {
     setEditingCheck(null);
     const survey = surveys.find(s => s.id === surveyId);
@@ -196,7 +204,9 @@ export default function PMCFSurvey() {
         const diff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
         monthsElapsed = Math.max(1, diff);
       }
-      const cumulativeTarget = (s.expected_monthly_fills || 0) * monthsElapsed;
+      const autoTarget = (s.expected_monthly_fills || 0) * monthsElapsed;
+      const cumulativeTarget = s.manual_target != null ? s.manual_target : autoTarget;
+      const isManual = s.manual_target != null;
       const progressPct = cumulativeTarget > 0 ? Math.min(100, (totalFills / cumulativeTarget) * 100) : 0;
       const lastCheck = surveyChecks.sort((a, b) => b.reference_month.localeCompare(a.reference_month))[0];
       const lastMonthPct = lastCheck && lastCheck.expected_count > 0
@@ -208,7 +218,9 @@ export default function PMCFSurvey() {
         monthsTracked,
         monthsElapsed,
         avgMonthly,
+        autoTarget,
         cumulativeTarget,
+        isManual,
         progressPct,
         lastCheck,
         lastMonthPct,
@@ -289,14 +301,31 @@ export default function PMCFSurvey() {
                         <TableCell>{s.title}</TableCell>
                         <TableCell>{s.target_audience}</TableCell>
                         <TableCell>{s.expected_monthly_fills}</TableCell>
-                        <TableCell className="min-w-[160px]">
+                        <TableCell className="min-w-[200px]">
                           <div className="flex items-center gap-2">
                             <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
                               <div className={`h-full ${barColor} transition-all`} style={{ width: `${Math.min(100, pct)}%` }} />
                             </div>
                             <span className={`text-xs font-semibold ${pctColor}`}>{pct.toFixed(0)}%</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{t?.totalFills ?? 0} / {t?.cumulativeTarget ?? 0}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-[10px] text-muted-foreground">{t?.totalFills ?? 0} /</span>
+                            <Input
+                              type="number"
+                              defaultValue={t?.cumulativeTarget ?? 0}
+                              key={`${s.id}-${t?.cumulativeTarget}`}
+                              className="h-6 w-16 px-1 text-[10px]"
+                              onBlur={(e) => {
+                                const v = parseInt(e.target.value);
+                                if (isNaN(v) || v === t?.cumulativeTarget) return;
+                                updateManualTarget(s.id, v);
+                              }}
+                            />
+                            {t?.isManual && (
+                              <Button size="sm" variant="ghost" className="h-5 px-1 text-[9px]" title="Reset to auto-calculated"
+                                onClick={() => updateManualTarget(s.id, null)}>auto</Button>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-xs">{s.start_date ? format(new Date(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(new Date(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
                         <TableCell><Badge className={statusColors[s.status]}>{s.status}</Badge></TableCell>
@@ -384,6 +413,16 @@ export default function PMCFSurvey() {
             <div><Label>Start Date</Label><Input type="date" value={surveyForm.start_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, start_date: e.target.value })} /></div>
             <div><Label>End Date</Label><Input type="date" value={surveyForm.end_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, end_date: e.target.value })} /></div>
             <div className="col-span-2"><Label>Responsible</Label><Input value={surveyForm.responsible ?? ""} onChange={e => setSurveyForm({ ...surveyForm, responsible: e.target.value })} /></div>
+            <div className="col-span-2">
+              <Label>Manual Target (optional)</Label>
+              <Input
+                type="number"
+                placeholder="Leave empty to auto-calculate from Expected/mo × months elapsed"
+                value={surveyForm.manual_target ?? ""}
+                onChange={e => setSurveyForm({ ...surveyForm, manual_target: e.target.value === "" ? null : parseInt(e.target.value) || 0 })}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Override the cumulative fill target used for progress tracking.</p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSurveyDialogOpen(false)}>Cancel</Button>

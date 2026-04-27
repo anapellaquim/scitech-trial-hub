@@ -1,0 +1,1 @@
+ALTER TABLE public.pmcf_surveys ADD COLUMN IF NOT EXISTS manual_target integer;
