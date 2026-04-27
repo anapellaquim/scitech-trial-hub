@@ -9,10 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Shield, Plus, History, FileText, Search as SearchIcon, ShieldCheck, Eye } from "lucide-react";
+import { Users, Shield, Plus, History, FileText, Search as SearchIcon, ShieldCheck, Eye, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserRoleDialog from "@/components/admin/UserRoleDialog";
 import UserAuditDialog from "@/components/admin/UserAuditDialog";
+import ModulePermissionsDialog from "@/components/admin/ModulePermissionsDialog";
 
 interface Profile {
   id: string;
