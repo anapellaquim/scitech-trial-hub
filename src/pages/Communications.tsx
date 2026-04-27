@@ -486,7 +486,34 @@ export default function Communications() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="plan">
+            {selectedProject === 'all' ? (
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  Select a study to manage its communication plan.
+                </CardContent>
+              </Card>
+            ) : (
+              <CommunicationPlanList projectId={selectedProject} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="stakeholders">
+            {selectedProject === 'all' ? (
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  Select a study to manage its stakeholders.
+                </CardContent>
+              </Card>
+            ) : (
+              <StakeholderList projectId={selectedProject} />
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
 }
+
