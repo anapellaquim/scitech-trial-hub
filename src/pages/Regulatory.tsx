@@ -111,32 +111,38 @@ export default function Regulatory() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [projectsRes, submissionsRes, reportsRes] = await Promise.all([
-        supabase.from("projects").select("id, title").order("title"),
+      const [projectsRes, sitesRes, submissionsRes, reportsRes] = await Promise.all([
+        supabase.from("projects").select("id, title, start_date, end_date").order("title"),
+        supabase.from("study_sites").select("id, site_code, name, project_id").order("site_code"),
         supabase.from("regulatory_submissions").select("*").order("planned_date", { ascending: true }),
         supabase.from("regulatory_reports").select("*").order("due_date", { ascending: true }),
       ]);
 
       if (projectsRes.error) throw projectsRes.error;
+      if (sitesRes.error) throw sitesRes.error;
       if (submissionsRes.error) throw submissionsRes.error;
       if (reportsRes.error) throw reportsRes.error;
 
       const projectsData = projectsRes.data || [];
       setProjects(projectsData);
-      
+      const sitesData = sitesRes.data || [];
+      setSites(sitesData);
+
       // Set default project filter if persisted
       if (persistedProjectId && projectsData.some(p => p.id === persistedProjectId) && projectFilter === "all") {
         setProjectFilter(persistedProjectId);
       }
 
-      // Map projects to submissions and reports
+      // Map projects/sites to submissions and reports
       const projectMap = new Map(projectsData.map(p => [p.id, p]));
-      
-      setSubmissions((submissionsRes.data || []).map(s => ({
+      const siteMap = new Map(sitesData.map(s => [s.id, s]));
+
+      setSubmissions(((submissionsRes.data as any) || []).map((s: any) => ({
         ...s,
-        project: s.project_id ? projectMap.get(s.project_id) : undefined
+        project: s.project_id ? projectMap.get(s.project_id) : undefined,
+        site: s.site_id ? siteMap.get(s.site_id) : undefined,
       })));
-      
+
       setReports((reportsRes.data || []).map(r => ({
         ...r,
         project: r.project_id ? projectMap.get(r.project_id) : undefined
