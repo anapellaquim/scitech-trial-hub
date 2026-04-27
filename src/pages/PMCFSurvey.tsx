@@ -197,7 +197,9 @@ export default function PMCFSurvey() {
         const diff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
         monthsElapsed = Math.max(1, diff);
       }
-      const cumulativeTarget = (s.expected_monthly_fills || 0) * monthsElapsed;
+      const autoTarget = (s.expected_monthly_fills || 0) * monthsElapsed;
+      const cumulativeTarget = s.manual_target != null ? s.manual_target : autoTarget;
+      const isManual = s.manual_target != null;
       const progressPct = cumulativeTarget > 0 ? Math.min(100, (totalFills / cumulativeTarget) * 100) : 0;
       const lastCheck = surveyChecks.sort((a, b) => b.reference_month.localeCompare(a.reference_month))[0];
       const lastMonthPct = lastCheck && lastCheck.expected_count > 0
