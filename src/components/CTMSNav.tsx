@@ -50,7 +50,7 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     { to: "/tasks", icon: ListTodo, label: "Tasks" },
     { to: "/projects", icon: Briefcase, label: "Studies" },
     { to: "/visits", icon: CalendarCheck, label: "Visits" },
-    { to: "/visit-schedule", icon: Calendar, label: "Visit Schedule" },
+    
     { to: "/qualifications", icon: ShieldCheck, label: "Qualifications" },
     { to: "/trainings", icon: GraduationCap, label: "Trainings" },
     { to: "/change-control", icon: GitBranch, label: "Change Control" },

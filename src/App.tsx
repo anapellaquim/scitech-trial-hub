@@ -21,7 +21,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminAudit from "./pages/AdminAudit";
 import Communications from "./pages/Communications";
 import Settings from "./pages/Settings";
-import StudyVisitSchedule from "./pages/StudyVisitSchedule";
+
 import Qualifications from "./pages/Qualifications";
 import Trainings from "./pages/Trainings";
 import ChangeControl from "./pages/ChangeControl";
@@ -61,7 +61,6 @@ function App() {
             <Route path="/visits/:id" element={<VisitReport />} />
 
             {/* New CTMS Modules */}
-            <Route path="/visit-schedule" element={<StudyVisitSchedule />} />
             <Route path="/qualifications" element={<Qualifications />} />
             <Route path="/trainings" element={<Trainings />} />
             <Route path="/change-control" element={<ChangeControl />} />
