@@ -335,7 +335,7 @@ export default function ChangeControl() {
           ) : (
             <Table>
               <TableHeader><TableRow>
-                <TableHead>ID</TableHead><TableHead>Description</TableHead><TableHead>Type</TableHead><TableHead>Requester</TableHead><TableHead>Status</TableHead><TableHead>Responsible</TableHead><TableHead>Opened</TableHead><TableHead>Actions Plan</TableHead><TableHead>Approvals</TableHead><TableHead className="w-[120px]">Actions</TableHead>
+                <TableHead>ID</TableHead><TableHead>Project</TableHead><TableHead>Description</TableHead><TableHead>Type</TableHead><TableHead>Requester</TableHead><TableHead>Status</TableHead><TableHead>Responsible</TableHead><TableHead>Opened</TableHead><TableHead>Actions Plan</TableHead><TableHead>Approvals</TableHead><TableHead className="w-[120px]">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {filtered.map(r => {
