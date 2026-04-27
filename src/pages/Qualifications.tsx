@@ -165,8 +165,8 @@ export default function Qualifications() {
 
   return (
     <ModulePageLayout title="Site & Vendor Qualifications" subtitle="Manage feasibility and qualification of sites and vendors"
-      selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="qualifications"
-      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Entry</Button></div>}
+      selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="qualifications" showAllOption
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)} disabled={!selectedProject || selectedProject === "all"}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew} disabled={!selectedProject || selectedProject === "all"}><Plus className="h-4 w-4 mr-1" />New Entry</Button></div>}
     >
       <Card>
         <CardHeader>
