@@ -156,12 +156,34 @@ export default function NewSubmissionDialog({
           </div>
 
           <div className="space-y-2">
+            <Label>Centro de Pesquisa</Label>
+            <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Observações adicionais..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="compliance_response">Atendimento de Exigência</Label>
+            <Textarea
+              id="compliance_response"
+              value={formData.compliance_response}
+              onChange={(e) => setFormData({ ...formData, compliance_response: e.target.value })}
+              placeholder="Descreva exigências recebidas e como foram atendidas..."
               rows={3}
             />
           </div>
