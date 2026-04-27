@@ -38,17 +38,27 @@ interface CTMSNavProps {
   className?: string;
 }
 
+type RestrictMode = "hide" | "disable";
+
 interface NavItem {
   to: string;
   icon: LucideIcon;
   label: string;
+  adminOnly?: boolean;
+  restrictMode?: RestrictMode; // overrides group/default behavior
+  restrictedTooltip?: string;
 }
 
 interface NavGroup {
   label: string;
   items: NavItem[];
   adminOnly?: boolean;
+  restrictMode?: RestrictMode;
+  restrictedTooltip?: string;
 }
+
+const DEFAULT_RESTRICTED_TOOLTIP = "Requires administrator access";
+const DEFAULT_RESTRICT_MODE: RestrictMode = "hide";
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -101,6 +111,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Administration",
     adminOnly: true,
+    restrictMode: "hide",
     items: [
       { to: "/settings", icon: Settings, label: "Settings" },
     ],
@@ -113,6 +124,7 @@ const COLLAPSE_KEY = "ctms.sidebar.collapsed";
 
 function isActivePath(currentPath: string, to: string): boolean {
   if (to === "/") return currentPath === "/";
+
   return currentPath === to || currentPath.startsWith(to + "/");
 }
 
