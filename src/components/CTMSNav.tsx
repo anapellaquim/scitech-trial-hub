@@ -14,7 +14,7 @@ import {
   Briefcase,
   FileText,
   DollarSign,
-  Library,
+  
   Settings,
   LogOut,
   MessageSquare,
