@@ -23,7 +23,7 @@ import { AlertFilters } from '@/components/communications/AlertFilters';
 import { StudySummaryPanel } from '@/components/communications/StudySummaryPanel';
 import GlobalStudySelector from '@/components/shared/GlobalStudySelector';
 import CommunicationPlanList from '@/components/communications/CommunicationPlanList';
-import StakeholderList from '@/components/communications/StakeholderList';
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -146,7 +146,7 @@ export default function Communications() {
               Communications
             </h1>
             <p className="text-muted-foreground">
-              Alerts, communication plan and stakeholders for the selected study
+              Alerts and communication plan for the selected study
             </p>
           </div>
           
@@ -174,15 +174,12 @@ export default function Communications() {
         </div>
 
         <Tabs defaultValue="alerts" className="w-full">
-          <TabsList className="grid w-full md:w-[600px] grid-cols-3 mb-6">
+          <TabsList className="grid w-full md:w-[400px] grid-cols-2 mb-6">
             <TabsTrigger value="alerts" className="flex items-center gap-1">
               <Bell className="h-4 w-4" /> Alerts
             </TabsTrigger>
             <TabsTrigger value="plan" className="flex items-center gap-1">
               <CalendarClock className="h-4 w-4" /> Communication Plan
-            </TabsTrigger>
-            <TabsTrigger value="stakeholders" className="flex items-center gap-1">
-              <Users className="h-4 w-4" /> Stakeholders
             </TabsTrigger>
           </TabsList>
 
@@ -497,18 +494,6 @@ export default function Communications() {
               </Card>
             ) : (
               <CommunicationPlanList projectId={selectedProject} />
-            )}
-          </TabsContent>
-
-          <TabsContent value="stakeholders">
-            {selectedProject === 'all' ? (
-              <Card>
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  Select a study to manage its stakeholders.
-                </CardContent>
-              </Card>
-            ) : (
-              <StakeholderList projectId={selectedProject} />
             )}
           </TabsContent>
         </Tabs>
