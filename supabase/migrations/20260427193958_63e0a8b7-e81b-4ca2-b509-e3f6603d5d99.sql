@@ -1,0 +1,1 @@
+ALTER TABLE public.change_controls ALTER COLUMN project_id DROP NOT NULL;
