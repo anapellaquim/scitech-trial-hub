@@ -311,6 +311,17 @@ export default function Regulatory() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={siteFilter} onValueChange={setSiteFilter} disabled={projectFilter === "all"}>
+            <SelectTrigger className="w-full md:w-[200px]">
+              <SelectValue placeholder={projectFilter === "all" ? "Selecione um estudo" : "Filtrar por centro"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os centros</SelectItem>
+              {sites.filter(s => s.project_id === projectFilter).map(s => (
+                <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full md:w-[200px]">
               <SelectValue placeholder="Filtrar por status" />
@@ -329,7 +340,12 @@ export default function Regulatory() {
           <TabsList>
             <TabsTrigger value="submissions">Submissões ({filteredSubmissions.length})</TabsTrigger>
             <TabsTrigger value="reports">Relatórios ({filteredReports.length})</TabsTrigger>
+            <TabsTrigger value="schedule">Cronograma</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="schedule">
+            <ReportSchedulesManager projects={projects} />
+          </TabsContent>
 
           <TabsContent value="submissions">
             <Card>
