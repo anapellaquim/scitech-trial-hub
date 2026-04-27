@@ -232,6 +232,7 @@ export default function ContractsManager({ qualificationId }: Props) {
               <div className="col-span-2"><Label>Value</Label><Input type="number" step="0.01" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} /></div>
               <div><Label>Currency</Label><Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} /></div>
             </div>
+            <div><Label>Payment Terms</Label><Textarea rows={2} value={form.payment_terms} onChange={e => setForm({ ...form, payment_terms: e.target.value })} placeholder="Net 30, milestones, ..." /></div>
             <div><Label>Document URL</Label><Input value={form.document_url} onChange={e => setForm({ ...form, document_url: e.target.value })} /></div>
             <div><Label>Notes</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
