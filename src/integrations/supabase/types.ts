@@ -297,6 +297,90 @@ export type Database = {
           },
         ]
       }
+      committee_letters: {
+        Row: {
+          committee_id: string | null
+          committee_type: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          letter_code: string
+          letter_date: string | null
+          link: string | null
+          notes: string | null
+          project_id: string
+          recipient: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          committee_id?: string | null
+          committee_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          letter_code: string
+          letter_date?: string | null
+          link?: string | null
+          notes?: string | null
+          project_id: string
+          recipient?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          committee_id?: string | null
+          committee_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          letter_code?: string
+          letter_date?: string | null
+          link?: string | null
+          notes?: string | null
+          project_id?: string
+          recipient?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      committee_types: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       committees: {
         Row: {
           agenda: string | null
