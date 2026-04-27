@@ -280,7 +280,7 @@ function SidebarBody({ collapsed, groups, currentPath, onItemClick }: SidebarBod
 export default function CTMSNav({ className }: CTMSNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, loading: permLoading } = usePermission();
+  const { isAdmin, canModule, loading: permLoading } = usePermission();
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(COLLAPSE_KEY) === "1";
@@ -288,7 +288,8 @@ export default function CTMSNav({ className }: CTMSNavProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const userIsAdmin = !permLoading && isAdmin();
-  const groups = resolveGroups(NAV_GROUPS, userIsAdmin);
+  const groups = resolveGroups(NAV_GROUPS, userIsAdmin, (m) => canModule(m, "view"));
+
 
   const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
