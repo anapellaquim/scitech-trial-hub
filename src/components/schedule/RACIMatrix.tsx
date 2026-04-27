@@ -300,43 +300,36 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
           <TableHeader>
             <TableRow>
               <TableHead className="min-w-[200px] sticky left-0 bg-background z-10">Tarefa</TableHead>
-              {viewMode === "users" ? (
-                displayUsers.map(user => (
-                  <TableHead key={user.id} className="text-center min-w-[120px]">
-                    <div className="truncate">{user.full_name}</div>
-                  </TableHead>
-                ))
-              ) : (
-                displayDepts.map(dept => (
-                  <TableHead key={dept.id} className="text-center min-w-[140px]">
-                    <div className="flex flex-col items-center gap-1">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: dept.color }}
-                      />
-                      <div className="truncate text-xs">{dept.name}</div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5"
-                          onClick={() => openEditDept(dept)}
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 text-destructive"
-                          onClick={() => handleDeleteDepartment(dept.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
+              {viewMode === "users" && displayUsers.map(user => (
+                <TableHead key={user.id} className="text-center min-w-[120px]">
+                  <div className="truncate">{user.full_name}</div>
+                </TableHead>
+              ))}
+              {viewMode === "departments" && displayDepts.map(dept => (
+                <TableHead key={dept.id} className="text-center min-w-[140px]">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: dept.color }} />
+                    <div className="truncate text-xs">{dept.name}</div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => openEditDept(dept)}>
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive" onClick={() => handleDeleteDepartment(dept.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                  </TableHead>
-                ))
-              )}
+                  </div>
+                </TableHead>
+              ))}
+              {viewMode === "stakeholders" && displayStakeholders.map(s => (
+                <TableHead key={s.id} className="text-center min-w-[140px]">
+                  <div className="flex flex-col items-center gap-1">
+                    <Briefcase className="h-3 w-3 text-muted-foreground" />
+                    <div className="truncate text-xs font-medium">{s.name}</div>
+                    {s.organization && <div className="truncate text-[10px] text-muted-foreground">{s.organization}</div>}
+                  </div>
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
