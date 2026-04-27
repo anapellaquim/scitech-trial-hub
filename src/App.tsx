@@ -28,6 +28,7 @@ import ChangeControl from "./pages/ChangeControl";
 import RiskManagement from "./pages/RiskManagement";
 import Committees from "./pages/Committees";
 import SteeringDecisions from "./pages/SteeringDecisions";
+import SiteMonitoring from "./pages/SiteMonitoring";
 
 const queryClient = new QueryClient();
 
