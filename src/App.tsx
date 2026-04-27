@@ -55,7 +55,6 @@ function App() {
             
             <Route path="/regulatory" element={<Regulatory />} />
             <Route path="/payments" element={<Payments />} />
-            <Route path="/library" element={<Library />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/settings/users" element={<AdminUsers />} />
             <Route path="/settings/audit" element={<AdminAudit />} />
