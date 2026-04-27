@@ -2588,6 +2588,54 @@ export type Database = {
           },
         ]
       }
+      steering_meetings: {
+        Row: {
+          agenda: string | null
+          attendees: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          meeting_code: string
+          meeting_date: string
+          minutes: string | null
+          next_meeting_date: string | null
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agenda?: string | null
+          attendees?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          meeting_code: string
+          meeting_date: string
+          minutes?: string | null
+          next_meeting_date?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agenda?: string | null
+          attendees?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          meeting_code?: string
+          meeting_date?: string
+          minutes?: string | null
+          next_meeting_date?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       study_forms: {
         Row: {
           created_at: string
