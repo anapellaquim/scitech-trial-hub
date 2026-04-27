@@ -17,6 +17,8 @@ import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportD
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import QualificationScorecard from "@/components/qualifications/QualificationScorecard";
 import ContractsManager from "@/components/qualifications/ContractsManager";
+import ContractsOverview from "@/components/qualifications/ContractsOverview";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Qualification {
   id: string;
