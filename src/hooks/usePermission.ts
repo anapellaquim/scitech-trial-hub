@@ -127,6 +127,8 @@ export const usePermission = () => {
   const canModule = useCallback(
     (module: ModuleKey, action: ModuleAction, projectId?: string): boolean => {
       if (isAdmin()) return true;
+      // Collaborators (viewer role) get view + create on all non-admin modules by default
+      if (hasRole("viewer", projectId)) return true;
       const matches = (row: ModulePermissionRow) =>
         row.module === module &&
         (row.project_id === null || (projectId && row.project_id === projectId));
@@ -136,7 +138,7 @@ export const usePermission = () => {
       if (action === "view" && modulePerms.some((r) => matches(r) && r.action === "create")) return true;
       return false;
     },
-    [isAdmin, modulePerms]
+    [isAdmin, hasRole, modulePerms]
   );
 
   const getUserRoles = useCallback((): AppRole[] => [...new Set(roles.map(r => r.role))], [roles]);
