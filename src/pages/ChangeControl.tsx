@@ -189,7 +189,7 @@ export default function ChangeControl() {
   const handleSave = async () => {
     if (!form.change_code.trim() || !form.description.trim()) { toast.error("Code and description are required"); return; }
     const payload: any = {
-      project_id: selectedProject,
+      project_id: form.project_id && form.project_id !== GENERAL_VALUE ? form.project_id : null,
       change_code: form.change_code.trim(),
       description: form.description.trim(),
       change_type: form.change_type,
