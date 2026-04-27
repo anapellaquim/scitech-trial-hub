@@ -61,7 +61,6 @@ function App() {
             <Route path="/visits/:id" element={<VisitReport />} />
 
             {/* New CTMS Modules */}
-            <Route path="/visit-schedule" element={<StudyVisitSchedule />} />
             <Route path="/qualifications" element={<Qualifications />} />
             <Route path="/trainings" element={<Trainings />} />
             <Route path="/change-control" element={<ChangeControl />} />
