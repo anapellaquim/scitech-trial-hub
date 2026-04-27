@@ -142,7 +142,11 @@ interface ResolvedGroup {
   items: ResolvedItem[];
 }
 
-function resolveGroups(groups: NavGroup[], userIsAdmin: boolean): ResolvedGroup[] {
+function resolveGroups(
+  groups: NavGroup[],
+  userIsAdmin: boolean,
+  canViewModule: (m: ModuleKey) => boolean
+): ResolvedGroup[] {
   const resolved: ResolvedGroup[] = [];
   for (const group of groups) {
     const groupRestricted = !!group.adminOnly && !userIsAdmin;
@@ -154,11 +158,20 @@ function resolveGroups(groups: NavGroup[], userIsAdmin: boolean): ResolvedGroup[
 
     const items: ResolvedItem[] = [];
     for (const item of group.items) {
-      const itemRestricted = groupRestricted || (!!item.adminOnly && !userIsAdmin);
+      const adminRestricted = groupRestricted || (!!item.adminOnly && !userIsAdmin);
+      const moduleRestricted =
+        !userIsAdmin && !!item.module && !canViewModule(item.module);
+      const itemRestricted = adminRestricted || moduleRestricted;
+
       const effectiveMode: RestrictMode =
         item.restrictMode ?? (groupRestricted ? groupMode : DEFAULT_RESTRICT_MODE);
       const effectiveTooltip =
-        item.restrictedTooltip ?? (groupRestricted ? groupTooltip : DEFAULT_RESTRICTED_TOOLTIP);
+        item.restrictedTooltip ??
+        (adminRestricted
+          ? groupRestricted
+            ? groupTooltip
+            : DEFAULT_RESTRICTED_TOOLTIP
+          : DEFAULT_MODULE_RESTRICTED_TOOLTIP);
 
       if (itemRestricted && effectiveMode === "hide") continue;
 
