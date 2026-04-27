@@ -112,6 +112,7 @@ export default function ContractsManager({ qualificationId }: Props) {
       signed_date: form.signed_date || null,
       value: form.value ? parseFloat(form.value) : null,
       currency: form.currency || "BRL",
+      payment_terms: form.payment_terms.trim() || null,
       description: form.description.trim() || null,
       document_url: form.document_url.trim() || null,
       notes: form.notes.trim() || null,
