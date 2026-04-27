@@ -79,6 +79,10 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
   // Display entities based on view mode
   const displayUsers = usersWithAssignments.length > 0 ? usersWithAssignments : profiles.slice(0, 5);
   const displayDepts = deptsWithAssignments.length > 0 ? deptsWithAssignments : departments;
+  const stakeholdersWithAssignments = stakeholders.filter(s =>
+    raciAssignments.some(r => r.stakeholder_id === s.id)
+  );
+  const displayStakeholders = stakeholdersWithAssignments.length > 0 ? stakeholdersWithAssignments : stakeholders;
 
   const getRaciForUserCell = (taskId: string, userId: string): TaskRACI[] => {
     return raciAssignments.filter(r => r.task_id === taskId && r.user_id === userId);
@@ -264,7 +268,7 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
         </div>
 
         <div className="flex items-center gap-2">
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "users" | "departments")}>
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "users" | "departments" | "stakeholders")}>
             <TabsList>
               <TabsTrigger value="users" className="gap-2">
                 <Users className="h-4 w-4" />
@@ -273,6 +277,10 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
               <TabsTrigger value="departments" className="gap-2">
                 <Building2 className="h-4 w-4" />
                 Departamentos
+              </TabsTrigger>
+              <TabsTrigger value="stakeholders" className="gap-2">
+                <Briefcase className="h-4 w-4" />
+                Stakeholders
               </TabsTrigger>
             </TabsList>
           </Tabs>
