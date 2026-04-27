@@ -61,8 +61,8 @@ const permissionMatrix: Record<AppRole, Record<Module, Permission[]>> = {
     regulatory: ["full"], payments: ["full"], users: ["full"], audit: ["full"],
   },
   viewer: {
-    dashboard: ["read"], studies: ["read"], visits: ["read"],
-    regulatory: ["read"], payments: ["read"], users: [], audit: [],
+    dashboard: ["read"], studies: ["read", "write"], visits: ["read", "write"],
+    regulatory: ["read", "write"], payments: ["read", "write"], users: [], audit: [],
   },
 };
 
