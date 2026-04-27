@@ -108,6 +108,7 @@ export default function Qualifications() {
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Name is required"); return; }
+    if (!selectedProject || selectedProject === "all") { toast.error("Select a study to create"); return; }
     const payload = {
       project_id: selectedProject, name: form.name.trim(), vendor_type: form.vendor_type,
       qualification_status: form.qualification_status, feasibility_date: form.feasibility_date || null,
