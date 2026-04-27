@@ -251,7 +251,8 @@ export default function ChangeControl() {
 
   const openNew = () => {
     setEditing(null);
-    setForm(emptyForm);
+    const initialProject = !selectedProject || selectedProject === "all" ? GENERAL_VALUE : selectedProject;
+    setForm({ ...emptyForm, project_id: initialProject });
     setActionItems([]);
     setDialogOpen(true);
   };
@@ -259,6 +260,7 @@ export default function ChangeControl() {
   const openEdit = (r: ChangeControlRecord) => {
     setEditing(r);
     setForm({
+      project_id: r.project_id || GENERAL_VALUE,
       change_code: r.change_code,
       description: r.description,
       change_type: r.change_type,
