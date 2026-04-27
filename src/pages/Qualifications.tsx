@@ -97,13 +97,18 @@ export default function Qualifications() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from("site_vendor_qualifications").select("*").eq("project_id", selectedProject).order("name");
+    let query = supabase.from("site_vendor_qualifications").select("*").order("name");
+    if (selectedProject && selectedProject !== "all") {
+      query = query.eq("project_id", selectedProject);
+    }
+    const { data } = await query;
     setRecords(data || []);
     setLoading(false);
   }, [selectedProject]);
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Name is required"); return; }
+    if (!selectedProject || selectedProject === "all") { toast.error("Select a study to create"); return; }
     const payload = {
       project_id: selectedProject, name: form.name.trim(), vendor_type: form.vendor_type,
       qualification_status: form.qualification_status, feasibility_date: form.feasibility_date || null,
@@ -160,8 +165,8 @@ export default function Qualifications() {
 
   return (
     <ModulePageLayout title="Site & Vendor Qualifications" subtitle="Manage feasibility and qualification of sites and vendors"
-      selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="qualifications"
-      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Entry</Button></div>}
+      selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="qualifications" showAllOption
+      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)} disabled={!selectedProject || selectedProject === "all"}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew} disabled={!selectedProject || selectedProject === "all"}><Plus className="h-4 w-4 mr-1" />New Entry</Button></div>}
     >
       <Card>
         <CardHeader>
