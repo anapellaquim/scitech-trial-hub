@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CTMSNav from '@/components/CTMSNav';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,17 @@ import {
   RefreshCw,
   Inbox,
   Building2,
-  Layers
+  Layers,
+  CalendarClock,
+  Users,
 } from 'lucide-react';
 import { useNotifications, useNotificationStats } from '@/hooks/useNotifications';
 import { AlertCard } from '@/components/communications/AlertCard';
 import { AlertFilters } from '@/components/communications/AlertFilters';
 import { StudySummaryPanel } from '@/components/communications/StudySummaryPanel';
+import GlobalStudySelector from '@/components/shared/GlobalStudySelector';
+import CommunicationPlanList from '@/components/communications/CommunicationPlanList';
+import StakeholderList from '@/components/communications/StakeholderList';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
