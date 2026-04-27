@@ -16,6 +16,7 @@ import { Plus, Pencil, Trash2, Search, Upload } from "lucide-react";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import QualificationScorecard from "@/components/qualifications/QualificationScorecard";
+import ContractAmendments from "@/components/qualifications/ContractAmendments";
 
 interface Qualification {
   id: string;
