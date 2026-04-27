@@ -13,14 +13,18 @@ interface Project {
   title: string;
 }
 
+interface Site { id: string; site_code: string; name: string; }
+
 interface Submission {
   id: string;
   project_id: string | null;
+  site_id?: string | null;
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
   status: string;
   notes: string | null;
+  compliance_response?: string | null;
 }
 
 interface EditSubmissionDialogProps {
