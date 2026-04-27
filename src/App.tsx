@@ -70,6 +70,7 @@ function App() {
             <Route path="/committees" element={<Committees />} />
             <Route path="/steering" element={<SteeringDecisions />} />
             <Route path="/site-monitoring" element={<SiteMonitoring />} />
+            <Route path="/pmcf-survey" element={<PMCFSurvey />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
