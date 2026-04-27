@@ -4115,6 +4115,44 @@ export type Database = {
           },
         ]
       }
+      user_module_permissions: {
+        Row: {
+          action: Database["public"]["Enums"]["module_action"]
+          granted_at: string
+          granted_by: string | null
+          id: string
+          module: Database["public"]["Enums"]["module_key"]
+          project_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["module_action"]
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          module: Database["public"]["Enums"]["module_key"]
+          project_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["module_action"]
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          module?: Database["public"]["Enums"]["module_key"]
+          project_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_module_permissions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           access_type: string
@@ -4658,6 +4696,14 @@ export type Database = {
         }[]
       }
       get_module_from_table: { Args: { table_name: string }; Returns: string }
+      get_user_module_permissions: {
+        Args: { _user_id: string }
+        Returns: {
+          action: Database["public"]["Enums"]["module_action"]
+          module: Database["public"]["Enums"]["module_key"]
+          project_id: string
+        }[]
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: {
@@ -4668,6 +4714,15 @@ export type Database = {
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      has_module_permission: {
+        Args: {
+          _action: Database["public"]["Enums"]["module_action"]
+          _module: Database["public"]["Enums"]["module_key"]
+          _project_id?: string
           _user_id: string
         }
         Returns: boolean
@@ -4693,6 +4748,10 @@ export type Database = {
       }
       is_oversight_role: { Args: { _user_id: string }; Returns: boolean }
       is_site_role: { Args: { _user_id: string }; Returns: boolean }
+      user_has_role_in_project: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
@@ -4737,6 +4796,25 @@ export type Database = {
         | "acknowledged"
         | "skipped"
       communication_recipient_role: "to" | "cc" | "bcc" | "informed"
+      module_action: "view" | "create"
+      module_key:
+        | "dashboard"
+        | "communications"
+        | "projects"
+        | "agenda"
+        | "tasks"
+        | "visits"
+        | "site_monitoring"
+        | "pmcf_survey"
+        | "qualifications"
+        | "trainings"
+        | "change_control"
+        | "risks"
+        | "committees"
+        | "steering"
+        | "regulatory"
+        | "payments"
+        | "library"
       notification_severity: "info" | "warning" | "critical"
       notification_type:
         | "task_overdue"
@@ -4954,6 +5032,26 @@ export const Constants = {
         "skipped",
       ],
       communication_recipient_role: ["to", "cc", "bcc", "informed"],
+      module_action: ["view", "create"],
+      module_key: [
+        "dashboard",
+        "communications",
+        "projects",
+        "agenda",
+        "tasks",
+        "visits",
+        "site_monitoring",
+        "pmcf_survey",
+        "qualifications",
+        "trainings",
+        "change_control",
+        "risks",
+        "committees",
+        "steering",
+        "regulatory",
+        "payments",
+        "library",
+      ],
       notification_severity: ["info", "warning", "critical"],
       notification_type: [
         "task_overdue",
