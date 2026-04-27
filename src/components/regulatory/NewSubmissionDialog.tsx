@@ -42,12 +42,20 @@ export default function NewSubmissionDialog({
   onSuccess,
 }: NewSubmissionDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     submission_type: "",
     planned_date: "",
     notes: "",
+    compliance_response: "",
   });
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
