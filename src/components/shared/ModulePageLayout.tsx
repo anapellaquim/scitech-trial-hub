@@ -28,6 +28,9 @@ export default function ModulePageLayout({
   children,
   actions,
   showAllOption = false,
+  showGeneralOption = false,
+  generalValue,
+  generalLabel,
 }: ModulePageLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
