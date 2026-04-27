@@ -2737,6 +2737,7 @@ export type Database = {
           department_id: string | null
           id: string
           role: string
+          stakeholder_id: string | null
           task_id: string
           user_id: string | null
         }
@@ -2745,6 +2746,7 @@ export type Database = {
           department_id?: string | null
           id?: string
           role: string
+          stakeholder_id?: string | null
           task_id: string
           user_id?: string | null
         }
@@ -2753,6 +2755,7 @@ export type Database = {
           department_id?: string | null
           id?: string
           role?: string
+          stakeholder_id?: string | null
           task_id?: string
           user_id?: string | null
         }
@@ -2762,6 +2765,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_raci_stakeholder_id_fkey"
+            columns: ["stakeholder_id"]
+            isOneToOne: false
+            referencedRelation: "communication_stakeholders"
             referencedColumns: ["id"]
           },
           {
