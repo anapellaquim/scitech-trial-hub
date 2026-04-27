@@ -105,7 +105,8 @@ const emptyForm = {
 export default function ChangeControl() {
   const navigate = useNavigate();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
-  const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
+  const [selectedProject, setSelectedProject] = useState(persistedProjectId || "all");
+  const [projects, setProjects] = useState<{ id: string; title: string; protocol_number: string | null }[]>([]);
   const [records, setRecords] = useState<ChangeControlRecord[]>([]);
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [allActions, setAllActions] = useState<ActionItem[]>([]);
