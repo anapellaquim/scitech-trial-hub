@@ -28,7 +28,7 @@ interface Schedule {
   notes: string | null;
 }
 
-interface Project { id: string; title: string; start_date: string | null; end_date: string | null; }
+interface Project { id: string; title: string; start_date?: string | null; end_date?: string | null; }
 
 const startEventOptions = [
   { value: "study_start", label: "Início do estudo" },
