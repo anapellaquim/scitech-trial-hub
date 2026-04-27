@@ -345,6 +345,7 @@ export default function ChangeControl() {
                   return (
                     <TableRow key={r.id}>
                       <TableCell className="font-mono font-medium">{r.change_code}</TableCell>
+                      <TableCell>{r.project_id ? <Badge variant="outline">{projectLabel(r.project_id)}</Badge> : <Badge>General</Badge>}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{r.description}</TableCell>
                       <TableCell><Badge variant="outline">{typeLabel}</Badge></TableCell>
                       <TableCell>{r.requester || "-"}</TableCell>
