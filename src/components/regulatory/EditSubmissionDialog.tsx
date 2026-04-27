@@ -65,27 +65,37 @@ export default function EditSubmissionDialog({
   onSuccess,
 }: EditSubmissionDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     submission_type: "",
     planned_date: "",
     submission_date: "",
     status: "pending",
     notes: "",
+    compliance_response: "",
   });
 
   useEffect(() => {
     if (submission && open) {
       setFormData({
         project_id: submission.project_id || "",
+        site_id: (submission as any).site_id || "none",
         submission_type: submission.submission_type,
         planned_date: submission.planned_date || "",
         submission_date: submission.submission_date || "",
         status: submission.status,
         notes: submission.notes || "",
+        compliance_response: (submission as any).compliance_response || "",
       });
     }
   }, [submission, open]);
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
