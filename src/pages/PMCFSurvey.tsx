@@ -189,42 +189,25 @@ export default function PMCFSurvey() {
     compliant: checks.filter(c => c.status === "compliant").length,
   }), [surveys, checks]);
 
-  // Tracking: progress per survey vs target
+  // Tracking: progress per survey vs Sample Size (manual_target)
   const tracking = useMemo(() => {
     return surveys.map(s => {
       const surveyChecks = checks.filter(c => c.survey_id === s.id);
       const totalFills = surveyChecks.reduce((sum, c) => sum + (c.fills_count || 0), 0);
       const monthsTracked = surveyChecks.length;
-      const avgMonthly = monthsTracked > 0 ? totalFills / monthsTracked : 0;
-      // Cumulative target = expected_monthly * months elapsed since start_date (or months tracked)
-      let monthsElapsed = monthsTracked;
-      if (s.start_date) {
-        const start = new Date(s.start_date);
-        const end = s.end_date ? new Date(s.end_date) : new Date();
-        const diff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
-        monthsElapsed = Math.max(1, diff);
-      }
-      const autoTarget = (s.expected_monthly_fills || 0) * monthsElapsed;
-      const cumulativeTarget = s.manual_target != null ? s.manual_target : autoTarget;
-      const isManual = s.manual_target != null;
-      const progressPct = cumulativeTarget > 0 ? Math.min(100, (totalFills / cumulativeTarget) * 100) : 0;
+      const sampleSize = s.manual_target ?? 0;
+      const progressPct = sampleSize > 0 ? Math.min(100, (totalFills / sampleSize) * 100) : 0;
       const lastCheck = surveyChecks.sort((a, b) => b.reference_month.localeCompare(a.reference_month))[0];
-      const lastMonthPct = lastCheck && lastCheck.expected_count > 0
-        ? Math.min(100, (lastCheck.fills_count / lastCheck.expected_count) * 100)
-        : 0;
       return {
         survey: s,
         totalFills,
         monthsTracked,
-        monthsElapsed,
-        avgMonthly,
-        autoTarget,
-        cumulativeTarget,
-        isManual,
+        sampleSize,
+        cumulativeTarget: sampleSize,
+        isManual: s.manual_target != null,
         progressPct,
         lastCheck,
-        lastMonthPct,
-        gap: cumulativeTarget - totalFills,
+        gap: sampleSize - totalFills,
       };
     });
   }, [surveys, checks]);
