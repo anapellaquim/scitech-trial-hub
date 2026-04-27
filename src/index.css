@@ -210,3 +210,15 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* CTMS sidebar layout: shift page content to the right of the fixed sidebar on md+ */
+@media (min-width: 768px) {
+  :root {
+    --ctms-sidebar-w: 240px;
+  }
+  .min-h-screen.bg-background {
+    padding-left: var(--ctms-sidebar-w, 240px);
+    transition: padding-left 200ms ease;
+  }
+}
+

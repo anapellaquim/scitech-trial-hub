@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePermission } from "@/hooks/usePermission";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Calendar,
@@ -24,16 +28,173 @@ import {
   Gavel,
   Eye,
   ClipboardList,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  type LucideIcon,
 } from "lucide-react";
 
 interface CTMSNavProps {
   className?: string;
 }
 
+interface NavItem {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+  adminOnly?: boolean;
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/communications", icon: MessageSquare, label: "Communications" },
+    ],
+  },
+  {
+    label: "Planning",
+    items: [
+      { to: "/projects", icon: Briefcase, label: "Studies" },
+      { to: "/agenda", icon: Calendar, label: "Agenda" },
+      { to: "/tasks", icon: ListTodo, label: "Tasks" },
+    ],
+  },
+  {
+    label: "Execution",
+    items: [
+      { to: "/visits", icon: CalendarCheck, label: "Visits" },
+      { to: "/site-monitoring", icon: Eye, label: "Site Monitoring" },
+      { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey" },
+    ],
+  },
+  {
+    label: "Quality & Compliance",
+    items: [
+      { to: "/qualifications", icon: ShieldCheck, label: "Qualifications" },
+      { to: "/trainings", icon: GraduationCap, label: "Trainings" },
+      { to: "/change-control", icon: GitBranch, label: "Change Control" },
+      { to: "/risks", icon: AlertTriangle, label: "Risks" },
+    ],
+  },
+  {
+    label: "Governance",
+    items: [
+      { to: "/committees", icon: Users2, label: "Committees" },
+      { to: "/steering", icon: Gavel, label: "Steering" },
+      { to: "/regulatory", icon: FileText, label: "Regulatory" },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { to: "/payments", icon: DollarSign, label: "Payments" },
+      { to: "/library", icon: Library, label: "Library" },
+    ],
+  },
+  {
+    label: "Administration",
+    adminOnly: true,
+    items: [
+      { to: "/settings", icon: Settings, label: "Settings" },
+    ],
+  },
+];
+
+const SIDEBAR_WIDTH = 240;
+const SIDEBAR_COLLAPSED_WIDTH = 64;
+const COLLAPSE_KEY = "ctms.sidebar.collapsed";
+
+function isActivePath(currentPath: string, to: string): boolean {
+  if (to === "/") return currentPath === "/";
+  return currentPath === to || currentPath.startsWith(to + "/");
+}
+
+interface SidebarBodyProps {
+  collapsed: boolean;
+  groups: NavGroup[];
+  currentPath: string;
+  onItemClick?: () => void;
+}
+
+function SidebarBody({ collapsed, groups, currentPath, onItemClick }: SidebarBodyProps) {
+  return (
+    <div className="flex-1 overflow-y-auto py-3">
+      {groups.map((group) => (
+        <div key={group.label} className="mb-4">
+          {!collapsed && (
+            <div className="px-4 mb-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {group.label}
+              </span>
+            </div>
+          )}
+          {collapsed && <div className="mx-3 my-2 border-t border-border/60" />}
+          <nav className="flex flex-col gap-0.5 px-2">
+            {group.items.map(({ to, icon: Icon, label }) => {
+              const active = isActivePath(currentPath, to);
+              const linkClass = cn(
+                "flex items-center gap-3 rounded-md text-sm transition-colors",
+                collapsed ? "justify-center px-2 py-2" : "px-3 py-2",
+                active
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground/80 hover:bg-muted hover:text-foreground"
+              );
+              const link = (
+                <Link to={to} onClick={onItemClick} className={linkClass}>
+                  <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                  {!collapsed && <span className="truncate">{label}</span>}
+                </Link>
+              );
+              if (collapsed) {
+                return (
+                  <Tooltip key={to} delayDuration={100}>
+                    <TooltipTrigger asChild>{link}</TooltipTrigger>
+                    <TooltipContent side="right" className="font-medium">
+                      {label}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+              return <div key={to}>{link}</div>;
+            })}
+          </nav>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CTMSNav({ className }: CTMSNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdmin, loading: permLoading } = usePermission();
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(COLLAPSE_KEY) === "1";
+  });
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const groups = NAV_GROUPS.filter((g) => !g.adminOnly || (!permLoading && isAdmin()));
+  const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--ctms-sidebar-w", `${width}px`);
+    return () => {
+      root.style.removeProperty("--ctms-sidebar-w");
+    };
+  }, [width]);
+
+  useEffect(() => {
+    localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
+  }, [collapsed]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -45,92 +206,119 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     }
   };
 
-  const baseNavItems = [
-    { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/communications", icon: MessageSquare, label: "Communications" },
-    { to: "/agenda", icon: Calendar, label: "Agenda" },
-    { to: "/tasks", icon: ListTodo, label: "Tasks" },
-    { to: "/projects", icon: Briefcase, label: "Studies" },
-    { to: "/visits", icon: CalendarCheck, label: "Visits" },
-    { to: "/site-monitoring", icon: Eye, label: "Site Monitoring" },
-    { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey" },
-    
-    { to: "/qualifications", icon: ShieldCheck, label: "Qualifications" },
-    { to: "/trainings", icon: GraduationCap, label: "Trainings" },
-    { to: "/change-control", icon: GitBranch, label: "Change Control" },
-    { to: "/risks", icon: AlertTriangle, label: "Risks" },
-    { to: "/committees", icon: Users2, label: "Committees" },
-    { to: "/steering", icon: Gavel, label: "Steering" },
-    { to: "/regulatory", icon: FileText, label: "Regulatory" },
-    { to: "/payments", icon: DollarSign, label: "Payments" },
-    { to: "/library", icon: Library, label: "Library" },
-  ];
-
-  // Only show Settings for admins
-  const navItems = !permLoading && isAdmin()
-    ? [...baseNavItems, { to: "/settings", icon: Settings, label: "Settings" }]
-    : baseNavItems;
-
-  const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
-  };
-
   return (
-    <nav className={`border-b bg-card/50 backdrop-blur-sm ${className}`}>
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link 
-            to="/" 
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Activity className="h-5 w-5 text-primary-foreground" />
+    <TooltipProvider>
+      {/* Desktop fixed sidebar */}
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-40 h-screen border-r bg-card/95 backdrop-blur-sm hidden md:flex flex-col transition-[width] duration-200",
+          className
+        )}
+        style={{ width }}
+      >
+        <div
+          className={cn(
+            "flex items-center h-14 border-b px-3 gap-2",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              <Activity className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-bold text-lg text-foreground hidden sm:inline">CTMS</span>
+            {!collapsed && <span className="font-bold text-base text-foreground">CTMS</span>}
           </Link>
-
-          <div className="flex items-center gap-1 overflow-x-auto">
-            {navItems.map(({ to, icon: Icon, label }) => (
-              <Button
-                key={to}
-                variant={isActive(to) ? "secondary" : "ghost"}
-                size="sm"
-                asChild
-                className="hidden md:flex"
-              >
-                <Link to={to}>
-                  <Icon className="h-4 w-4 mr-1" />
-                  <span className="text-sm">{label}</span>
-                </Link>
-              </Button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex md:hidden overflow-x-auto pb-2 gap-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {!collapsed && (
             <Button
-              key={to}
-              variant={isActive(to) ? "secondary" : "ghost"}
-              size="sm"
-              asChild
-              className="flex-shrink-0"
+              variant="ghost"
+              size="icon"
+              className="ml-auto h-8 w-8"
+              onClick={() => setCollapsed(true)}
+              aria-label="Collapse sidebar"
             >
-              <Link to={to}>
-                <Icon className="h-4 w-4 mr-1" />
-                <span className="text-xs">{label}</span>
-              </Link>
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-          ))}
+          )}
         </div>
+
+        <SidebarBody collapsed={collapsed} groups={groups} currentPath={location.pathname} />
+
+        <div className={cn("border-t p-2 flex items-center gap-2", collapsed && "flex-col")}>
+          {collapsed && (
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCollapsed(false)}
+                  aria-label="Expand sidebar"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Expand</TooltipContent>
+            </Tooltip>
+          )}
+          <Tooltip delayDuration={100}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size={collapsed ? "icon" : "sm"}
+                onClick={handleLogout}
+                className={cn(collapsed ? "h-8 w-8" : "w-full justify-start")}
+                aria-label="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+                {!collapsed && <span className="ml-2">Sign out</span>}
+              </Button>
+            </TooltipTrigger>
+            {collapsed && <TooltipContent side="right">Sign out</TooltipContent>}
+          </Tooltip>
+        </div>
+      </aside>
+
+      {/* Mobile top bar with hamburger */}
+      <div className="md:hidden sticky top-0 z-40 flex items-center h-14 border-b bg-card/95 backdrop-blur-sm px-3 gap-2">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Open menu">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64 flex flex-col">
+            <div className="flex items-center h-14 border-b px-3 gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Activity className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="font-bold text-base">CTMS</span>
+            </div>
+            <SidebarBody
+              collapsed={false}
+              groups={groups}
+              currentPath={location.pathname}
+              onItemClick={() => setMobileOpen(false)}
+            />
+            <div className="border-t p-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign out
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <Activity className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-base">CTMS</span>
+        </Link>
       </div>
-    </nav>
+    </TooltipProvider>
   );
 }
