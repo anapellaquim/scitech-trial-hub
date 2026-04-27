@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ScheduleTask, TaskRACI, Profile, Department } from "@/types/schedule";
-import { Plus, X, Users, Building2, Trash2, Edit2 } from "lucide-react";
+import { ScheduleTask, TaskRACI, Profile, Department, Stakeholder } from "@/types/schedule";
+import { Plus, X, Users, Building2, Trash2, Edit2, Briefcase } from "lucide-react";
 
 interface RACIMatrixProps {
   tasks: ScheduleTask[];
   raciAssignments: TaskRACI[];
   profiles: Profile[];
+  projectId?: string;
   onRefresh: () => void;
 }
 
@@ -31,17 +32,19 @@ const COLOR_OPTIONS = [
   "#ec4899", "#6366f1", "#14b8a6", "#84cc16", "#f97316"
 ];
 
-export const RACIMatrix = ({ tasks, raciAssignments, profiles, onRefresh }: RACIMatrixProps) => {
+export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefresh }: RACIMatrixProps) => {
   const [loading, setLoading] = useState<string | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [viewMode, setViewMode] = useState<"users" | "departments">("users");
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
+  const [viewMode, setViewMode] = useState<"users" | "departments" | "stakeholders">("users");
   const [showDeptDialog, setShowDeptDialog] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [deptForm, setDeptForm] = useState({ name: "", description: "", color: "#6366f1" });
 
   useEffect(() => {
     fetchDepartments();
-  }, []);
+    fetchStakeholders();
+  }, [projectId]);
 
   const fetchDepartments = async () => {
     const { data, error } = await supabase
@@ -52,6 +55,16 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, onRefresh }: RACI
     if (!error && data) {
       setDepartments(data);
     }
+  };
+
+  const fetchStakeholders = async () => {
+    if (!projectId) { setStakeholders([]); return; }
+    const { data, error } = await supabase
+      .from("communication_stakeholders")
+      .select("id, name, organization, stakeholder_type, project_id")
+      .eq("project_id", projectId)
+      .order("name");
+    if (!error && data) setStakeholders(data as Stakeholder[]);
   };
 
   // Get unique users/departments that have RACI assignments
