@@ -24,7 +24,6 @@ export const ROLE_TEMPLATES: RoleTemplate[] = [
       visits: ["view", "create"],
       site_monitoring: ["view"],
       communications: ["view", "create"],
-      library: ["view"],
     },
   },
   {
@@ -43,7 +42,6 @@ export const ROLE_TEMPLATES: RoleTemplate[] = [
       steering: ["view"],
       regulatory: ["view"],
       communications: ["view"],
-      library: ["view"],
     },
   },
   {
@@ -64,7 +62,6 @@ export const ROLE_TEMPLATES: RoleTemplate[] = [
       committees: ["view"],
       steering: ["view"],
       communications: ["view"],
-      library: ["view"],
     },
   },
   {
@@ -80,21 +77,19 @@ export const ROLE_TEMPLATES: RoleTemplate[] = [
       tasks: ["view", "create"],
       regulatory: ["view"],
       communications: ["view"],
-      library: ["view"],
     },
   },
   {
     id: "regulatory",
     name: "Regulatory Affairs",
     description:
-      "Regulatory submissions, committees, change control, library access.",
+      "Regulatory submissions, committees, change control.",
     grants: {
       dashboard: ["view"],
       projects: ["view"],
       regulatory: ["view", "create"],
       committees: ["view", "create"],
       change_control: ["view", "create"],
-      library: ["view", "create"],
       communications: ["view", "create"],
     },
   },
@@ -108,7 +103,7 @@ export const ROLE_TEMPLATES: RoleTemplate[] = [
       site_monitoring: ["view"], pmcf_survey: ["view"], qualifications: ["view"],
       trainings: ["view"], change_control: ["view"], risks: ["view"],
       committees: ["view"], steering: ["view"], regulatory: ["view"],
-      payments: ["view"], library: ["view"],
+      payments: ["view"],
     },
   },
 ];
