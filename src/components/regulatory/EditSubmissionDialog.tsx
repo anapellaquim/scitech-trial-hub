@@ -114,12 +114,14 @@ export default function EditSubmissionDialog({
         .from("regulatory_submissions")
         .update({
           project_id: formData.project_id,
+          site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
           submission_type: formData.submission_type,
           planned_date: formData.planned_date || null,
           submission_date: formData.submission_date || null,
           status: formData.status as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
-        })
+          compliance_response: formData.compliance_response || null,
+        } as any)
         .eq("id", submission.id);
 
       if (error) throw error;
