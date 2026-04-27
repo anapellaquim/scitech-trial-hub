@@ -39,9 +39,10 @@ interface Props {
   contractId: string;
   qualificationId: string;
   currency?: string;
+  onTotalChange?: (total: number) => void;
 }
 
-export default function ContractBudgetItems({ contractId, qualificationId, currency = "USD" }: Props) {
+export default function ContractBudgetItems({ contractId, qualificationId, currency = "USD", onTotalChange }: Props) {
   const [items, setItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
