@@ -207,7 +207,7 @@ export type Database = {
           impact_areas: string[] | null
           impact_assessment: string | null
           opened_at: string
-          project_id: string
+          project_id: string | null
           requester: string | null
           requires_communication: boolean
           requires_training: boolean
@@ -228,7 +228,7 @@ export type Database = {
           impact_areas?: string[] | null
           impact_assessment?: string | null
           opened_at?: string
-          project_id: string
+          project_id?: string | null
           requester?: string | null
           requires_communication?: boolean
           requires_training?: boolean
@@ -249,7 +249,7 @@ export type Database = {
           impact_areas?: string[] | null
           impact_assessment?: string | null
           opened_at?: string
-          project_id?: string
+          project_id?: string | null
           requester?: string | null
           requires_communication?: boolean
           requires_training?: boolean

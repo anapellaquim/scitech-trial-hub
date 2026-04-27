@@ -19,7 +19,7 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface ChangeControlRecord {
   id: string;
-  project_id: string;
+  project_id: string | null;
   change_code: string;
   description: string;
   change_type: string;
@@ -83,7 +83,10 @@ const IMPACT_AREAS = [
   { value: "other", label: "Outros" },
 ];
 
+const GENERAL_VALUE = "__general__";
+
 const emptyForm = {
+  project_id: "" as string,
   change_code: "",
   description: "",
   change_type: "operational",
@@ -102,7 +105,8 @@ const emptyForm = {
 export default function ChangeControl() {
   const navigate = useNavigate();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
-  const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
+  const [selectedProject, setSelectedProject] = useState(persistedProjectId || "all");
+  const [projects, setProjects] = useState<{ id: string; title: string; protocol_number: string | null }[]>([]);
   const [records, setRecords] = useState<ChangeControlRecord[]>([]);
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [allActions, setAllActions] = useState<ActionItem[]>([]);
@@ -136,12 +140,24 @@ export default function ChangeControl() {
     check();
   }, []);
 
-  useEffect(() => { if (selectedProject) { setProjectId(selectedProject); loadData(); } }, [selectedProject]);
+  useEffect(() => {
+    supabase.from("projects").select("id, title, protocol_number").order("title").then(({ data }) => setProjects(data || []));
+  }, []);
+
+  useEffect(() => {
+    if (selectedProject) { setProjectId(selectedProject); loadData(); }
+  }, [selectedProject]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    let query = supabase.from("change_controls").select("*").order("opened_at", { ascending: false });
+    if (selectedProject === GENERAL_VALUE) {
+      query = query.is("project_id", null);
+    } else if (selectedProject && selectedProject !== "all") {
+      query = query.eq("project_id", selectedProject);
+    }
     const [{ data: cc }, { data: ap }, { data: acts }] = await Promise.all([
-      supabase.from("change_controls").select("*").eq("project_id", selectedProject).order("opened_at", { ascending: false }),
+      query,
       supabase.from("change_control_approvals").select("*").order("created_at"),
       supabase.from("change_control_actions" as any).select("*").order("display_order"),
     ]);
@@ -173,7 +189,7 @@ export default function ChangeControl() {
   const handleSave = async () => {
     if (!form.change_code.trim() || !form.description.trim()) { toast.error("Code and description are required"); return; }
     const payload: any = {
-      project_id: selectedProject,
+      project_id: form.project_id && form.project_id !== GENERAL_VALUE ? form.project_id : null,
       change_code: form.change_code.trim(),
       description: form.description.trim(),
       change_type: form.change_type,
@@ -235,7 +251,8 @@ export default function ChangeControl() {
 
   const openNew = () => {
     setEditing(null);
-    setForm(emptyForm);
+    const initialProject = !selectedProject || selectedProject === "all" ? GENERAL_VALUE : selectedProject;
+    setForm({ ...emptyForm, project_id: initialProject });
     setActionItems([]);
     setDialogOpen(true);
   };
@@ -243,6 +260,7 @@ export default function ChangeControl() {
   const openEdit = (r: ChangeControlRecord) => {
     setEditing(r);
     setForm({
+      project_id: r.project_id || GENERAL_VALUE,
       change_code: r.change_code,
       description: r.description,
       change_type: r.change_type,
@@ -283,10 +301,21 @@ export default function ChangeControl() {
     "Resolved At": r.resolved_at || "",
   }));
 
+  const projectLabel = (pid: string | null) => {
+    if (!pid) return "General";
+    const p = projects.find(x => x.id === pid);
+    return p ? (p.protocol_number || p.title) : "—";
+  };
+
   return (
-    <ModulePageLayout title="Change Control" subtitle="Track protocol, regulatory, and operational changes"
+    <ModulePageLayout title="Change Control" subtitle="Track protocol, regulatory, and operational changes (general or per project)"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="change_control"
-      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button></div>}
+      showAllOption
+      actions={<div className="flex gap-2">
+        <Button size="sm" variant={selectedProject === GENERAL_VALUE ? "default" : "outline"} onClick={() => setSelectedProject(GENERAL_VALUE)}>General</Button>
+        <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button>
+        <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button>
+      </div>}
     >
       <Card>
         <CardHeader>
@@ -306,7 +335,7 @@ export default function ChangeControl() {
           ) : (
             <Table>
               <TableHeader><TableRow>
-                <TableHead>ID</TableHead><TableHead>Description</TableHead><TableHead>Type</TableHead><TableHead>Requester</TableHead><TableHead>Status</TableHead><TableHead>Responsible</TableHead><TableHead>Opened</TableHead><TableHead>Actions Plan</TableHead><TableHead>Approvals</TableHead><TableHead className="w-[120px]">Actions</TableHead>
+                <TableHead>ID</TableHead><TableHead>Project</TableHead><TableHead>Description</TableHead><TableHead>Type</TableHead><TableHead>Requester</TableHead><TableHead>Status</TableHead><TableHead>Responsible</TableHead><TableHead>Opened</TableHead><TableHead>Actions Plan</TableHead><TableHead>Approvals</TableHead><TableHead className="w-[120px]">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {filtered.map(r => {
@@ -316,6 +345,7 @@ export default function ChangeControl() {
                   return (
                     <TableRow key={r.id}>
                       <TableCell className="font-mono font-medium">{r.change_code}</TableCell>
+                      <TableCell>{r.project_id ? <Badge variant="outline">{projectLabel(r.project_id)}</Badge> : <Badge>General</Badge>}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{r.description}</TableCell>
                       <TableCell><Badge variant="outline">{typeLabel}</Badge></TableCell>
                       <TableCell>{r.requester || "-"}</TableCell>
@@ -344,6 +374,16 @@ export default function ChangeControl() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Change Control</DialogTitle></DialogHeader>
           <div className="grid gap-4">
+            <div>
+              <Label>Project / Scope</Label>
+              <Select value={form.project_id || GENERAL_VALUE} onValueChange={v => setForm({...form, project_id: v})}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={GENERAL_VALUE}>General (no project)</SelectItem>
+                  {projects.map(p => <SelectItem key={p.id} value={p.id}>{p.protocol_number || p.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Change ID</Label><Input value={form.change_code} onChange={e => setForm({...form, change_code: e.target.value})} placeholder="CC-001" /></div>
               <div><Label>Type</Label>
