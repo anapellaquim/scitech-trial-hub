@@ -24,7 +24,6 @@ export const ROLE_TEMPLATES: RoleTemplate[] = [
       visits: ["view", "create"],
       site_monitoring: ["view"],
       communications: ["view", "create"],
-      participants: ["view", "create"] as any, // ignored if not in MODULE_KEYS
       library: ["view"],
     },
   },
