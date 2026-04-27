@@ -1541,6 +1541,57 @@ export type Database = {
         }
         Relationships: []
       }
+      project_budget_items: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          display_order: number
+          id: string
+          notes: string | null
+          project_id: string
+          quantity: number
+          total_value: number | null
+          unit_value: number
+          updated_at: string
+          vendor: string | null
+          year: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          display_order?: number
+          id?: string
+          notes?: string | null
+          project_id: string
+          quantity?: number
+          total_value?: number | null
+          unit_value?: number
+          updated_at?: string
+          vendor?: string | null
+          year?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          display_order?: number
+          id?: string
+          notes?: string | null
+          project_id?: string
+          quantity?: number
+          total_value?: number | null
+          unit_value?: number
+          updated_at?: string
+          vendor?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       project_templates: {
         Row: {
           category: string | null

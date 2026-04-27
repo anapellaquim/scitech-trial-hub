@@ -34,6 +34,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Plus, Trash2, Building2 } from "lucide-react";
 import YearlyBudgetManager from "./YearlyBudgetManager";
+import DetailedBudgetManager from "./DetailedBudgetManager";
 
 const centerSchema = z.object({
   id: z.string().optional(),
@@ -474,6 +475,11 @@ const EditProjectDialog = ({ project, open, onOpenChange, onProjectUpdated }: Ed
             {/* Yearly Budget Section */}
             {project && (
               <YearlyBudgetManager projectId={project.id} />
+            )}
+
+            {/* Detailed Budget Section */}
+            {project && (
+              <DetailedBudgetManager projectId={project.id} />
             )}
 
             <Separator />
