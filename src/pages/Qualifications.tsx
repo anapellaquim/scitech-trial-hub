@@ -283,7 +283,7 @@ export default function Qualifications() {
                 onTotalChange={(pct) => setForm(prev => ({ ...prev, score: pct.toFixed(1) }))}
               />
             )}
-            {editing && <ContractAmendments qualificationId={editing.id} />
+            {editing && <ContractAmendments qualificationId={editing.id} />}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
