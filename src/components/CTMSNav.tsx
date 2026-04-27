@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   Users2,
   Gavel,
+  Eye,
 } from "lucide-react";
 
 interface CTMSNavProps {
@@ -50,6 +51,7 @@ export default function CTMSNav({ className }: CTMSNavProps) {
     { to: "/tasks", icon: ListTodo, label: "Tasks" },
     { to: "/projects", icon: Briefcase, label: "Studies" },
     { to: "/visits", icon: CalendarCheck, label: "Visits" },
+    { to: "/site-monitoring", icon: Eye, label: "Site Monitoring" },
     
     { to: "/qualifications", icon: ShieldCheck, label: "Qualifications" },
     { to: "/trainings", icon: GraduationCap, label: "Trainings" },

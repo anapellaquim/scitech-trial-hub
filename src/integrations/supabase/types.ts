@@ -2557,6 +2557,130 @@ export type Database = {
           },
         ]
       }
+      site_monitoring_findings: {
+        Row: {
+          action_required: string | null
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          due_date: string | null
+          id: string
+          monitoring_visit_id: string
+          resolution_notes: string | null
+          resolved_date: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_required?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          due_date?: string | null
+          id?: string
+          monitoring_visit_id: string
+          resolution_notes?: string | null
+          resolved_date?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_required?: string | null
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          due_date?: string | null
+          id?: string
+          monitoring_visit_id?: string
+          resolution_notes?: string | null
+          resolved_date?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_monitoring_findings_monitoring_visit_id_fkey"
+            columns: ["monitoring_visit_id"]
+            isOneToOne: false
+            referencedRelation: "site_monitoring_visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_monitoring_visits: {
+        Row: {
+          actual_date: string | null
+          created_at: string
+          created_by: string | null
+          follow_up_actions: string | null
+          id: string
+          monitor_name: string | null
+          planned_date: string | null
+          project_id: string
+          purpose: string | null
+          report_date: string | null
+          report_link: string | null
+          site_id: string | null
+          status: string
+          summary: string | null
+          updated_at: string
+          visit_code: string | null
+          visit_type: string
+        }
+        Insert: {
+          actual_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          follow_up_actions?: string | null
+          id?: string
+          monitor_name?: string | null
+          planned_date?: string | null
+          project_id: string
+          purpose?: string | null
+          report_date?: string | null
+          report_link?: string | null
+          site_id?: string | null
+          status?: string
+          summary?: string | null
+          updated_at?: string
+          visit_code?: string | null
+          visit_type?: string
+        }
+        Update: {
+          actual_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          follow_up_actions?: string | null
+          id?: string
+          monitor_name?: string | null
+          planned_date?: string | null
+          project_id?: string
+          purpose?: string | null
+          report_date?: string | null
+          report_link?: string | null
+          site_id?: string | null
+          status?: string
+          summary?: string | null
+          updated_at?: string
+          visit_code?: string | null
+          visit_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_monitoring_visits_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "study_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_vendor_qualifications: {
         Row: {
           contract_status: string
