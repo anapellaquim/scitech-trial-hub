@@ -115,6 +115,27 @@ const ModulePermissionsDialog = ({ open, onOpenChange, user, projects, onSuccess
     });
   };
 
+  const applyTemplate = (templateId: string, mode: "replace" | "merge") => {
+    const tpl = ROLE_TEMPLATES.find((t) => t.id === templateId);
+    if (!tpl) return;
+    setGranted((prev) => {
+      const next = mode === "merge" ? new Set(prev) : new Set<PermKey>();
+      (Object.keys(tpl.grants) as ModuleKey[]).forEach((m) => {
+        if (!MODULE_KEYS.includes(m)) return;
+        const actions = tpl.grants[m] ?? [];
+        actions.forEach((a) => {
+          next.add(keyOf(m, a));
+          if (a === "create") next.add(keyOf(m, "view"));
+        });
+      });
+      return next;
+    });
+    toast.success(
+      `Applied template: ${tpl.name}` +
+        (mode === "merge" ? " (merged with existing)" : " (replaced existing)")
+    );
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
