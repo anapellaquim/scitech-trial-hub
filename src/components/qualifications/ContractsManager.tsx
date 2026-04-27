@@ -192,6 +192,7 @@ export default function ContractsManager({ qualificationId }: Props) {
                         <Trash2 className="h-3 w-3 mr-1 text-destructive" />Delete
                       </Button>
                     </div>
+                    <ContractBudgetItems contractId={c.id} qualificationId={qualificationId} currency={c.currency || "USD"} />
                     <ContractAmendments qualificationId={qualificationId} contractId={c.id} />
                   </div>
                 </AccordionContent>
