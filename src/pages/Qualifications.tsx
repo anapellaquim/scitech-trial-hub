@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, Upload } from "lucide-react";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import QualificationScorecard from "@/components/qualifications/QualificationScorecard";
 
 interface Qualification {
   id: string;
@@ -231,7 +232,7 @@ export default function Qualifications() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Qualification</DialogTitle></DialogHeader>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
@@ -274,6 +275,13 @@ export default function Qualifications() {
             <div><Label>Responsible</Label><Input value={form.responsible} onChange={e => setForm({...form, responsible: e.target.value})} /></div>
             <div><Label>Documents URL</Label><Input value={form.documents_url} onChange={e => setForm({...form, documents_url: e.target.value})} /></div>
             <div><Label>Notes</Label><Textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
+            {editing && (
+              <QualificationScorecard
+                projectId={editing.project_id}
+                qualificationId={editing.id}
+                onTotalChange={(pct) => setForm(prev => ({ ...prev, score: pct.toFixed(1) }))}
+              />
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>

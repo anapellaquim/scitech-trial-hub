@@ -1804,6 +1804,81 @@ export type Database = {
           },
         ]
       }
+      qualification_scorecard_criteria: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          id: string
+          max_score: number
+          name: string
+          project_id: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          max_score?: number
+          name: string
+          project_id: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          max_score?: number
+          name?: string
+          project_id?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      qualification_scorecard_responses: {
+        Row: {
+          comment: string | null
+          created_at: string
+          created_by: string | null
+          criterion_id: string
+          id: string
+          qualification_id: string
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          criterion_id: string
+          id?: string
+          qualification_id: string
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          created_by?: string | null
+          criterion_id?: string
+          id?: string
+          qualification_id?: string
+          score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       regulatory_flow_steps: {
         Row: {
           created_at: string
