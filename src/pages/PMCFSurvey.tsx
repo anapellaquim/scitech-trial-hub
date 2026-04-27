@@ -301,14 +301,31 @@ export default function PMCFSurvey() {
                         <TableCell>{s.title}</TableCell>
                         <TableCell>{s.target_audience}</TableCell>
                         <TableCell>{s.expected_monthly_fills}</TableCell>
-                        <TableCell className="min-w-[160px]">
+                        <TableCell className="min-w-[200px]">
                           <div className="flex items-center gap-2">
                             <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
                               <div className={`h-full ${barColor} transition-all`} style={{ width: `${Math.min(100, pct)}%` }} />
                             </div>
                             <span className={`text-xs font-semibold ${pctColor}`}>{pct.toFixed(0)}%</span>
                           </div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{t?.totalFills ?? 0} / {t?.cumulativeTarget ?? 0}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-[10px] text-muted-foreground">{t?.totalFills ?? 0} /</span>
+                            <Input
+                              type="number"
+                              defaultValue={t?.cumulativeTarget ?? 0}
+                              key={`${s.id}-${t?.cumulativeTarget}`}
+                              className="h-6 w-16 px-1 text-[10px]"
+                              onBlur={(e) => {
+                                const v = parseInt(e.target.value);
+                                if (isNaN(v) || v === t?.cumulativeTarget) return;
+                                updateManualTarget(s.id, v);
+                              }}
+                            />
+                            {t?.isManual && (
+                              <Button size="sm" variant="ghost" className="h-5 px-1 text-[9px]" title="Reset to auto-calculated"
+                                onClick={() => updateManualTarget(s.id, null)}>auto</Button>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-xs">{s.start_date ? format(new Date(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(new Date(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
                         <TableCell><Badge className={statusColors[s.status]}>{s.status}</Badge></TableCell>
