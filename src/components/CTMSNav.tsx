@@ -14,7 +14,7 @@ import {
   Briefcase,
   FileText,
   DollarSign,
-  Library,
+  
   Settings,
   LogOut,
   MessageSquare,
@@ -85,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/visits", icon: CalendarCheck, label: "Visits", module: "visits" },
       { to: "/site-monitoring", icon: Eye, label: "Site Monitoring", module: "site_monitoring" },
       { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey", module: "pmcf_survey" },
+      { to: "/payments", icon: DollarSign, label: "Payments", module: "payments" },
     ],
   },
   {
@@ -102,13 +103,6 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/committees", icon: Users2, label: "Committees", module: "committees" },
       { to: "/steering", icon: Gavel, label: "Steering", module: "steering" },
       { to: "/regulatory", icon: FileText, label: "Regulatory", module: "regulatory" },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { to: "/payments", icon: DollarSign, label: "Payments", module: "payments" },
-      { to: "/library", icon: Library, label: "Library", module: "library" },
     ],
   },
   {

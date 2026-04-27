@@ -13,7 +13,7 @@ import VisitAgenda from "./pages/VisitAgenda";
 import VisitReport from "./pages/VisitReport";
 import Visits from "./pages/Visits";
 import Payments from "./pages/Payments";
-import Library from "./pages/Library";
+
 import Regulatory from "./pages/Regulatory";
 import NotFound from "./pages/NotFound";
 import ProjectSchedule from "./pages/ProjectSchedule";
@@ -55,7 +55,6 @@ function App() {
             
             <Route path="/regulatory" element={<Regulatory />} />
             <Route path="/payments" element={<Payments />} />
-            <Route path="/library" element={<Library />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/settings/users" element={<AdminUsers />} />
             <Route path="/settings/audit" element={<AdminAudit />} />
