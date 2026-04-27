@@ -9,10 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Shield, Plus, History, FileText, Search as SearchIcon, ShieldCheck, Eye } from "lucide-react";
+import { Users, Shield, Plus, History, FileText, Search as SearchIcon, ShieldCheck, Eye, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserRoleDialog from "@/components/admin/UserRoleDialog";
 import UserAuditDialog from "@/components/admin/UserAuditDialog";
+import ModulePermissionsDialog from "@/components/admin/ModulePermissionsDialog";
 
 interface Profile {
   id: string;
@@ -53,7 +54,9 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [auditDialogOpen, setAuditDialogOpen] = useState(false);
+  const [permsDialogOpen, setPermsDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => { checkAuth(); }, []);
@@ -89,6 +92,7 @@ const AdminUsers = () => {
 
   const handleAddRole = (user: Profile) => { setSelectedUser(user); setRoleDialogOpen(true); };
   const handleViewAudit = (user: Profile) => { setSelectedUser(user); setAuditDialogOpen(true); };
+  const handleManagePerms = (user: Profile) => { setSelectedUser(user); setPermsDialogOpen(true); };
   const handleRoleSuccess = () => { setRoleDialogOpen(false); fetchData(); };
 
   const handleDeleteRole = async (roleId: string) => {
@@ -204,9 +208,14 @@ const AdminUsers = () => {
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         {isAdmin && (
-                          <Button variant="outline" size="sm" onClick={() => handleAddRole(user)}>
-                            <Plus className="h-4 w-4 mr-1" />Role
-                          </Button>
+                          <>
+                            <Button variant="outline" size="sm" onClick={() => handleAddRole(user)}>
+                              <Plus className="h-4 w-4 mr-1" />Role
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleManagePerms(user)}>
+                              <Lock className="h-4 w-4 mr-1" />Permissions
+                            </Button>
+                          </>
                         )}
                         <Button variant="ghost" size="sm" onClick={() => handleViewAudit(user)}>
                           <History className="h-4 w-4" />
@@ -225,8 +234,10 @@ const AdminUsers = () => {
         <>
           <UserRoleDialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen} user={selectedUser} projects={projects} studies={[]} onSuccess={handleRoleSuccess} />
           <UserAuditDialog open={auditDialogOpen} onOpenChange={setAuditDialogOpen} user={selectedUser} />
+          <ModulePermissionsDialog open={permsDialogOpen} onOpenChange={setPermsDialogOpen} user={selectedUser} projects={projects} />
         </>
       )}
+
     </div>
   );
 };

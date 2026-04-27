@@ -9,8 +9,50 @@ export type Module =
 
 export type Permission = "read" | "write" | "delete" | "approve" | "full";
 
+// Module-level permission system (matches DB enum module_key)
+export type ModuleKey =
+  | "dashboard" | "communications" | "projects" | "agenda" | "tasks"
+  | "visits" | "site_monitoring" | "pmcf_survey"
+  | "qualifications" | "trainings" | "change_control" | "risks"
+  | "committees" | "steering" | "regulatory" | "payments" | "library";
+
+export type ModuleAction = "view" | "create";
+
+export const MODULE_KEYS: ModuleKey[] = [
+  "dashboard", "communications", "projects", "agenda", "tasks",
+  "visits", "site_monitoring", "pmcf_survey",
+  "qualifications", "trainings", "change_control", "risks",
+  "committees", "steering", "regulatory", "payments", "library",
+];
+
+export const MODULE_LABELS: Record<ModuleKey, string> = {
+  dashboard: "Dashboard",
+  communications: "Communications",
+  projects: "Studies",
+  agenda: "Agenda",
+  tasks: "Tasks",
+  visits: "Visits",
+  site_monitoring: "Site Monitoring",
+  pmcf_survey: "PMCF Survey",
+  qualifications: "Qualifications",
+  trainings: "Trainings",
+  change_control: "Change Control",
+  risks: "Risks",
+  committees: "Committees",
+  steering: "Steering",
+  regulatory: "Regulatory",
+  payments: "Payments",
+  library: "Library",
+};
+
 interface UserRole {
   role: AppRole;
+  project_id: string | null;
+}
+
+interface ModulePermissionRow {
+  module: ModuleKey;
+  action: ModuleAction;
   project_id: string | null;
 }
 
@@ -28,6 +70,7 @@ const permissionMatrix: Record<AppRole, Record<Module, Permission[]>> = {
 export const usePermission = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
+  const [modulePerms, setModulePerms] = useState<ModulePermissionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -36,12 +79,16 @@ export const usePermission = () => {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        setIsAuthenticated(false); setRoles([]); setLoading(false); return;
+        setIsAuthenticated(false); setRoles([]); setModulePerms([]); setLoading(false); return;
       }
       setUserId(session.user.id);
       setIsAuthenticated(true);
-      const { data: rolesData, error } = await supabase.rpc('get_user_roles', { _user_id: session.user.id });
-      if (!error && rolesData) setRoles(rolesData as UserRole[]);
+      const [{ data: rolesData, error: rolesErr }, { data: permsData, error: permsErr }] = await Promise.all([
+        supabase.rpc('get_user_roles', { _user_id: session.user.id }),
+        supabase.rpc('get_user_module_permissions', { _user_id: session.user.id }),
+      ]);
+      if (!rolesErr && rolesData) setRoles(rolesData as UserRole[]);
+      if (!permsErr && permsData) setModulePerms(permsData as ModulePermissionRow[]);
       setLoading(false);
     };
 
@@ -77,6 +124,22 @@ export const usePermission = () => {
 
   const isAdmin = useCallback((): boolean => hasRole("admin"), [hasRole]);
 
+  // Module-level permission check (view / create)
+  const canModule = useCallback(
+    (module: ModuleKey, action: ModuleAction, projectId?: string): boolean => {
+      if (isAdmin()) return true;
+      const matches = (row: ModulePermissionRow) =>
+        row.module === module &&
+        (row.project_id === null || (projectId && row.project_id === projectId));
+      // Direct grant
+      if (modulePerms.some((r) => matches(r) && r.action === action)) return true;
+      // create implies view
+      if (action === "view" && modulePerms.some((r) => matches(r) && r.action === "create")) return true;
+      return false;
+    },
+    [isAdmin, modulePerms]
+  );
+
   const getUserRoles = useCallback((): AppRole[] => [...new Set(roles.map(r => r.role))], [roles]);
 
   const getPrimaryRole = useCallback((): AppRole | null => {
@@ -85,7 +148,7 @@ export const usePermission = () => {
     return null;
   }, [hasRole]);
 
-  return { userId, roles, loading, isAuthenticated, hasRole, hasAnyRole, can, isAdmin, getUserRoles, getPrimaryRole };
+  return { userId, roles, modulePerms, loading, isAuthenticated, hasRole, hasAnyRole, can, canModule, isAdmin, getUserRoles, getPrimaryRole };
 };
 
 export const roleLabels: Record<AppRole, string> = {
