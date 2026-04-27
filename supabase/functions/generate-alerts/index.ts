@@ -288,7 +288,55 @@ Deno.serve(async (req) => {
       });
     });
 
+    // 14. COMMUNICATION OCCURRENCES — overdue, today, due soon
+    const { data: commOccurrences } = await supabase
+      .from('communication_occurrences')
+      .select('id, plan_id, project_id, due_date, status, communication_plans!inner(title, lead_time_days, is_active, is_mandatory, channel)')
+      .in('status', ['scheduled', 'overdue']);
+
+    commOccurrences?.forEach((occ: any) => {
+      const plan = occ.communication_plans;
+      if (!plan?.is_active) return;
+      const due = new Date(occ.due_date);
+      const dueStr = occ.due_date;
+      const leadTime = plan.lead_time_days || 0;
+      const diffDays = Math.floor((due.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+
+      if (diffDays < 0) {
+        alerts.push({
+          type: 'communication_overdue',
+          severity: 'critical',
+          title: `Overdue communication: ${plan.title}`,
+          message: `Mandatory communication "${plan.title}" was due on ${dueStr} (${plan.channel})`,
+          entityType: 'communication_occurrence',
+          entityId: occ.id,
+          projectId: occ.project_id,
+        });
+      } else if (diffDays === 0) {
+        alerts.push({
+          type: 'communication_today',
+          severity: 'warning',
+          title: `Communication due today: ${plan.title}`,
+          message: `Communication "${plan.title}" is due today via ${plan.channel}`,
+          entityType: 'communication_occurrence',
+          entityId: occ.id,
+          projectId: occ.project_id,
+        });
+      } else if (diffDays <= leadTime) {
+        alerts.push({
+          type: 'communication_due_soon',
+          severity: plan.is_mandatory ? 'warning' : 'info',
+          title: `Upcoming communication: ${plan.title}`,
+          message: `Communication "${plan.title}" is due in ${diffDays} day(s) on ${dueStr}`,
+          entityType: 'communication_occurrence',
+          entityId: occ.id,
+          projectId: occ.project_id,
+        });
+      }
+    });
+
     console.log(`Generated ${alerts.length} alerts`);
+
 
     // Clear existing non-dismissed notifications and insert new ones
     // First, mark old alerts as dismissed
