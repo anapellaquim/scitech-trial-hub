@@ -91,6 +91,7 @@ export default function ContractsManager({ qualificationId }: Props) {
       contract_number: c.contract_number, title: c.title, contract_type: c.contract_type || "",
       status: c.status, start_date: c.start_date || "", end_date: c.end_date || "",
       signed_date: c.signed_date || "", value: c.value?.toString() || "", currency: c.currency || "BRL",
+      payment_terms: c.payment_terms || "",
       description: c.description || "", document_url: c.document_url || "", notes: c.notes || "",
     });
     setOpen(true);
