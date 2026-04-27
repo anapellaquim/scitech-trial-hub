@@ -26,7 +26,7 @@ interface UserRoleDialogProps {
 
 const roles = [
   { value: "admin", label: "Administrator", icon: ShieldCheck, description: "Full system access" },
-  { value: "viewer", label: "Collaborator", icon: Eye, description: "View-only access" },
+  { value: "collaborator", label: "Collaborator", icon: Eye, description: "Custom per-module access (set via Permissions)" },
 ];
 
 const UserRoleDialog = ({ open, onOpenChange, user, projects, studies, onSuccess }: UserRoleDialogProps) => {
