@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,17 +39,27 @@ interface CTMSNavProps {
   className?: string;
 }
 
+type RestrictMode = "hide" | "disable";
+
 interface NavItem {
   to: string;
   icon: LucideIcon;
   label: string;
+  adminOnly?: boolean;
+  restrictMode?: RestrictMode; // overrides group/default behavior
+  restrictedTooltip?: string;
 }
 
 interface NavGroup {
   label: string;
   items: NavItem[];
   adminOnly?: boolean;
+  restrictMode?: RestrictMode;
+  restrictedTooltip?: string;
 }
+
+const DEFAULT_RESTRICTED_TOOLTIP = "Requires administrator access";
+const DEFAULT_RESTRICT_MODE: RestrictMode = "hide";
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -101,6 +112,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Administration",
     adminOnly: true,
+    restrictMode: "hide",
     items: [
       { to: "/settings", icon: Settings, label: "Settings" },
     ],
@@ -113,12 +125,58 @@ const COLLAPSE_KEY = "ctms.sidebar.collapsed";
 
 function isActivePath(currentPath: string, to: string): boolean {
   if (to === "/") return currentPath === "/";
+
   return currentPath === to || currentPath.startsWith(to + "/");
+}
+
+interface ResolvedItem extends NavItem {
+  restricted: boolean;
+  effectiveMode: RestrictMode;
+  effectiveTooltip: string;
+}
+
+interface ResolvedGroup {
+  label: string;
+  items: ResolvedItem[];
+}
+
+function resolveGroups(groups: NavGroup[], userIsAdmin: boolean): ResolvedGroup[] {
+  const resolved: ResolvedGroup[] = [];
+  for (const group of groups) {
+    const groupRestricted = !!group.adminOnly && !userIsAdmin;
+    const groupMode: RestrictMode = group.restrictMode ?? DEFAULT_RESTRICT_MODE;
+    const groupTooltip = group.restrictedTooltip ?? DEFAULT_RESTRICTED_TOOLTIP;
+
+    // If the whole group is admin-only and user can't access it, hide or keep disabled per group mode
+    if (groupRestricted && groupMode === "hide") continue;
+
+    const items: ResolvedItem[] = [];
+    for (const item of group.items) {
+      const itemRestricted = groupRestricted || (!!item.adminOnly && !userIsAdmin);
+      const effectiveMode: RestrictMode =
+        item.restrictMode ?? (groupRestricted ? groupMode : DEFAULT_RESTRICT_MODE);
+      const effectiveTooltip =
+        item.restrictedTooltip ?? (groupRestricted ? groupTooltip : DEFAULT_RESTRICTED_TOOLTIP);
+
+      if (itemRestricted && effectiveMode === "hide") continue;
+
+      items.push({
+        ...item,
+        restricted: itemRestricted,
+        effectiveMode,
+        effectiveTooltip,
+      });
+    }
+
+    if (items.length === 0) continue;
+    resolved.push({ label: group.label, items });
+  }
+  return resolved;
 }
 
 interface SidebarBodyProps {
   collapsed: boolean;
-  groups: NavGroup[];
+  groups: ResolvedGroup[];
   currentPath: string;
   onItemClick?: () => void;
 }
@@ -137,32 +195,65 @@ function SidebarBody({ collapsed, groups, currentPath, onItemClick }: SidebarBod
           )}
           {collapsed && <div className="mx-3 my-2 border-t border-border/60" />}
           <nav className="flex flex-col gap-0.5 px-2">
-            {group.items.map(({ to, icon: Icon, label }) => {
-              const active = isActivePath(currentPath, to);
-              const linkClass = cn(
+            {group.items.map((item) => {
+              const { to, icon: Icon, label, restricted, effectiveTooltip } = item;
+              const active = !restricted && isActivePath(currentPath, to);
+              const baseClass = cn(
                 "flex items-center gap-3 rounded-md text-sm transition-colors",
-                collapsed ? "justify-center px-2 py-2" : "px-3 py-2",
-                active
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-foreground/80 hover:bg-muted hover:text-foreground"
+                collapsed ? "justify-center px-2 py-2" : "px-3 py-2"
               );
-              const link = (
-                <Link to={to} onClick={onItemClick} className={linkClass}>
+              const stateClass = restricted
+                ? "text-muted-foreground/50 cursor-not-allowed select-none"
+                : active
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-foreground/80 hover:bg-muted hover:text-foreground";
+
+              const content = (
+                <>
                   <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
-                  {!collapsed && <span className="truncate">{label}</span>}
+                  {!collapsed && (
+                    <span className="truncate flex-1">{label}</span>
+                  )}
+                  {!collapsed && restricted && (
+                    <Lock className="h-3 w-3 shrink-0 text-muted-foreground/60" aria-hidden />
+                  )}
+                </>
+              );
+
+              const node = restricted ? (
+                <div
+                  className={cn(baseClass, stateClass)}
+                  aria-disabled="true"
+                  role="link"
+                  tabIndex={-1}
+                >
+                  {content}
+                </div>
+              ) : (
+                <Link to={to} onClick={onItemClick} className={cn(baseClass, stateClass)}>
+                  {content}
                 </Link>
               );
-              if (collapsed) {
+
+              const tooltipText = restricted
+                ? effectiveTooltip
+                : collapsed
+                ? label
+                : null;
+
+              if (tooltipText) {
                 return (
                   <Tooltip key={to} delayDuration={100}>
-                    <TooltipTrigger asChild>{link}</TooltipTrigger>
+                    <TooltipTrigger asChild>
+                      <div>{node}</div>
+                    </TooltipTrigger>
                     <TooltipContent side="right" className="font-medium">
-                      {label}
+                      {tooltipText}
                     </TooltipContent>
                   </Tooltip>
                 );
               }
-              return <div key={to}>{link}</div>;
+              return <div key={to}>{node}</div>;
             })}
           </nav>
         </div>
@@ -181,7 +272,9 @@ export default function CTMSNav({ className }: CTMSNavProps) {
   });
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const groups = NAV_GROUPS.filter((g) => !g.adminOnly || (!permLoading && isAdmin()));
+  const userIsAdmin = !permLoading && isAdmin();
+  const groups = resolveGroups(NAV_GROUPS, userIsAdmin);
+
   const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
   useEffect(() => {
