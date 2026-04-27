@@ -2,50 +2,37 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldX, ArrowLeft, Home } from "lucide-react";
-import { AppRole, Module, Permission, roleLabels } from "@/hooks/usePermission";
+import { AppRole, ModuleKey, ModuleAction, MODULE_LABELS, roleLabels } from "@/hooks/usePermission";
 import CTMSNav from "@/components/CTMSNav";
 
 interface AccessDeniedProps {
   requiredRoles?: AppRole[];
-  module?: Module;
-  permission?: Permission;
+  module?: ModuleKey;
+  action?: ModuleAction;
   title?: string;
   description?: string;
 }
 
-const moduleLabels: Record<Module, string> = {
-  dashboard: "Dashboard",
-  studies: "Studies",
-  visits: "Visits",
-  regulatory: "Regulatory",
-  payments: "Payments",
-  users: "Users",
-  audit: "Audit Trail",
-};
-
-const permissionLabels: Record<Permission, string> = {
-  read: "view",
-  write: "edit",
-  delete: "delete",
-  approve: "approve",
-  full: "manage",
+const actionLabels: Record<ModuleAction, string> = {
+  view: "view",
+  create: "create in",
 };
 
 const AccessDenied = ({
   requiredRoles,
   module,
-  permission,
+  action,
   title = "Access Denied",
   description,
 }: AccessDeniedProps) => {
   const getDescription = () => {
     if (description) return description;
     if (requiredRoles && requiredRoles.length > 0) {
-      const roles = requiredRoles.map(r => roleLabels[r]).join(", ");
+      const roles = requiredRoles.map((r) => roleLabels[r]).join(", ");
       return `You need one of the following roles to access this page: ${roles}`;
     }
-    if (module && permission) {
-      return `You don't have permission to ${permissionLabels[permission]} in the ${moduleLabels[module]} module.`;
+    if (module && action) {
+      return `You don't have permission to ${actionLabels[action]} the ${MODULE_LABELS[module]} module.`;
     }
     return "You don't have permission to access this page.";
   };
@@ -68,10 +55,14 @@ const AccessDenied = ({
             </p>
             <div className="flex items-center justify-center gap-4 pt-4">
               <Button variant="outline" asChild>
-                <Link to="/" className="flex items-center gap-2"><Home className="h-4 w-4" />Dashboard</Link>
+                <Link to="/" className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  Dashboard
+                </Link>
               </Button>
               <Button variant="ghost" onClick={() => window.history.back()}>
-                <ArrowLeft className="h-4 w-4 mr-2" />Back
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
               </Button>
             </div>
           </CardContent>
