@@ -83,7 +83,10 @@ const IMPACT_AREAS = [
   { value: "other", label: "Outros" },
 ];
 
+const GENERAL_VALUE = "__general__";
+
 const emptyForm = {
+  project_id: "" as string,
   change_code: "",
   description: "",
   change_type: "operational",
