@@ -79,12 +79,14 @@ export default function Regulatory() {
   const { projectId: persistedProjectId, setProjectId: setPersistedProjectId } = usePersistedFilters();
   
   const [projects, setProjects] = useState<Project[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
+  const [siteFilter, setSiteFilter] = useState<string>("all");
   const [showNewSubmission, setShowNewSubmission] = useState(false);
   const [showNewReport, setShowNewReport] = useState(false);
   
