@@ -477,6 +477,14 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
         </div>
       )}
 
+      {viewMode === "stakeholders" && displayStakeholders.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-50" />
+          <p>Nenhum stakeholder cadastrado neste estudo.</p>
+          <p className="text-xs mt-2">Cadastre stakeholders no módulo Communications &gt; Stakeholders.</p>
+        </div>
+      )}
+
       {/* Department Dialog */}
       <Dialog open={showDeptDialog} onOpenChange={setShowDeptDialog}>
         <DialogContent>
