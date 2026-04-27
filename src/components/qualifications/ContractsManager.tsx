@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import ContractAmendments from "./ContractAmendments";
+import ContractBudgetItems from "./ContractBudgetItems";
 
 interface Contract {
   id: string;
@@ -25,6 +26,7 @@ interface Contract {
   signed_date: string | null;
   value: number | null;
   currency: string | null;
+  payment_terms: string | null;
   description: string | null;
   document_url: string | null;
   notes: string | null;
