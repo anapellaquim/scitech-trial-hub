@@ -296,6 +296,62 @@ export default function PMCFSurvey() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="tracking">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Fill Progress vs Target</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {tracking.map(t => {
+                const onTrack = t.progressPct >= 90;
+                const warning = t.progressPct >= 60 && t.progressPct < 90;
+                const barColor = onTrack ? "bg-green-500" : warning ? "bg-yellow-500" : "bg-red-500";
+                return (
+                  <div key={t.survey.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs text-muted-foreground">{t.survey.survey_code}</span>
+                          <Badge className={statusColors[t.survey.status]}>{t.survey.status}</Badge>
+                        </div>
+                        <h4 className="font-semibold">{t.survey.title}</h4>
+                        {t.survey.target_audience && <p className="text-xs text-muted-foreground">{t.survey.target_audience}</p>}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">{t.progressPct.toFixed(0)}%</p>
+                        <p className="text-xs text-muted-foreground">of cumulative target</p>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{t.totalFills} fills collected</span>
+                        <span>Target: {t.cumulativeTarget}</span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className={`h-full ${barColor} transition-all`} style={{ width: `${t.progressPct}%` }} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t">
+                      <div><p className="text-xs text-muted-foreground">Monthly Target</p><p className="font-semibold">{t.survey.expected_monthly_fills}</p></div>
+                      <div><p className="text-xs text-muted-foreground">Avg / Month</p><p className="font-semibold flex items-center gap-1"><TrendingUp className="h-3 w-3" />{t.avgMonthly.toFixed(1)}</p></div>
+                      <div><p className="text-xs text-muted-foreground">Months Tracked</p><p className="font-semibold">{t.monthsTracked} / {t.monthsElapsed}</p></div>
+                      <div><p className="text-xs text-muted-foreground">Gap to Target</p><p className={`font-semibold ${t.gap > 0 ? "text-red-600" : "text-green-600"}`}>{t.gap > 0 ? `-${t.gap}` : `+${Math.abs(t.gap)}`}</p></div>
+                    </div>
+                    {t.lastCheck && (
+                      <div className="bg-muted/50 rounded p-2 text-xs">
+                        <span className="text-muted-foreground">Last check ({format(new Date(t.lastCheck.reference_month), "MM/yyyy")}):</span>{" "}
+                        <span className="font-semibold">{t.lastCheck.fills_count} / {t.lastCheck.expected_count}</span>{" "}
+                        <Badge className={`ml-2 ${checkStatusColors[t.lastCheck.status]}`}>{t.lastCheck.status.replace("_", " ")}</Badge>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {!tracking.length && <p className="text-center text-muted-foreground py-8">No surveys to track</p>}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="checks">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
