@@ -29,6 +29,7 @@ interface Survey {
   end_date: string | null;
   status: string;
   responsible: string | null;
+  manual_target: number | null;
 }
 
 interface MonthlyCheck {
