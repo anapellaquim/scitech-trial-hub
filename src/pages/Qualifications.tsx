@@ -172,67 +172,80 @@ export default function Qualifications() {
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="qualifications" showAllOption
       actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)} disabled={!selectedProject || selectedProject === "all"}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew} disabled={!selectedProject || selectedProject === "all"}><Plus className="h-4 w-4 mr-1" />New Entry</Button></div>}
     >
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
-            <CardTitle>Qualifications & Contracts</CardTitle>
-            <div className="flex gap-2 flex-wrap">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 w-[200px]" />
+      <Tabs defaultValue="qualifications" className="w-full">
+        <TabsList>
+          <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
+          <TabsTrigger value="contracts">Contracts</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="qualifications">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+                <CardTitle>Qualifications & Contracts</CardTitle>
+                <div className="flex gap-2 flex-wrap">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 w-[200px]" />
+                  </div>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      {vendorTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {vendorTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? <p className="text-muted-foreground">Loading...</p> : filtered.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No records found.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Qualification</TableHead>
-                  <TableHead>Feasibility</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Next Qualification</TableHead>
-                  <TableHead>Contract</TableHead>
-                  <TableHead>Responsible</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map(r => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.name}</TableCell>
-                    <TableCell>{vendorTypes.find(t => t.value === r.vendor_type)?.label || r.vendor_type}</TableCell>
-                    <TableCell><Badge className={qualStatusColors[r.qualification_status] || ""}>{r.qualification_status}</Badge></TableCell>
-                    <TableCell>{r.feasibility_date || "-"}</TableCell>
-                    <TableCell>{r.score ?? "-"}</TableCell>
-                    <TableCell>{r.next_qualification_date || "-"}</TableCell>
-                    <TableCell><Badge className={contractStatusColors[r.contract_status] || ""}>{r.contract_status}</Badge></TableCell>
-                    <TableCell>{r.responsible || "-"}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+            </CardHeader>
+            <CardContent>
+              {loading ? <p className="text-muted-foreground">Loading...</p> : filtered.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No records found.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Qualification</TableHead>
+                      <TableHead>Feasibility</TableHead>
+                      <TableHead>Score</TableHead>
+                      <TableHead>Next Qualification</TableHead>
+                      <TableHead>Contract</TableHead>
+                      <TableHead>Responsible</TableHead>
+                      <TableHead className="w-[100px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map(r => (
+                      <TableRow key={r.id}>
+                        <TableCell className="font-medium">{r.name}</TableCell>
+                        <TableCell>{vendorTypes.find(t => t.value === r.vendor_type)?.label || r.vendor_type}</TableCell>
+                        <TableCell><Badge className={qualStatusColors[r.qualification_status] || ""}>{r.qualification_status}</Badge></TableCell>
+                        <TableCell>{r.feasibility_date || "-"}</TableCell>
+                        <TableCell>{r.score ?? "-"}</TableCell>
+                        <TableCell>{r.next_qualification_date || "-"}</TableCell>
+                        <TableCell><Badge className={contractStatusColors[r.contract_status] || ""}>{r.contract_status}</Badge></TableCell>
+                        <TableCell>{r.responsible || "-"}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="contracts">
+          <ContractsOverview projectId={selectedProject} />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
