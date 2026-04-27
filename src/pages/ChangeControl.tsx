@@ -301,10 +301,21 @@ export default function ChangeControl() {
     "Resolved At": r.resolved_at || "",
   }));
 
+  const projectLabel = (pid: string | null) => {
+    if (!pid) return "General";
+    const p = projects.find(x => x.id === pid);
+    return p ? (p.protocol_number || p.title) : "—";
+  };
+
   return (
-    <ModulePageLayout title="Change Control" subtitle="Track protocol, regulatory, and operational changes"
+    <ModulePageLayout title="Change Control" subtitle="Track protocol, regulatory, and operational changes (general or per project)"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="change_control"
-      actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button></div>}
+      showAllOption
+      actions={<div className="flex gap-2">
+        <Button size="sm" variant={selectedProject === GENERAL_VALUE ? "default" : "outline"} onClick={() => setSelectedProject(GENERAL_VALUE)}>General</Button>
+        <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button>
+        <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button>
+      </div>}
     >
       <Card>
         <CardHeader>
