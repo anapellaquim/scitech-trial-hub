@@ -54,7 +54,9 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [auditDialogOpen, setAuditDialogOpen] = useState(false);
+  const [permsDialogOpen, setPermsDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => { checkAuth(); }, []);
