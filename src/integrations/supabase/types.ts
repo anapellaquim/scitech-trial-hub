@@ -1136,59 +1136,6 @@ export type Database = {
           },
         ]
       }
-      database_locks: {
-        Row: {
-          created_at: string
-          id: string
-          is_active: boolean
-          lock_scope: string
-          lock_type: string
-          locked_at: string
-          locked_by: string
-          project_id: string
-          reason: string
-          scope_id: string | null
-          unlocked_at: string | null
-          unlocked_by: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          lock_scope: string
-          lock_type: string
-          locked_at?: string
-          locked_by: string
-          project_id: string
-          reason: string
-          scope_id?: string | null
-          unlocked_at?: string | null
-          unlocked_by?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          lock_scope?: string
-          lock_type?: string
-          locked_at?: string
-          locked_by?: string
-          project_id?: string
-          reason?: string
-          scope_id?: string | null
-          unlocked_at?: string | null
-          unlocked_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "database_locks_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       departments: {
         Row: {
           color: string | null
@@ -4200,60 +4147,6 @@ export type Database = {
           },
         ]
       }
-      user_site_access: {
-        Row: {
-          created_at: string
-          expires_at: string | null
-          granted_at: string
-          granted_by: string | null
-          id: string
-          notes: string | null
-          project_id: string | null
-          site_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          expires_at?: string | null
-          granted_at?: string
-          granted_by?: string | null
-          id?: string
-          notes?: string | null
-          project_id?: string | null
-          site_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          expires_at?: string | null
-          granted_at?: string
-          granted_by?: string | null
-          id?: string
-          notes?: string | null
-          project_id?: string | null
-          site_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_site_access_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_site_access_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "research_centers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       vendor_payments: {
         Row: {
           amount: number
@@ -4674,15 +4567,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_design_crf: { Args: { _user_id: string }; Returns: boolean }
-      can_enter_data: { Args: { _user_id: string }; Returns: boolean }
-      can_export_data: { Args: { _user_id: string }; Returns: boolean }
-      can_lock_data: { Args: { _user_id: string }; Returns: boolean }
-      can_manage_queries: { Args: { _user_id: string }; Returns: boolean }
-      can_perform_sdv: { Args: { _user_id: string }; Returns: boolean }
-      can_respond_queries: { Args: { _user_id: string }; Returns: boolean }
-      can_sign_forms: { Args: { _user_id: string }; Returns: boolean }
-      can_view_audit: { Args: { _user_id: string }; Returns: boolean }
       generate_communication_occurrences: {
         Args: { _plan_id: string }
         Returns: number
@@ -4711,13 +4595,6 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
-      has_any_role: {
-        Args: {
-          _roles: Database["public"]["Enums"]["app_role"][]
-          _user_id: string
-        }
-        Returns: boolean
-      }
       has_module_permission: {
         Args: {
           _action: Database["public"]["Enums"]["module_action"]
@@ -4734,43 +4611,13 @@ export type Database = {
         }
         Returns: boolean
       }
-      has_role_in_project: {
-        Args: {
-          _project_id: string
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      has_site_access: {
-        Args: { _site_id: string; _user_id: string }
-        Returns: boolean
-      }
-      is_oversight_role: { Args: { _user_id: string }; Returns: boolean }
-      is_site_role: { Args: { _user_id: string }; Returns: boolean }
       user_has_role_in_project: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
     }
     Enums: {
-      app_role:
-        | "admin"
-        | "project_manager"
-        | "monitor"
-        | "data_manager"
-        | "regulatory"
-        | "quality"
-        | "finance"
-        | "viewer"
-        | "site_coordinator"
-        | "investigator"
-        | "cra_monitor"
-        | "data_lead"
-        | "study_builder"
-        | "medical_monitor"
-        | "statistician"
-        | "auditor"
+      app_role: "admin" | "collaborator"
       communication_channel:
         | "email"
         | "etmf"
@@ -4986,24 +4833,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: [
-        "admin",
-        "project_manager",
-        "monitor",
-        "data_manager",
-        "regulatory",
-        "quality",
-        "finance",
-        "viewer",
-        "site_coordinator",
-        "investigator",
-        "cra_monitor",
-        "data_lead",
-        "study_builder",
-        "medical_monitor",
-        "statistician",
-        "auditor",
-      ],
+      app_role: ["admin", "collaborator"],
       communication_channel: [
         "email",
         "etmf",
