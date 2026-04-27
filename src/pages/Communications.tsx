@@ -143,30 +143,50 @@ export default function Communications() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Bell className="h-6 w-6 text-primary" />
-              Central de Comunicação
+              Communications
             </h1>
             <p className="text-muted-foreground">
-              Alertas e notificações integradas de todos os módulos
+              Alerts, communication plan and stakeholders for the selected study
             </p>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <GlobalStudySelector
+              value={selectedProject === 'all' ? '' : selectedProject}
+              onChange={(v) => setSelectedProject(v || 'all')}
+              showAllOption
+            />
             <Button
               variant="outline"
               onClick={handleGenerateAlerts}
               disabled={generating}
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${generating ? 'animate-spin' : ''}`} />
-              {generating ? 'Gerando...' : 'Atualizar Alertas'}
+              {generating ? 'Updating...' : 'Update Alerts'}
             </Button>
             {unreadCount > 0 && (
               <Button variant="outline" onClick={markAllAsRead}>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Marcar todas como lidas
+                Mark all as read
               </Button>
             )}
           </div>
         </div>
+
+        <Tabs defaultValue="alerts" className="w-full">
+          <TabsList className="grid w-full md:w-[600px] grid-cols-3 mb-6">
+            <TabsTrigger value="alerts" className="flex items-center gap-1">
+              <Bell className="h-4 w-4" /> Alerts
+            </TabsTrigger>
+            <TabsTrigger value="plan" className="flex items-center gap-1">
+              <CalendarClock className="h-4 w-4" /> Communication Plan
+            </TabsTrigger>
+            <TabsTrigger value="stakeholders" className="flex items-center gap-1">
+              <Users className="h-4 w-4" /> Stakeholders
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="alerts">
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
