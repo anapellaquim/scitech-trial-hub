@@ -29,6 +29,7 @@ import RiskManagement from "./pages/RiskManagement";
 import Committees from "./pages/Committees";
 import SteeringDecisions from "./pages/SteeringDecisions";
 import SiteMonitoring from "./pages/SiteMonitoring";
+import PMCFSurvey from "./pages/PMCFSurvey";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ function App() {
             <Route path="/committees" element={<Committees />} />
             <Route path="/steering" element={<SteeringDecisions />} />
             <Route path="/site-monitoring" element={<SiteMonitoring />} />
+            <Route path="/pmcf-survey" element={<PMCFSurvey />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

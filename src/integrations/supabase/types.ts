@@ -1601,6 +1601,116 @@ export type Database = {
           },
         ]
       }
+      pmcf_monthly_checks: {
+        Row: {
+          checked_at: string
+          checked_by: string | null
+          created_at: string
+          created_by: string | null
+          expected_count: number
+          fills_count: number
+          id: string
+          notes: string | null
+          project_id: string
+          reference_month: string
+          status: string
+          survey_id: string
+          updated_at: string
+        }
+        Insert: {
+          checked_at?: string
+          checked_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expected_count?: number
+          fills_count?: number
+          id?: string
+          notes?: string | null
+          project_id: string
+          reference_month: string
+          status?: string
+          survey_id: string
+          updated_at?: string
+        }
+        Update: {
+          checked_at?: string
+          checked_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          expected_count?: number
+          fills_count?: number
+          id?: string
+          notes?: string | null
+          project_id?: string
+          reference_month?: string
+          status?: string
+          survey_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pmcf_monthly_checks_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "pmcf_surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pmcf_surveys: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          expected_monthly_fills: number
+          form_link: string | null
+          id: string
+          project_id: string
+          responsible: string | null
+          start_date: string | null
+          status: string
+          survey_code: string
+          target_audience: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          expected_monthly_fills?: number
+          form_link?: string | null
+          id?: string
+          project_id: string
+          responsible?: string | null
+          start_date?: string | null
+          status?: string
+          survey_code: string
+          target_audience?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          expected_monthly_fills?: number
+          form_link?: string | null
+          id?: string
+          project_id?: string
+          responsible?: string | null
+          start_date?: string | null
+          status?: string
+          survey_code?: string
+          target_audience?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
