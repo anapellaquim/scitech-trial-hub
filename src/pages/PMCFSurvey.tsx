@@ -418,7 +418,7 @@ export default function PMCFSurvey() {
             <div className="col-span-2"><Label>Survey *</Label>
               <Select value={checkForm.survey_id} onValueChange={v => {
                 const surv = surveys.find(s => s.id === v);
-                setCheckForm({ ...checkForm, survey_id: v, expected_count: surv?.expected_monthly_fills ?? 0 });
+                setCheckForm({ ...checkForm, survey_id: v, expected_count: surv?.manual_target ?? 0 });
               }}>
                 <SelectTrigger><SelectValue placeholder="Select survey" /></SelectTrigger>
                 <SelectContent>{surveys.map(s => <SelectItem key={s.id} value={s.id}>{s.survey_code} — {s.title}</SelectItem>)}</SelectContent>
@@ -427,7 +427,10 @@ export default function PMCFSurvey() {
             <div><Label>Reference Month *</Label><Input type="month" value={checkForm.reference_month?.slice(0, 7) ?? ""} onChange={e => setCheckForm({ ...checkForm, reference_month: e.target.value + "-01" })} /></div>
             <div><Label>Checked At</Label><Input type="date" value={checkForm.checked_at ?? ""} onChange={e => setCheckForm({ ...checkForm, checked_at: e.target.value })} /></div>
             <div><Label>Fills Count</Label><Input type="number" value={checkForm.fills_count ?? 0} onChange={e => setCheckForm({ ...checkForm, fills_count: parseInt(e.target.value) || 0 })} /></div>
-            <div><Label>Expected Count</Label><Input type="number" value={checkForm.expected_count ?? 0} onChange={e => setCheckForm({ ...checkForm, expected_count: parseInt(e.target.value) || 0 })} /></div>
+            <div>
+              <Label>Sample Size</Label>
+              <Input type="number" disabled value={surveys.find(s => s.id === checkForm.survey_id)?.manual_target ?? ""} placeholder="Set on Survey" />
+            </div>
             <div className="col-span-2"><Label>Checked By</Label><Input value={checkForm.checked_by ?? ""} onChange={e => setCheckForm({ ...checkForm, checked_by: e.target.value })} /></div>
             <div className="col-span-2"><Label>Notes</Label><Textarea value={checkForm.notes ?? ""} onChange={e => setCheckForm({ ...checkForm, notes: e.target.value })} /></div>
           </div>
