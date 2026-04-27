@@ -1861,6 +1861,51 @@ export type Database = {
         }
         Relationships: []
       }
+      qualification_contract_budget_items: {
+        Row: {
+          category: string
+          contract_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          display_order: number
+          id: string
+          notes: string | null
+          qualification_id: string
+          quantity: number
+          unit_value: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          contract_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          display_order?: number
+          id?: string
+          notes?: string | null
+          qualification_id: string
+          quantity?: number
+          unit_value?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          contract_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          display_order?: number
+          id?: string
+          notes?: string | null
+          qualification_id?: string
+          quantity?: number
+          unit_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       qualification_contracts: {
         Row: {
           contract_number: string
@@ -1873,11 +1918,13 @@ export type Database = {
           end_date: string | null
           id: string
           notes: string | null
+          payment_terms: string | null
           qualification_id: string
           signed_date: string | null
           start_date: string | null
           status: string
           title: string
+          total_value: number | null
           updated_at: string
           value: number | null
         }
@@ -1892,11 +1939,13 @@ export type Database = {
           end_date?: string | null
           id?: string
           notes?: string | null
+          payment_terms?: string | null
           qualification_id: string
           signed_date?: string | null
           start_date?: string | null
           status?: string
           title: string
+          total_value?: number | null
           updated_at?: string
           value?: number | null
         }
@@ -1911,11 +1960,13 @@ export type Database = {
           end_date?: string | null
           id?: string
           notes?: string | null
+          payment_terms?: string | null
           qualification_id?: string
           signed_date?: string | null
           start_date?: string | null
           status?: string
           title?: string
+          total_value?: number | null
           updated_at?: string
           value?: number | null
         }
