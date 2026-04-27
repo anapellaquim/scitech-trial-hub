@@ -348,6 +348,7 @@ const ProjectSchedule = () => {
                   tasks={tasks}
                   raciAssignments={raciAssignments}
                   profiles={profiles}
+                  projectId={projectId}
                   onRefresh={fetchData}
                 />
               </CardContent>
