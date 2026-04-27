@@ -374,6 +374,16 @@ export default function ChangeControl() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Change Control</DialogTitle></DialogHeader>
           <div className="grid gap-4">
+            <div>
+              <Label>Project / Scope</Label>
+              <Select value={form.project_id || GENERAL_VALUE} onValueChange={v => setForm({...form, project_id: v})}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={GENERAL_VALUE}>General (no project)</SelectItem>
+                  {projects.map(p => <SelectItem key={p.id} value={p.id}>{p.protocol_number || p.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Change ID</Label><Input value={form.change_code} onChange={e => setForm({...form, change_code: e.target.value})} placeholder="CC-001" /></div>
               <div><Label>Type</Label>
