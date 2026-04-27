@@ -311,8 +311,10 @@ export default function ChangeControl() {
     <ModulePageLayout title="Change Control" subtitle="Track protocol, regulatory, and operational changes (general or per project)"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="change_control"
       showAllOption
+      showGeneralOption
+      generalValue={GENERAL_VALUE}
+      generalLabel="General (no project)"
       actions={<div className="flex gap-2">
-        <Button size="sm" variant={selectedProject === GENERAL_VALUE ? "default" : "outline"} onClick={() => setSelectedProject(GENERAL_VALUE)}>General</Button>
         <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4 mr-1" />Import</Button>
         <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button>
       </div>}
