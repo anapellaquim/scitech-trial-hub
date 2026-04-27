@@ -136,7 +136,7 @@ export default function PMCFSurvey() {
       survey_id: surveyId,
       reference_month: refMonth,
       fills_count: 0,
-      expected_count: survey?.expected_monthly_fills ?? 0,
+      expected_count: survey?.manual_target ?? 0,
       status: "compliant",
       checked_at: format(now, "yyyy-MM-dd"),
     });
@@ -189,42 +189,25 @@ export default function PMCFSurvey() {
     compliant: checks.filter(c => c.status === "compliant").length,
   }), [surveys, checks]);
 
-  // Tracking: progress per survey vs target
+  // Tracking: progress per survey vs Sample Size (manual_target)
   const tracking = useMemo(() => {
     return surveys.map(s => {
       const surveyChecks = checks.filter(c => c.survey_id === s.id);
       const totalFills = surveyChecks.reduce((sum, c) => sum + (c.fills_count || 0), 0);
       const monthsTracked = surveyChecks.length;
-      const avgMonthly = monthsTracked > 0 ? totalFills / monthsTracked : 0;
-      // Cumulative target = expected_monthly * months elapsed since start_date (or months tracked)
-      let monthsElapsed = monthsTracked;
-      if (s.start_date) {
-        const start = new Date(s.start_date);
-        const end = s.end_date ? new Date(s.end_date) : new Date();
-        const diff = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
-        monthsElapsed = Math.max(1, diff);
-      }
-      const autoTarget = (s.expected_monthly_fills || 0) * monthsElapsed;
-      const cumulativeTarget = s.manual_target != null ? s.manual_target : autoTarget;
-      const isManual = s.manual_target != null;
-      const progressPct = cumulativeTarget > 0 ? Math.min(100, (totalFills / cumulativeTarget) * 100) : 0;
+      const sampleSize = s.manual_target ?? 0;
+      const progressPct = sampleSize > 0 ? Math.min(100, (totalFills / sampleSize) * 100) : 0;
       const lastCheck = surveyChecks.sort((a, b) => b.reference_month.localeCompare(a.reference_month))[0];
-      const lastMonthPct = lastCheck && lastCheck.expected_count > 0
-        ? Math.min(100, (lastCheck.fills_count / lastCheck.expected_count) * 100)
-        : 0;
       return {
         survey: s,
         totalFills,
         monthsTracked,
-        monthsElapsed,
-        avgMonthly,
-        autoTarget,
-        cumulativeTarget,
-        isManual,
+        sampleSize,
+        cumulativeTarget: sampleSize,
+        isManual: s.manual_target != null,
         progressPct,
         lastCheck,
-        lastMonthPct,
-        gap: cumulativeTarget - totalFills,
+        gap: sampleSize - totalFills,
       };
     });
   }, [surveys, checks]);
@@ -281,7 +264,7 @@ export default function PMCFSurvey() {
                     <TableHead>Code</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Audience</TableHead>
-                    <TableHead>Target</TableHead>
+                    <TableHead>Sample Size</TableHead>
                     <TableHead>Progress</TableHead>
                     <TableHead>Period</TableHead>
                     <TableHead>Status</TableHead>
@@ -300,32 +283,30 @@ export default function PMCFSurvey() {
                         <TableCell className="font-mono text-sm">{s.survey_code}</TableCell>
                         <TableCell>{s.title}</TableCell>
                         <TableCell>{s.target_audience}</TableCell>
-                        <TableCell>{s.expected_monthly_fills}</TableCell>
-                        <TableCell className="min-w-[200px]">
+                        <TableCell>
+                          <Input
+                            type="number"
+                            defaultValue={s.manual_target ?? ""}
+                            key={`ss-${s.id}-${s.manual_target ?? "n"}`}
+                            placeholder="—"
+                            className="h-8 w-20 text-sm"
+                            onBlur={(e) => {
+                              const raw = e.target.value;
+                              const v = raw === "" ? null : parseInt(raw);
+                              if (v !== null && isNaN(v)) return;
+                              if (v === (s.manual_target ?? null)) return;
+                              updateManualTarget(s.id, v);
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="min-w-[180px]">
                           <div className="flex items-center gap-2">
                             <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
                               <div className={`h-full ${barColor} transition-all`} style={{ width: `${Math.min(100, pct)}%` }} />
                             </div>
                             <span className={`text-xs font-semibold ${pctColor}`}>{pct.toFixed(0)}%</span>
                           </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-[10px] text-muted-foreground">{t?.totalFills ?? 0} /</span>
-                            <Input
-                              type="number"
-                              defaultValue={t?.cumulativeTarget ?? 0}
-                              key={`${s.id}-${t?.cumulativeTarget}`}
-                              className="h-6 w-16 px-1 text-[10px]"
-                              onBlur={(e) => {
-                                const v = parseInt(e.target.value);
-                                if (isNaN(v) || v === t?.cumulativeTarget) return;
-                                updateManualTarget(s.id, v);
-                              }}
-                            />
-                            {t?.isManual && (
-                              <Button size="sm" variant="ghost" className="h-5 px-1 text-[9px]" title="Reset to auto-calculated"
-                                onClick={() => updateManualTarget(s.id, null)}>auto</Button>
-                            )}
-                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{t?.totalFills ?? 0} / {t?.sampleSize ?? 0}</p>
                         </TableCell>
                         <TableCell className="text-xs">{s.start_date ? format(new Date(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(new Date(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
                         <TableCell><Badge className={statusColors[s.status]}>{s.status}</Badge></TableCell>
@@ -409,20 +390,18 @@ export default function PMCFSurvey() {
             <div className="col-span-2"><Label>Description</Label><Textarea value={surveyForm.description ?? ""} onChange={e => setSurveyForm({ ...surveyForm, description: e.target.value })} /></div>
             <div className="col-span-2"><Label>Form Link</Label><Input type="url" placeholder="https://…" value={surveyForm.form_link ?? ""} onChange={e => setSurveyForm({ ...surveyForm, form_link: e.target.value })} /></div>
             <div><Label>Target Audience</Label><Input value={surveyForm.target_audience ?? ""} onChange={e => setSurveyForm({ ...surveyForm, target_audience: e.target.value })} /></div>
-            <div><Label>Expected Monthly Fills</Label><Input type="number" value={surveyForm.expected_monthly_fills ?? 0} onChange={e => setSurveyForm({ ...surveyForm, expected_monthly_fills: parseInt(e.target.value) || 0 })} /></div>
-            <div><Label>Start Date</Label><Input type="date" value={surveyForm.start_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, start_date: e.target.value })} /></div>
-            <div><Label>End Date</Label><Input type="date" value={surveyForm.end_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, end_date: e.target.value })} /></div>
-            <div className="col-span-2"><Label>Responsible</Label><Input value={surveyForm.responsible ?? ""} onChange={e => setSurveyForm({ ...surveyForm, responsible: e.target.value })} /></div>
-            <div className="col-span-2">
-              <Label>Manual Target (optional)</Label>
+            <div>
+              <Label>Sample Size</Label>
               <Input
                 type="number"
-                placeholder="Leave empty to auto-calculate from Expected/mo × months elapsed"
+                placeholder="Total expected fills"
                 value={surveyForm.manual_target ?? ""}
                 onChange={e => setSurveyForm({ ...surveyForm, manual_target: e.target.value === "" ? null : parseInt(e.target.value) || 0 })}
               />
-              <p className="text-xs text-muted-foreground mt-1">Override the cumulative fill target used for progress tracking.</p>
             </div>
+            <div><Label>Start Date</Label><Input type="date" value={surveyForm.start_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, start_date: e.target.value })} /></div>
+            <div><Label>End Date</Label><Input type="date" value={surveyForm.end_date ?? ""} onChange={e => setSurveyForm({ ...surveyForm, end_date: e.target.value })} /></div>
+            <div className="col-span-2"><Label>Responsible</Label><Input value={surveyForm.responsible ?? ""} onChange={e => setSurveyForm({ ...surveyForm, responsible: e.target.value })} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSurveyDialogOpen(false)}>Cancel</Button>
@@ -439,7 +418,7 @@ export default function PMCFSurvey() {
             <div className="col-span-2"><Label>Survey *</Label>
               <Select value={checkForm.survey_id} onValueChange={v => {
                 const surv = surveys.find(s => s.id === v);
-                setCheckForm({ ...checkForm, survey_id: v, expected_count: surv?.expected_monthly_fills ?? 0 });
+                setCheckForm({ ...checkForm, survey_id: v, expected_count: surv?.manual_target ?? 0 });
               }}>
                 <SelectTrigger><SelectValue placeholder="Select survey" /></SelectTrigger>
                 <SelectContent>{surveys.map(s => <SelectItem key={s.id} value={s.id}>{s.survey_code} — {s.title}</SelectItem>)}</SelectContent>
@@ -448,7 +427,10 @@ export default function PMCFSurvey() {
             <div><Label>Reference Month *</Label><Input type="month" value={checkForm.reference_month?.slice(0, 7) ?? ""} onChange={e => setCheckForm({ ...checkForm, reference_month: e.target.value + "-01" })} /></div>
             <div><Label>Checked At</Label><Input type="date" value={checkForm.checked_at ?? ""} onChange={e => setCheckForm({ ...checkForm, checked_at: e.target.value })} /></div>
             <div><Label>Fills Count</Label><Input type="number" value={checkForm.fills_count ?? 0} onChange={e => setCheckForm({ ...checkForm, fills_count: parseInt(e.target.value) || 0 })} /></div>
-            <div><Label>Expected Count</Label><Input type="number" value={checkForm.expected_count ?? 0} onChange={e => setCheckForm({ ...checkForm, expected_count: parseInt(e.target.value) || 0 })} /></div>
+            <div>
+              <Label>Sample Size</Label>
+              <Input type="number" disabled value={surveys.find(s => s.id === checkForm.survey_id)?.manual_target ?? ""} placeholder="Set on Survey" />
+            </div>
             <div className="col-span-2"><Label>Checked By</Label><Input value={checkForm.checked_by ?? ""} onChange={e => setCheckForm({ ...checkForm, checked_by: e.target.value })} /></div>
             <div className="col-span-2"><Label>Notes</Label><Textarea value={checkForm.notes ?? ""} onChange={e => setCheckForm({ ...checkForm, notes: e.target.value })} /></div>
           </div>
