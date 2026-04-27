@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CTMSNav from '@/components/CTMSNav';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,17 @@ import {
   RefreshCw,
   Inbox,
   Building2,
-  Layers
+  Layers,
+  CalendarClock,
+  Users,
 } from 'lucide-react';
 import { useNotifications, useNotificationStats } from '@/hooks/useNotifications';
 import { AlertCard } from '@/components/communications/AlertCard';
 import { AlertFilters } from '@/components/communications/AlertFilters';
 import { StudySummaryPanel } from '@/components/communications/StudySummaryPanel';
+import GlobalStudySelector from '@/components/shared/GlobalStudySelector';
+import CommunicationPlanList from '@/components/communications/CommunicationPlanList';
+import StakeholderList from '@/components/communications/StakeholderList';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -138,30 +143,50 @@ export default function Communications() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Bell className="h-6 w-6 text-primary" />
-              Central de Comunicação
+              Communications
             </h1>
             <p className="text-muted-foreground">
-              Alertas e notificações integradas de todos os módulos
+              Alerts, communication plan and stakeholders for the selected study
             </p>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <GlobalStudySelector
+              value={selectedProject === 'all' ? '' : selectedProject}
+              onChange={(v) => setSelectedProject(v || 'all')}
+              showAllOption
+            />
             <Button
               variant="outline"
               onClick={handleGenerateAlerts}
               disabled={generating}
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${generating ? 'animate-spin' : ''}`} />
-              {generating ? 'Gerando...' : 'Atualizar Alertas'}
+              {generating ? 'Updating...' : 'Update Alerts'}
             </Button>
             {unreadCount > 0 && (
               <Button variant="outline" onClick={markAllAsRead}>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Marcar todas como lidas
+                Mark all as read
               </Button>
             )}
           </div>
         </div>
+
+        <Tabs defaultValue="alerts" className="w-full">
+          <TabsList className="grid w-full md:w-[600px] grid-cols-3 mb-6">
+            <TabsTrigger value="alerts" className="flex items-center gap-1">
+              <Bell className="h-4 w-4" /> Alerts
+            </TabsTrigger>
+            <TabsTrigger value="plan" className="flex items-center gap-1">
+              <CalendarClock className="h-4 w-4" /> Communication Plan
+            </TabsTrigger>
+            <TabsTrigger value="stakeholders" className="flex items-center gap-1">
+              <Users className="h-4 w-4" /> Stakeholders
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="alerts">
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -461,7 +486,34 @@ export default function Communications() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="plan">
+            {selectedProject === 'all' ? (
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  Select a study to manage its communication plan.
+                </CardContent>
+              </Card>
+            ) : (
+              <CommunicationPlanList projectId={selectedProject} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="stakeholders">
+            {selectedProject === 'all' ? (
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  Select a study to manage its stakeholders.
+                </CardContent>
+              </Card>
+            ) : (
+              <StakeholderList projectId={selectedProject} />
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
 }
+

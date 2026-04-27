@@ -344,6 +344,180 @@ export type Database = {
           },
         ]
       }
+      communication_occurrences: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_date: string
+          evidence_url: string | null
+          id: string
+          notes: string | null
+          plan_id: string
+          project_id: string
+          sent_date: string | null
+          status: Database["public"]["Enums"]["communication_occurrence_status"]
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date: string
+          evidence_url?: string | null
+          id?: string
+          notes?: string | null
+          plan_id: string
+          project_id: string
+          sent_date?: string | null
+          status?: Database["public"]["Enums"]["communication_occurrence_status"]
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string
+          evidence_url?: string | null
+          id?: string
+          notes?: string | null
+          plan_id?: string
+          project_id?: string
+          sent_date?: string | null
+          status?: Database["public"]["Enums"]["communication_occurrence_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      communication_plan_recipients: {
+        Row: {
+          created_at: string
+          id: string
+          plan_id: string
+          role: Database["public"]["Enums"]["communication_recipient_role"]
+          stakeholder_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_id: string
+          role?: Database["public"]["Enums"]["communication_recipient_role"]
+          stakeholder_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_id?: string
+          role?: Database["public"]["Enums"]["communication_recipient_role"]
+          stakeholder_id?: string
+        }
+        Relationships: []
+      }
+      communication_plans: {
+        Row: {
+          channel: Database["public"]["Enums"]["communication_channel"]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_day_offset: number
+          end_date: string | null
+          frequency: Database["public"]["Enums"]["communication_frequency"]
+          id: string
+          is_active: boolean
+          is_mandatory: boolean
+          lead_time_days: number
+          project_id: string
+          purpose: string | null
+          responsible_user_id: string | null
+          sender_stakeholder_id: string | null
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: Database["public"]["Enums"]["communication_channel"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_day_offset?: number
+          end_date?: string | null
+          frequency?: Database["public"]["Enums"]["communication_frequency"]
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          lead_time_days?: number
+          project_id: string
+          purpose?: string | null
+          responsible_user_id?: string | null
+          sender_stakeholder_id?: string | null
+          start_date?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["communication_channel"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_day_offset?: number
+          end_date?: string | null
+          frequency?: Database["public"]["Enums"]["communication_frequency"]
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          lead_time_days?: number
+          project_id?: string
+          purpose?: string | null
+          responsible_user_id?: string | null
+          sender_stakeholder_id?: string | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      communication_stakeholders: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+          organization: string | null
+          project_id: string
+          stakeholder_type: Database["public"]["Enums"]["stakeholder_type"]
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          organization?: string | null
+          project_id: string
+          stakeholder_type?: Database["public"]["Enums"]["stakeholder_type"]
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          organization?: string | null
+          project_id?: string
+          stakeholder_type?: Database["public"]["Enums"]["stakeholder_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crf_audit_log: {
         Row: {
           action: string
@@ -3643,6 +3817,10 @@ export type Database = {
       can_respond_queries: { Args: { _user_id: string }; Returns: boolean }
       can_sign_forms: { Args: { _user_id: string }; Returns: boolean }
       can_view_audit: { Args: { _user_id: string }; Returns: boolean }
+      generate_communication_occurrences: {
+        Args: { _plan_id: string }
+        Returns: number
+      }
       get_current_user_info: {
         Args: never
         Returns: {
@@ -3706,6 +3884,31 @@ export type Database = {
         | "medical_monitor"
         | "statistician"
         | "auditor"
+      communication_channel:
+        | "email"
+        | "etmf"
+        | "portal"
+        | "meeting"
+        | "letter"
+        | "phone"
+        | "system"
+        | "other"
+      communication_frequency:
+        | "once"
+        | "weekly"
+        | "biweekly"
+        | "monthly"
+        | "quarterly"
+        | "semiannual"
+        | "annual"
+        | "on_event"
+      communication_occurrence_status:
+        | "scheduled"
+        | "sent"
+        | "overdue"
+        | "acknowledged"
+        | "skipped"
+      communication_recipient_role: "to" | "cc" | "bcc" | "informed"
       notification_severity: "info" | "warning" | "critical"
       notification_type:
         | "task_overdue"
@@ -3726,6 +3929,9 @@ export type Database = {
         | "document_missing"
         | "participant_status"
         | "general"
+        | "communication_due_soon"
+        | "communication_today"
+        | "communication_overdue"
       priority_level: "low" | "medium" | "high" | "critical"
       regulatory_status:
         | "pending"
@@ -3734,6 +3940,17 @@ export type Database = {
         | "approved"
         | "rejected"
         | "revision_required"
+      stakeholder_type:
+        | "sponsor"
+        | "ethics_committee"
+        | "regulatory_authority"
+        | "research_center"
+        | "vendor"
+        | "dsmb"
+        | "steering_committee"
+        | "investigator"
+        | "internal_team"
+        | "other"
       task_status: "backlog" | "in_progress" | "waiting" | "completed"
       visit_type: "SQV" | "SIV" | "IMV" | "COV"
     }
@@ -3881,6 +4098,34 @@ export const Constants = {
         "statistician",
         "auditor",
       ],
+      communication_channel: [
+        "email",
+        "etmf",
+        "portal",
+        "meeting",
+        "letter",
+        "phone",
+        "system",
+        "other",
+      ],
+      communication_frequency: [
+        "once",
+        "weekly",
+        "biweekly",
+        "monthly",
+        "quarterly",
+        "semiannual",
+        "annual",
+        "on_event",
+      ],
+      communication_occurrence_status: [
+        "scheduled",
+        "sent",
+        "overdue",
+        "acknowledged",
+        "skipped",
+      ],
+      communication_recipient_role: ["to", "cc", "bcc", "informed"],
       notification_severity: ["info", "warning", "critical"],
       notification_type: [
         "task_overdue",
@@ -3901,6 +4146,9 @@ export const Constants = {
         "document_missing",
         "participant_status",
         "general",
+        "communication_due_soon",
+        "communication_today",
+        "communication_overdue",
       ],
       priority_level: ["low", "medium", "high", "critical"],
       regulatory_status: [
@@ -3910,6 +4158,18 @@ export const Constants = {
         "approved",
         "rejected",
         "revision_required",
+      ],
+      stakeholder_type: [
+        "sponsor",
+        "ethics_committee",
+        "regulatory_authority",
+        "research_center",
+        "vendor",
+        "dsmb",
+        "steering_committee",
+        "investigator",
+        "internal_team",
+        "other",
       ],
       task_status: ["backlog", "in_progress", "waiting", "completed"],
       visit_type: ["SQV", "SIV", "IMV", "COV"],
