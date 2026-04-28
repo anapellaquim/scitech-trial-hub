@@ -175,6 +175,8 @@ export default function InvestigationalProducts() {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <ExcelExportButton data={exportData} fileName="investigational-products" />
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4 mr-1" /> Import
             <Button onClick={openNew}>
               <Plus className="h-4 w-4 mr-1" /> New IP
             </Button>
