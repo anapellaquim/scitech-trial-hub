@@ -85,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/visits", icon: CalendarCheck, label: "Visits", module: "visits" },
       { to: "/site-monitoring", icon: Eye, label: "Site Monitoring", module: "site_monitoring" },
       { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey", module: "pmcf_survey" },
+      { to: "/budget", icon: DollarSign, label: "Budget", module: "payments" },
       { to: "/payments", icon: DollarSign, label: "Payments", module: "payments" },
     ],
   },
