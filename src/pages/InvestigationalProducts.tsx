@@ -177,6 +177,7 @@ export default function InvestigationalProducts() {
             <ExcelExportButton data={exportData} fileName="investigational-products" />
             <Button variant="outline" onClick={() => setImportOpen(true)}>
               <Upload className="h-4 w-4 mr-1" /> Import
+            </Button>
             <Button onClick={openNew}>
               <Plus className="h-4 w-4 mr-1" /> New IP
             </Button>
