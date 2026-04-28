@@ -107,35 +107,23 @@ function reviewBadge(nextReview: string | null) {
 }
 
 export default function ClinicalEvaluation() {
-  const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
-  const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
   const [records, setRecords] = useState<CEDocument[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<CEDocument | null>(null);
-  const [form, setForm] = useState(emptyForm(""));
+  const [form, setForm] = useState(emptyForm());
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyDoc, setHistoryDoc] = useState<CEDocument | null>(null);
   const [versions, setVersions] = useState<CEVersion[]>([]);
   const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "" });
 
-  const handleProjectChange = (v: string) => {
-    setSelectedProject(v);
-    setProjectId(v);
-  };
-
   const loadRecords = useCallback(async () => {
-    if (!selectedProject) {
-      setRecords([]);
-      return;
-    }
     setLoading(true);
     const { data, error } = await supabase
       .from("clinical_evaluation_documents")
       .select("*")
-      .eq("project_id", selectedProject)
       .order("created_at", { ascending: false });
     if (error) {
       toast.error("Failed to load documents: " + error.message);
@@ -143,19 +131,15 @@ export default function ClinicalEvaluation() {
       setRecords((data || []) as CEDocument[]);
     }
     setLoading(false);
-  }, [selectedProject]);
+  }, []);
 
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
 
   const openNew = () => {
-    if (!selectedProject) {
-      toast.error("Select a study first");
-      return;
-    }
     setEditing(null);
-    setForm(emptyForm(selectedProject));
+    setForm(emptyForm());
     setDialogOpen(true);
   };
 
