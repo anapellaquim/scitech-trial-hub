@@ -294,6 +294,10 @@ const ProjectSchedule = () => {
               <Users className="h-4 w-4" />
               RACI
             </TabsTrigger>
+            <TabsTrigger value="budget" className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              Budget
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="gantt">
