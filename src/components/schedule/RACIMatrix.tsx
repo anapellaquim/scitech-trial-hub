@@ -36,7 +36,7 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
   const [loading, setLoading] = useState<string | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
-  const [viewMode, setViewMode] = useState<"users" | "departments" | "stakeholders">("users");
+  const [viewMode, setViewMode] = useState<"users" | "departments" | "stakeholders">("stakeholders");
   const [showDeptDialog, setShowDeptDialog] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [deptForm, setDeptForm] = useState({ name: "", description: "", color: "#6366f1" });
@@ -270,10 +270,6 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
         <div className="flex items-center gap-2">
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "users" | "departments" | "stakeholders")}>
             <TabsList>
-              <TabsTrigger value="users" className="gap-2">
-                <Users className="h-4 w-4" />
-                Usuários
-              </TabsTrigger>
               <TabsTrigger value="stakeholders" className="gap-2">
                 <Briefcase className="h-4 w-4" />
                 Stakeholders
