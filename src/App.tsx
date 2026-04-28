@@ -73,6 +73,7 @@ function App() {
             <Route path="/steering" element={<SteeringDecisions />} />
             <Route path="/site-monitoring" element={<SiteMonitoring />} />
             <Route path="/pmcf-survey" element={<PMCFSurvey />} />
+            <Route path="/clinical-evaluation" element={<ClinicalEvaluation />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
