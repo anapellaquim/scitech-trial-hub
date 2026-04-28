@@ -8,8 +8,7 @@ import YearlyBudgetManager from "@/components/YearlyBudgetManager";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 const Budget = () => {
-  const { filters, setFilter } = usePersistedFilters("budget", { projectId: "" });
-  const projectId = filters.projectId;
+  const { projectId, setProjectId } = usePersistedFilters();
 
   return (
     <div className="min-h-screen bg-background">
