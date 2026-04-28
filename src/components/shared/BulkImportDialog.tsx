@@ -18,7 +18,7 @@ interface BulkImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tableName: string;
-  projectId: string;
+  projectId?: string;
   columns: ColumnMapping[];
   onSuccess: () => void;
   templateData?: Record<string, string>[];
@@ -45,7 +45,8 @@ export default function BulkImportDialog({
 
         const errs: string[] = [];
         const mapped = raw.map((row, idx) => {
-          const record: Record<string, any> = { project_id: projectId };
+          const record: Record<string, any> = {};
+          if (projectId) record.project_id = projectId;
           columns.forEach(col => {
             let val = row[col.excelHeader];
             if (col.required && (val === undefined || val === null || val === "")) {
