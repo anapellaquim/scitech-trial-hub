@@ -321,6 +321,17 @@ export default function Qualifications() {
                 </Select>
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>NDA</Label>
+                <Select value={form.nda_status} onValueChange={v => setForm({...form, nda_status: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="signed">Signed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="grid grid-cols-3 gap-4">
               <div><Label>Feasibility Date</Label><Input type="date" value={form.feasibility_date} onChange={e => setForm({...form, feasibility_date: e.target.value})} /></div>
               <div><Label>Score</Label><Input type="number" value={form.score} onChange={e => setForm({...form, score: e.target.value})} /></div>
