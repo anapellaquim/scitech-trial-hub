@@ -315,6 +315,13 @@ export default function InvestigationalProducts() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <BulkImportDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          tableName="investigational_products"
+          columns={IP_IMPORT_COLUMNS}
+          onSuccess={loadRecords}
+        />
       </main>
     </div>
   );
