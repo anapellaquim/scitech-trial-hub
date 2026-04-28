@@ -274,23 +274,12 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
                 <Users className="h-4 w-4" />
                 Usuários
               </TabsTrigger>
-              <TabsTrigger value="departments" className="gap-2">
-                <Building2 className="h-4 w-4" />
-                Departamentos
-              </TabsTrigger>
               <TabsTrigger value="stakeholders" className="gap-2">
                 <Briefcase className="h-4 w-4" />
                 Stakeholders
               </TabsTrigger>
             </TabsList>
           </Tabs>
-
-          {viewMode === "departments" && (
-            <Button variant="outline" size="sm" onClick={openNewDept}>
-              <Plus className="h-4 w-4 mr-1" />
-              Novo Departamento
-            </Button>
-          )}
         </div>
       </div>
 
