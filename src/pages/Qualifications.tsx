@@ -155,6 +155,7 @@ export default function Qualifications() {
       qualification_status: form.qualification_status, feasibility_date: form.feasibility_date || null,
       score: form.score ? parseFloat(form.score) : null, next_qualification_date: form.next_qualification_date || null,
       responsible: form.responsible.trim() || null, contract_status: form.contract_status,
+      nda_status: form.nda_status,
       documents_url: form.documents_url.trim() || null, notes: form.notes.trim() || null,
     };
     if (editing) {
