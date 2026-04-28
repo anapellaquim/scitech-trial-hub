@@ -172,7 +172,7 @@ export default function StakeholderList({ projectId }: Props) {
               </SelectContent>
             </Select>
             <ExcelExportButton data={exportData} fileName="stakeholders" />
-            <Button size="sm" onClick={openNew} disabled={!projectId}>
+            <Button type="button" size="sm" onClick={openNew} disabled={!projectId}>
               <Plus className="h-4 w-4 mr-1" />
               New Stakeholder
             </Button>
@@ -210,10 +210,10 @@ export default function StakeholderList({ projectId }: Props) {
                   <TableCell>{r.contact_phone || "-"}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(r)}>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -270,10 +270,10 @@ export default function StakeholderList({ projectId }: Props) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>{editing ? "Update" : "Create"}</Button>
+            <Button type="button" onClick={handleSave}>{editing ? "Update" : "Create"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
