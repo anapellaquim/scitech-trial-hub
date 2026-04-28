@@ -70,9 +70,8 @@ const STATUS_LABEL: Record<DocStatus, string> = {
   archived: "Archived",
 };
 
-const emptyForm = (projectId: string) => ({
+const emptyForm = () => ({
   id: "" as string,
-  project_id: projectId,
   document_type: "clinical_evaluation_report" as DocType,
   title: "",
   code: "",
