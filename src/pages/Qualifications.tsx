@@ -31,6 +31,7 @@ interface Qualification {
   next_qualification_date: string | null;
   responsible: string | null;
   contract_status: string;
+  nda_status: string;
   documents_url: string | null;
   notes: string | null;
 }
@@ -84,7 +85,7 @@ export default function Qualifications() {
   const [form, setForm] = useState({
     name: "", vendor_type: "site", qualification_status: "pending", feasibility_date: "",
     score: "", next_qualification_date: "", responsible: "", contract_status: "negotiating",
-    documents_url: "", notes: "",
+    nda_status: "pending", documents_url: "", notes: "",
   });
 
   useEffect(() => {
@@ -154,6 +155,7 @@ export default function Qualifications() {
       qualification_status: form.qualification_status, feasibility_date: form.feasibility_date || null,
       score: form.score ? parseFloat(form.score) : null, next_qualification_date: form.next_qualification_date || null,
       responsible: form.responsible.trim() || null, contract_status: form.contract_status,
+      nda_status: form.nda_status,
       documents_url: form.documents_url.trim() || null, notes: form.notes.trim() || null,
     };
     if (editing) {
@@ -179,14 +181,14 @@ export default function Qualifications() {
       name: r.name, vendor_type: r.vendor_type, qualification_status: r.qualification_status,
       feasibility_date: r.feasibility_date || "", score: r.score?.toString() || "",
       next_qualification_date: r.next_qualification_date || "", responsible: r.responsible || "",
-      contract_status: r.contract_status, documents_url: r.documents_url || "", notes: r.notes || "",
+      contract_status: r.contract_status, nda_status: r.nda_status || "pending", documents_url: r.documents_url || "", notes: r.notes || "",
     });
     setDialogOpen(true);
   };
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: "", vendor_type: "site", qualification_status: "pending", feasibility_date: "", score: "", next_qualification_date: "", responsible: "", contract_status: "negotiating", documents_url: "", notes: "" });
+    setForm({ name: "", vendor_type: "site", qualification_status: "pending", feasibility_date: "", score: "", next_qualification_date: "", responsible: "", contract_status: "negotiating", nda_status: "pending", documents_url: "", notes: "" });
     setDialogOpen(true);
   };
 
@@ -315,6 +317,17 @@ export default function Qualifications() {
                     <SelectItem value="negotiating">Negotiating</SelectItem>
                     <SelectItem value="signed">Signed</SelectItem>
                     <SelectItem value="terminated">Terminated</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>NDA</Label>
+                <Select value={form.nda_status} onValueChange={v => setForm({...form, nda_status: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="signed">Signed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

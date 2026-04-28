@@ -2811,6 +2811,7 @@ export type Database = {
           feasibility_date: string | null
           id: string
           name: string
+          nda_status: string
           next_qualification_date: string | null
           notes: string | null
           project_id: string
@@ -2827,6 +2828,7 @@ export type Database = {
           feasibility_date?: string | null
           id?: string
           name: string
+          nda_status?: string
           next_qualification_date?: string | null
           notes?: string | null
           project_id: string
@@ -2843,6 +2845,7 @@ export type Database = {
           feasibility_date?: string | null
           id?: string
           name?: string
+          nda_status?: string
           next_qualification_date?: string | null
           notes?: string | null
           project_id?: string
