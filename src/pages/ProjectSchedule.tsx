@@ -359,6 +359,20 @@ const ProjectSchedule = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="budget">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Detailed Budget
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {projectId && <DetailedBudgetManager projectId={projectId} />}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Task Dialog */}
