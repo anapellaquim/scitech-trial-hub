@@ -20,7 +20,7 @@ type DocStatus = "draft" | "under_review" | "approved" | "superseded" | "archive
 
 interface CEDocument {
   id: string;
-  project_id: string;
+  project_id: string | null;
   document_type: DocType;
   title: string;
   code: string | null;
