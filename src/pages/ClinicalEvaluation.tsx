@@ -147,7 +147,6 @@ export default function ClinicalEvaluation() {
     setEditing(r);
     setForm({
       id: r.id,
-      project_id: r.project_id,
       document_type: r.document_type,
       title: r.title,
       code: r.code || "",
