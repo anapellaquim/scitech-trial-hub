@@ -342,6 +342,75 @@ export default function InvestigationalProducts() {
               </Button>
             </div>
 
+            {/* Inventory KPIs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Package className="h-4 w-4 text-primary" /> Total Items
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{inventoryTotals.items.toLocaleString("pt-BR")}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Boxes className="h-4 w-4 text-primary" /> Total Quantity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{inventoryTotals.quantity.toLocaleString("pt-BR")}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">Sites Covered</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{inventoryTotals.sites.toLocaleString("pt-BR")}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quantity by Site */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Quantity by Site</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {inventoryBySite.length === 0 ? (
+                  <div className="p-6 text-center text-muted-foreground text-sm">
+                    No inventory yet.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Site</TableHead>
+                          <TableHead className="text-right">Items</TableHead>
+                          <TableHead className="text-right">Total Quantity</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {inventoryBySite.map((s, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="font-medium">{s.site}</TableCell>
+                            <TableCell className="text-right">{s.items.toLocaleString("pt-BR")}</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant="default">{s.quantity.toLocaleString("pt-BR")}</Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardContent className="p-0">
                 {loading ? (
