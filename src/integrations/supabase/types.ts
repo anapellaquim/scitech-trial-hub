@@ -353,7 +353,7 @@ export type Database = {
           link: string | null
           next_review_date: string | null
           notes: string | null
-          project_id: string
+          project_id: string | null
           review_periodicity_months: number
           status: string
           title: string
@@ -373,7 +373,7 @@ export type Database = {
           link?: string | null
           next_review_date?: string | null
           notes?: string | null
-          project_id: string
+          project_id?: string | null
           review_periodicity_months?: number
           status?: string
           title: string
@@ -393,7 +393,7 @@ export type Database = {
           link?: string | null
           next_review_date?: string | null
           notes?: string | null
-          project_id?: string
+          project_id?: string | null
           review_periodicity_months?: number
           status?: string
           title?: string
