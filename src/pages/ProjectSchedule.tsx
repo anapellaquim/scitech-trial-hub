@@ -293,10 +293,6 @@ const ProjectSchedule = () => {
               <Users className="h-4 w-4" />
               RACI
             </TabsTrigger>
-            <TabsTrigger value="budget" className="gap-2">
-              <DollarSign className="h-4 w-4" />
-              Budget
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="gantt">
@@ -355,20 +351,6 @@ const ProjectSchedule = () => {
                   projectId={projectId}
                   onRefresh={fetchData}
                 />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="budget">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Detailed Budget
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {projectId && <DetailedBudgetManager projectId={projectId} />}
               </CardContent>
             </Card>
           </TabsContent>
