@@ -1530,6 +1530,54 @@ export type Database = {
           },
         ]
       }
+      ip_supply: {
+        Row: {
+          created_at: string
+          date: string | null
+          description: string | null
+          expiration_date: string | null
+          id: string
+          invoice: string | null
+          lot_number: string | null
+          note: string | null
+          operation: string
+          quantity: number | null
+          site: string | null
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          expiration_date?: string | null
+          id?: string
+          invoice?: string | null
+          lot_number?: string | null
+          note?: string | null
+          operation: string
+          quantity?: number | null
+          site?: string | null
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          expiration_date?: string | null
+          id?: string
+          invoice?: string | null
+          lot_number?: string | null
+          note?: string | null
+          operation?: string
+          quantity?: number | null
+          site?: string | null
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
