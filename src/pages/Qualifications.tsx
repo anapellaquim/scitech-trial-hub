@@ -85,7 +85,7 @@ export default function Qualifications() {
   const [form, setForm] = useState({
     name: "", vendor_type: "site", qualification_status: "pending", feasibility_date: "",
     score: "", next_qualification_date: "", responsible: "", contract_status: "negotiating",
-    documents_url: "", notes: "",
+    nda_status: "pending", documents_url: "", notes: "",
   });
 
   useEffect(() => {
