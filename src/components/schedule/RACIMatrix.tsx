@@ -270,6 +270,10 @@ export const RACIMatrix = ({ tasks, raciAssignments, profiles, projectId, onRefr
         <div className="flex items-center gap-2">
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "users" | "departments" | "stakeholders")}>
             <TabsList>
+              <TabsTrigger value="users" className="gap-2">
+                <Users className="h-4 w-4" />
+                Usuários
+              </TabsTrigger>
               <TabsTrigger value="stakeholders" className="gap-2">
                 <Briefcase className="h-4 w-4" />
                 Stakeholders
