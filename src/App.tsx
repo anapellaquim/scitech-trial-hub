@@ -13,6 +13,7 @@ import VisitAgenda from "./pages/VisitAgenda";
 import VisitReport from "./pages/VisitReport";
 import Visits from "./pages/Visits";
 import Payments from "./pages/Payments";
+import Budget from "./pages/Budget";
 
 import Regulatory from "./pages/Regulatory";
 import NotFound from "./pages/NotFound";
@@ -55,6 +56,7 @@ function App() {
             
             <Route path="/regulatory" element={<Regulatory />} />
             <Route path="/payments" element={<Payments />} />
+            <Route path="/budget" element={<Budget />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/settings/users" element={<AdminUsers />} />
             <Route path="/settings/audit" element={<AdminAudit />} />
