@@ -181,7 +181,6 @@ export default function ClinicalEvaluation() {
       return;
     }
     const payload = {
-      project_id: form.project_id,
       document_type: form.document_type,
       title: form.title.trim(),
       code: form.code || null,
