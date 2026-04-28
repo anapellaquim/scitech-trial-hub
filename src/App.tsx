@@ -31,6 +31,7 @@ import Committees from "./pages/Committees";
 import SteeringDecisions from "./pages/SteeringDecisions";
 import SiteMonitoring from "./pages/SiteMonitoring";
 import PMCFSurvey from "./pages/PMCFSurvey";
+import ClinicalEvaluation from "./pages/ClinicalEvaluation";
 
 const queryClient = new QueryClient();
 
