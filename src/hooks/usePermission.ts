@@ -9,7 +9,7 @@ export type ModuleKey =
   | "dashboard" | "communications" | "projects" | "agenda" | "tasks"
   | "visits" | "site_monitoring" | "pmcf_survey"
   | "qualifications" | "trainings" | "change_control" | "risks"
-  | "committees" | "steering" | "regulatory" | "payments";
+  | "committees" | "steering" | "regulatory" | "clinical_evaluation" | "payments";
 
 export type ModuleAction = "view" | "create";
 
@@ -17,7 +17,7 @@ export const MODULE_KEYS: ModuleKey[] = [
   "dashboard", "communications", "projects", "agenda", "tasks",
   "visits", "site_monitoring", "pmcf_survey",
   "qualifications", "trainings", "change_control", "risks",
-  "committees", "steering", "regulatory", "payments",
+  "committees", "steering", "regulatory", "clinical_evaluation", "payments",
 ];
 
 export const MODULE_LABELS: Record<ModuleKey, string> = {
