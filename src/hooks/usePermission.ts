@@ -36,6 +36,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   committees: "Committees",
   steering: "Steering",
   regulatory: "Regulatory",
+  clinical_evaluation: "Clinical Evaluation",
   payments: "Payments",
 };
 
