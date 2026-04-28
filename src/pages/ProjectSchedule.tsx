@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Users, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings } from "lucide-react";
+import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Users, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings, DollarSign } from "lucide-react";
+import DetailedBudgetManager from "@/components/DetailedBudgetManager";
 import { toast } from "sonner";
 import { GanttChart } from "@/components/schedule/GanttChart";
 import { RACIMatrix } from "@/components/schedule/RACIMatrix";
@@ -293,6 +294,10 @@ const ProjectSchedule = () => {
               <Users className="h-4 w-4" />
               RACI
             </TabsTrigger>
+            <TabsTrigger value="budget" className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              Budget
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="gantt">
@@ -351,6 +356,20 @@ const ProjectSchedule = () => {
                   projectId={projectId}
                   onRefresh={fetchData}
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="budget">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Detailed Budget
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {projectId && <DetailedBudgetManager projectId={projectId} />}
               </CardContent>
             </Card>
           </TabsContent>
