@@ -99,8 +99,44 @@ export default function Qualifications() {
     if (selectedProject) { setProjectId(selectedProject); loadData(); }
   }, [selectedProject]);
 
+  const syncResearchCenters = useCallback(async () => {
+    // Auto-create qualification entries for research centers registered in Studies
+    let centersQuery = supabase.from("research_centers").select("project_id, code, name, pi_name");
+    if (selectedProject && selectedProject !== "all") {
+      centersQuery = centersQuery.eq("project_id", selectedProject);
+    }
+    const { data: centers } = await centersQuery;
+    if (!centers || centers.length === 0) return;
+
+    let existingQuery = supabase.from("site_vendor_qualifications").select("project_id, name").eq("vendor_type", "site");
+    if (selectedProject && selectedProject !== "all") {
+      existingQuery = existingQuery.eq("project_id", selectedProject);
+    }
+    const { data: existing } = await existingQuery;
+    const existingKeys = new Set((existing || []).map((r: any) => `${r.project_id}::${(r.name || "").toLowerCase()}`));
+
+    const toInsert = centers
+      .map((c: any) => {
+        const displayName = c.name ? `${c.code} - ${c.name}` : c.code;
+        return {
+          project_id: c.project_id,
+          name: displayName,
+          vendor_type: "site",
+          qualification_status: "pending",
+          contract_status: "negotiating",
+          responsible: c.pi_name || null,
+        };
+      })
+      .filter((r) => !existingKeys.has(`${r.project_id}::${r.name.toLowerCase()}`));
+
+    if (toInsert.length > 0) {
+      await supabase.from("site_vendor_qualifications").insert(toInsert);
+    }
+  }, [selectedProject]);
+
   const loadData = useCallback(async () => {
     setLoading(true);
+    await syncResearchCenters();
     let query = supabase.from("site_vendor_qualifications").select("*").order("name");
     if (selectedProject && selectedProject !== "all") {
       query = query.eq("project_id", selectedProject);
@@ -108,7 +144,7 @@ export default function Qualifications() {
     const { data } = await query;
     setRecords(data || []);
     setLoading(false);
-  }, [selectedProject]);
+  }, [selectedProject, syncResearchCenters]);
 
   const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Name is required"); return; }
