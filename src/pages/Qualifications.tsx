@@ -189,7 +189,7 @@ export default function Qualifications() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: "", vendor_type: "site", qualification_status: "pending", feasibility_date: "", score: "", next_qualification_date: "", responsible: "", contract_status: "negotiating", nda_status: "pending", documents_url: "", notes: "" });
+    setForm({ name: "", vendor_type: "site", qualification_status: "pending", feasibility_date: "", score: "", next_qualification_date: "", responsible: "", contract_status: "negotiating", nda_status: "pending", rq_pcl006_status: "pending", documents_url: "", notes: "" });
     setDialogOpen(true);
   };
 
