@@ -27,7 +27,7 @@ const Budget = () => {
             </div>
             <GlobalStudySelector
               value={projectId}
-              onChange={(v) => setFilter("projectId", v)}
+              onChange={(v) => setProjectId(v)}
             />
           </div>
 
