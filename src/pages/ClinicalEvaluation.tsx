@@ -289,24 +289,24 @@ export default function ClinicalEvaluation() {
   );
 
   return (
-    <ModulePageLayout
-      title="Clinical Evaluation"
-      subtitle="Document control for clinical evaluation reports and systematic literature reviews"
-      selectedProject={selectedProject}
-      onProjectChange={handleProjectChange}
-      exportData={exportData}
-      exportFileName="clinical-evaluation-documents"
-      actions={
-        <Button onClick={openNew} disabled={!selectedProject}>
-          <Plus className="h-4 w-4 mr-1" /> New Document
-        </Button>
-      }
-    >
+    <div className="min-h-screen bg-background">
+      <CTMSNav />
+      <main className="container mx-auto px-4 py-8 animate-fade-in">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-3xl font-bold text-foreground">Clinical Evaluation</h2>
+            <p className="text-muted-foreground">Document control for clinical evaluation reports and systematic literature reviews</p>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <ExcelExportButton data={exportData} fileName="clinical-evaluation-documents" />
+            <Button onClick={openNew}>
+              <Plus className="h-4 w-4 mr-1" /> New Document
+            </Button>
+          </div>
+        </div>
       <Card>
         <CardContent className="p-0">
-          {!selectedProject ? (
-            <div className="p-8 text-center text-muted-foreground">Select a study to view documents.</div>
-          ) : loading ? (
+          {loading ? (
             <div className="p-8 text-center text-muted-foreground">Loading...</div>
           ) : records.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
