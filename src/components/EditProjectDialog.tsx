@@ -478,10 +478,6 @@ const EditProjectDialog = ({ project, open, onOpenChange, onProjectUpdated }: Ed
               <YearlyBudgetManager projectId={project.id} />
             )}
 
-            {/* Detailed Budget Section */}
-            {project && (
-              <DetailedBudgetManager projectId={project.id} />
-            )}
 
             <Separator />
 
