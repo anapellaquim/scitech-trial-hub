@@ -2817,6 +2817,7 @@ export type Database = {
           project_id: string
           qualification_status: string
           responsible: string | null
+          rq_pcl006_status: string
           score: number | null
           updated_at: string
           vendor_type: string
@@ -2834,6 +2835,7 @@ export type Database = {
           project_id: string
           qualification_status?: string
           responsible?: string | null
+          rq_pcl006_status?: string
           score?: number | null
           updated_at?: string
           vendor_type?: string
@@ -2851,6 +2853,7 @@ export type Database = {
           project_id?: string
           qualification_status?: string
           responsible?: string | null
+          rq_pcl006_status?: string
           score?: number | null
           updated_at?: string
           vendor_type?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.site_vendor_qualifications ADD COLUMN IF NOT EXISTS rq_pcl006_status text NOT NULL DEFAULT 'pending';
