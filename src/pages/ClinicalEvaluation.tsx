@@ -546,6 +546,7 @@ export default function ClinicalEvaluation() {
           </Table>
         </DialogContent>
       </Dialog>
-    </ModulePageLayout>
+      </main>
+    </div>
   );
 }
