@@ -51,6 +51,7 @@ export default function InvestigationalProducts() {
   const [records, setRecords] = useState<IPRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<IPRecord | null>(null);
   const [form, setForm] = useState(emptyForm());
 
