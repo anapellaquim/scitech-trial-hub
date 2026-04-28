@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import ModulePageLayout from "@/components/shared/ModulePageLayout";
+import CTMSNav from "@/components/CTMSNav";
+import ExcelExportButton from "@/components/shared/ExcelExportButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, History, ExternalLink, FileCheck, AlertCircle } from "lucide-react";
-import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { format, addMonths, parseISO, differenceInDays } from "date-fns";
 
 type DocType = "clinical_evaluation_report" | "systematic_literature_review" | "other";
