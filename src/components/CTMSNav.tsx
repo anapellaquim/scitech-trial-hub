@@ -104,6 +104,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/committees", icon: Users2, label: "Committees", module: "committees" },
       { to: "/steering", icon: Gavel, label: "Steering", module: "steering" },
       { to: "/regulatory", icon: FileText, label: "Regulatory", module: "regulatory" },
+      { to: "/clinical-evaluation", icon: ClipboardList, label: "Clinical Evaluation", module: "clinical_evaluation" },
     ],
   },
   {

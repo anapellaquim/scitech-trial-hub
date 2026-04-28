@@ -1,0 +1,1 @@
+ALTER TABLE public.clinical_evaluation_documents ALTER COLUMN project_id DROP NOT NULL;

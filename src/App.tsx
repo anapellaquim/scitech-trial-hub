@@ -31,6 +31,7 @@ import Committees from "./pages/Committees";
 import SteeringDecisions from "./pages/SteeringDecisions";
 import SiteMonitoring from "./pages/SiteMonitoring";
 import PMCFSurvey from "./pages/PMCFSurvey";
+import ClinicalEvaluation from "./pages/ClinicalEvaluation";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ function App() {
             <Route path="/steering" element={<SteeringDecisions />} />
             <Route path="/site-monitoring" element={<SiteMonitoring />} />
             <Route path="/pmcf-survey" element={<PMCFSurvey />} />
+            <Route path="/clinical-evaluation" element={<ClinicalEvaluation />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

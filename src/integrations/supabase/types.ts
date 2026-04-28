@@ -298,6 +298,118 @@ export type Database = {
         }
         Relationships: []
       }
+      clinical_evaluation_document_versions: {
+        Row: {
+          author: string | null
+          change_summary: string | null
+          created_at: string
+          document_id: string
+          id: string
+          issued_at: string | null
+          link: string | null
+          version: string
+        }
+        Insert: {
+          author?: string | null
+          change_summary?: string | null
+          created_at?: string
+          document_id: string
+          id?: string
+          issued_at?: string | null
+          link?: string | null
+          version: string
+        }
+        Update: {
+          author?: string | null
+          change_summary?: string | null
+          created_at?: string
+          document_id?: string
+          id?: string
+          issued_at?: string | null
+          link?: string | null
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_evaluation_document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_evaluation_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinical_evaluation_documents: {
+        Row: {
+          approval_date: string | null
+          approver: string | null
+          author: string | null
+          code: string | null
+          created_at: string
+          document_type: string
+          id: string
+          issue_date: string | null
+          last_review_date: string | null
+          link: string | null
+          next_review_date: string | null
+          notes: string | null
+          project_id: string | null
+          review_periodicity_months: number
+          status: string
+          title: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          approval_date?: string | null
+          approver?: string | null
+          author?: string | null
+          code?: string | null
+          created_at?: string
+          document_type?: string
+          id?: string
+          issue_date?: string | null
+          last_review_date?: string | null
+          link?: string | null
+          next_review_date?: string | null
+          notes?: string | null
+          project_id?: string | null
+          review_periodicity_months?: number
+          status?: string
+          title: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          approval_date?: string | null
+          approver?: string | null
+          author?: string | null
+          code?: string | null
+          created_at?: string
+          document_type?: string
+          id?: string
+          issue_date?: string | null
+          last_review_date?: string | null
+          link?: string | null
+          next_review_date?: string | null
+          notes?: string | null
+          project_id?: string | null
+          review_periodicity_months?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_evaluation_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       committee_attendees: {
         Row: {
           committee_id: string
@@ -4668,6 +4780,7 @@ export type Database = {
         | "regulatory"
         | "payments"
         | "library"
+        | "clinical_evaluation"
       notification_severity: "info" | "warning" | "critical"
       notification_type:
         | "task_overdue"
@@ -4887,6 +5000,7 @@ export const Constants = {
         "regulatory",
         "payments",
         "library",
+        "clinical_evaluation",
       ],
       notification_severity: ["info", "warning", "critical"],
       notification_type: [
