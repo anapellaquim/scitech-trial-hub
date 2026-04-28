@@ -32,6 +32,7 @@ interface Qualification {
   responsible: string | null;
   contract_status: string;
   nda_status: string;
+  rq_pcl006_status: string;
   documents_url: string | null;
   notes: string | null;
 }
