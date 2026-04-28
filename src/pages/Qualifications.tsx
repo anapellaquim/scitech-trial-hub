@@ -181,7 +181,7 @@ export default function Qualifications() {
       name: r.name, vendor_type: r.vendor_type, qualification_status: r.qualification_status,
       feasibility_date: r.feasibility_date || "", score: r.score?.toString() || "",
       next_qualification_date: r.next_qualification_date || "", responsible: r.responsible || "",
-      contract_status: r.contract_status, documents_url: r.documents_url || "", notes: r.notes || "",
+      contract_status: r.contract_status, nda_status: r.nda_status || "pending", documents_url: r.documents_url || "", notes: r.notes || "",
     });
     setDialogOpen(true);
   };
