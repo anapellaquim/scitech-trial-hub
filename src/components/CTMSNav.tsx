@@ -28,6 +28,7 @@ import {
   Gavel,
   Eye,
   ClipboardList,
+  Package,
   ChevronLeft,
   ChevronRight,
   Menu,
