@@ -1462,6 +1462,74 @@ export type Database = {
           },
         ]
       }
+      investigational_products: {
+        Row: {
+          code: string
+          correction_invoice: string | null
+          created_at: string
+          delivery_date: string | null
+          description: string | null
+          expiration_date: string | null
+          id: string
+          invoice: string | null
+          lot_number: string | null
+          note: string | null
+          project_id: string | null
+          quantity: number | null
+          return_info: string | null
+          site: string | null
+          updated_at: string
+          usage: string | null
+          usage_date: string | null
+        }
+        Insert: {
+          code: string
+          correction_invoice?: string | null
+          created_at?: string
+          delivery_date?: string | null
+          description?: string | null
+          expiration_date?: string | null
+          id?: string
+          invoice?: string | null
+          lot_number?: string | null
+          note?: string | null
+          project_id?: string | null
+          quantity?: number | null
+          return_info?: string | null
+          site?: string | null
+          updated_at?: string
+          usage?: string | null
+          usage_date?: string | null
+        }
+        Update: {
+          code?: string
+          correction_invoice?: string | null
+          created_at?: string
+          delivery_date?: string | null
+          description?: string | null
+          expiration_date?: string | null
+          id?: string
+          invoice?: string | null
+          lot_number?: string | null
+          note?: string | null
+          project_id?: string | null
+          quantity?: number | null
+          return_info?: string | null
+          site?: string | null
+          updated_at?: string
+          usage?: string | null
+          usage_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investigational_products_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -4781,6 +4849,7 @@ export type Database = {
         | "payments"
         | "library"
         | "clinical_evaluation"
+        | "ip"
       notification_severity: "info" | "warning" | "critical"
       notification_type:
         | "task_overdue"
@@ -5001,6 +5070,7 @@ export const Constants = {
         "payments",
         "library",
         "clinical_evaluation",
+        "ip",
       ],
       notification_severity: ["info", "warning", "critical"],
       notification_type: [
