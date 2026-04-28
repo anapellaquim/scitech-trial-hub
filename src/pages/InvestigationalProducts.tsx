@@ -47,6 +47,44 @@ const emptyForm = () => ({
   note: "",
 });
 
+const IP_IMPORT_COLUMNS: ColumnMapping[] = [
+  { excelHeader: "Code", dbColumn: "code", required: true },
+  { excelHeader: "Description", dbColumn: "description" },
+  { excelHeader: "Lot#", dbColumn: "lot_number" },
+  { excelHeader: "Expiration", dbColumn: "expiration_date", transform: excelDate },
+  { excelHeader: "Quantity", dbColumn: "quantity", transform: (v) => (v === "" || v == null ? null : Number(v)) },
+  { excelHeader: "Site", dbColumn: "site" },
+  { excelHeader: "Invoice", dbColumn: "invoice" },
+  { excelHeader: "Correction Invoice", dbColumn: "correction_invoice" },
+  { excelHeader: "Delivery date", dbColumn: "delivery_date", transform: excelDate },
+  { excelHeader: "Usage", dbColumn: "usage" },
+  { excelHeader: "Usage date", dbColumn: "usage_date", transform: excelDate },
+  { excelHeader: "Return", dbColumn: "return_info" },
+  { excelHeader: "Note", dbColumn: "note" },
+];
+
+function excelDate(v: any): string | null {
+  if (v === "" || v == null) return null;
+  // Excel serial date
+  if (typeof v === "number") {
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return d.toISOString().slice(0, 10);
+  }
+  const s = String(v).trim();
+  // Try YYYY-MM-DD or MM/DD/YYYY
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+  const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (mdy) {
+    const mm = mdy[1].padStart(2, "0");
+    const dd = mdy[2].padStart(2, "0");
+    return `${mdy[3]}-${mm}-${dd}`;
+  }
+  const parsed = new Date(s);
+  if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+  return null;
+}
+
 export default function InvestigationalProducts() {
   const [records, setRecords] = useState<IPRecord[]>([]);
   const [loading, setLoading] = useState(false);
