@@ -292,6 +292,25 @@ export default function InvestigationalProducts() {
   const fmtBRL = (n: number) =>
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+  // Inventory KPIs by site
+  const inventoryBySite = useMemo(() => {
+    const map = new Map<string, { site: string; items: number; quantity: number }>();
+    records.forEach((r) => {
+      const site = (r.site || "—").trim() || "—";
+      const cur = map.get(site) || { site, items: 0, quantity: 0 };
+      cur.items += 1;
+      cur.quantity += Number(r.quantity || 0);
+      map.set(site, cur);
+    });
+    return Array.from(map.values()).sort((a, b) => b.quantity - a.quantity);
+  }, [records]);
+
+  const inventoryTotals = useMemo(() => ({
+    items: records.length,
+    quantity: records.reduce((sum, r) => sum + Number(r.quantity || 0), 0),
+    sites: new Set(records.map((r) => (r.site || "—").trim() || "—")).size,
+  }), [records]);
+
   return (
     <div className="min-h-screen bg-background">
       <CTMSNav />
