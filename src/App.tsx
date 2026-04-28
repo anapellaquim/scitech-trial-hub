@@ -32,6 +32,7 @@ import SteeringDecisions from "./pages/SteeringDecisions";
 import SiteMonitoring from "./pages/SiteMonitoring";
 import PMCFSurvey from "./pages/PMCFSurvey";
 import ClinicalEvaluation from "./pages/ClinicalEvaluation";
+import InvestigationalProducts from "./pages/InvestigationalProducts";
 
 const queryClient = new QueryClient();
 
