@@ -31,6 +31,7 @@ interface Qualification {
   next_qualification_date: string | null;
   responsible: string | null;
   contract_status: string;
+  nda_status: string;
   documents_url: string | null;
   notes: string | null;
 }
