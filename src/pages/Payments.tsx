@@ -24,6 +24,14 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
+// Parse a "YYYY-MM-DD" string as a LOCAL date (avoids UTC shift that displays the previous day)
+function parseLocalDate(dateStr: string | null | undefined): Date {
+  if (!dateStr) return new Date(NaN);
+  const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return new Date(dateStr);
+}
+
 interface Project {
   id: string;
   title: string;
@@ -288,8 +296,8 @@ export default function Payments() {
     // If recurrence is set, create future payments
     if (vendorFormData.recurrence_type !== "none" && vendorFormData.recurrence_end_date) {
       const recurrencePayments = [];
-      let nextDate = new Date(vendorFormData.payment_date);
-      const endDate = new Date(vendorFormData.recurrence_end_date);
+      let nextDate = parseLocalDate(vendorFormData.payment_date);
+      const endDate = parseLocalDate(vendorFormData.recurrence_end_date);
 
       while (nextDate < endDate) {
         if (vendorFormData.recurrence_type === "monthly") {
@@ -303,9 +311,12 @@ export default function Payments() {
         }
 
         if (nextDate <= endDate) {
+          const y = nextDate.getFullYear();
+          const mo = String(nextDate.getMonth() + 1).padStart(2, "0");
+          const d = String(nextDate.getDate()).padStart(2, "0");
           recurrencePayments.push({
             ...paymentData,
-            payment_date: nextDate.toISOString().split("T")[0],
+            payment_date: `${y}-${mo}-${d}`,
           });
         }
       }
@@ -932,7 +943,7 @@ export default function Payments() {
     ];
 
     const rows = filteredHistory.map((record) => [
-      format(new Date(record.payment_date), "dd/MM/yyyy", { locale: ptBR }),
+      format(parseLocalDate(record.payment_date), "dd/MM/yyyy", { locale: ptBR }),
       record.participant?.research_center || "-",
       record.participant?.participant_code || "-",
       record.participant?.name || "-",
@@ -1758,7 +1769,7 @@ export default function Payments() {
                                 return (
                                   <TableRow key={payment.id}>
                                     <TableCell>
-                                      {format(new Date(payment.payment_date), "dd/MM/yyyy", { locale: ptBR })}
+                                      {format(parseLocalDate(payment.payment_date), "dd/MM/yyyy", { locale: ptBR })}
                                     </TableCell>
                                     <TableCell className="font-medium">{payment.vendor_name}</TableCell>
                                     <TableCell>
@@ -1958,7 +1969,7 @@ export default function Payments() {
                           const csvContent = [
                             ["Data", "Tipo", "Centro/Vendor", "Participante/Descrição", "Valor", "Observações"].join(","),
                             ...combinedHistory.map(item => [
-                              format(new Date(item.date), "dd/MM/yyyy"),
+                              format(parseLocalDate(item.date), "dd/MM/yyyy"),
                               item.type === "center" ? "Centro" : "Vendor",
                               item.source,
                               item.description,
@@ -2092,7 +2103,7 @@ export default function Payments() {
                               {combinedHistory.map((record) => (
                                 <TableRow key={`${record.type}-${record.id}`}>
                                   <TableCell>
-                                    {format(new Date(record.date), "dd/MM/yyyy", { locale: ptBR })}
+                                    {format(parseLocalDate(record.date), "dd/MM/yyyy", { locale: ptBR })}
                                   </TableCell>
                                   <TableCell>
                                     {record.type === "center" ? (
@@ -2371,7 +2382,7 @@ export default function Payments() {
             {vendorFormData.recurrence_type !== "none" && vendorFormData.recurrence_end_date && (
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <RefreshCw className="h-3 w-3" />
-                Serão criados pagamentos recorrentes até {format(new Date(vendorFormData.recurrence_end_date), "dd/MM/yyyy", { locale: ptBR })}
+                Serão criados pagamentos recorrentes até {format(parseLocalDate(vendorFormData.recurrence_end_date), "dd/MM/yyyy", { locale: ptBR })}
               </p>
             )}
           </div>
