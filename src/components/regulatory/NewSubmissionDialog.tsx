@@ -77,6 +77,8 @@ export default function NewSubmissionDialog({
         site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
         submission_type: formData.submission_type,
         planned_date: formData.planned_date || null,
+        approval_date: formData.approval_date || null,
+        code: formData.code || null,
         notes: formData.notes || null,
         compliance_response: formData.compliance_response || null,
         status: "pending",
@@ -89,7 +91,7 @@ export default function NewSubmissionDialog({
         description: "Submissão criada com sucesso",
       });
       onOpenChange(false);
-      setFormData({ project_id: "", site_id: "none", submission_type: "", planned_date: "", notes: "", compliance_response: "" });
+      setFormData({ project_id: "", site_id: "none", submission_type: "", planned_date: "", approval_date: "", code: "", notes: "", compliance_response: "" });
       onSuccess();
     } catch (error: any) {
       toast({
