@@ -448,7 +448,7 @@ export default function RiskManagement() {
                           <TableCell className="font-mono font-medium">
                             <div className="flex items-center gap-1">
                               {r.risk_code}
-                              {r.escalated_at && <ArrowUpCircle className="h-3 w-3 text-orange-500" titleAccess="Escalated" />}
+                              {r.escalated_at && <span title="Escalated"><ArrowUpCircle className="h-3 w-3 text-orange-500" /></span>}
                             </div>
                           </TableCell>
                           <TableCell className="max-w-[220px] truncate" title={r.description}>{r.description}</TableCell>
