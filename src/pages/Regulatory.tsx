@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar } from "lucide-react";
 import { format, differenceInDays, isPast, isWithinInterval, addDays } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import NewSubmissionDialog from "@/components/regulatory/NewSubmissionDialog";
 import NewReportDialog from "@/components/regulatory/NewReportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
@@ -67,12 +67,12 @@ const statusColors: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  pending: "Pendente",
-  submitted: "Submetido",
-  under_review: "Em Análise",
-  approved: "Aprovado",
-  rejected: "Rejeitado",
-  revision_required: "Revisão Necessária",
+  pending: "Pending",
+  submitted: "Submitted",
+  under_review: "Under Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  revision_required: "Revision Required",
 };
 
 export default function Regulatory() {
@@ -150,7 +150,7 @@ export default function Regulatory() {
       })));
     } catch (error: any) {
       toast({
-        title: "Erro ao carregar dados",
+        title: "Error loading data",
         description: error.message,
         variant: "destructive",
       });
@@ -166,15 +166,15 @@ export default function Regulatory() {
     const daysUntil = differenceInDays(dueDate, today);
 
     if (isPast(dueDate)) {
-      return { color: "text-red-600", icon: AlertTriangle, label: "Atrasado" };
+      return { color: "text-red-600", icon: AlertTriangle, label: "Overdue" };
     }
     if (daysUntil <= 7) {
-      return { color: "text-orange-600", icon: Clock, label: `${daysUntil} dias` };
+      return { color: "text-orange-600", icon: Clock, label: `${daysUntil} days` };
     }
     if (daysUntil <= 30) {
-      return { color: "text-yellow-600", icon: Calendar, label: `${daysUntil} dias` };
+      return { color: "text-yellow-600", icon: Calendar, label: `${daysUntil} days` };
     }
-    return { color: "text-green-600", icon: CheckCircle, label: `${daysUntil} dias` };
+    return { color: "text-green-600", icon: CheckCircle, label: `${daysUntil} days` };
   };
 
   const filteredSubmissions = submissions.filter(sub => {
@@ -223,19 +223,19 @@ export default function Regulatory() {
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Regulatório</h1>
+            <h1 className="text-3xl font-bold text-foreground">Regulatory</h1>
             <p className="text-muted-foreground mt-1">
-              Acompanhe prazos e fluxos regulatórios dos estudos
+              Track regulatory deadlines and workflows for your studies
             </p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0">
             <Button variant="outline" onClick={() => setShowNewReport(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Novo Relatório
+              New Report
             </Button>
             <Button onClick={() => setShowNewSubmission(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Nova Submissão
+              New Submission
             </Button>
           </div>
         </div>
@@ -244,7 +244,7 @@ export default function Regulatory() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Submissões Pendentes</CardTitle>
+              <CardTitle className="text-sm font-medium">Pending Submissions</CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
@@ -253,7 +253,7 @@ export default function Regulatory() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Relatórios Atrasados</CardTitle>
+              <CardTitle className="text-sm font-medium">Overdue Reports</CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
@@ -262,7 +262,7 @@ export default function Regulatory() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aprovações</CardTitle>
+              <CardTitle className="text-sm font-medium">Approvals</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
@@ -271,7 +271,7 @@ export default function Regulatory() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Prazos em 30 dias</CardTitle>
+              <CardTitle className="text-sm font-medium">Deadlines in 30 days</CardTitle>
               <Calendar className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
@@ -285,7 +285,7 @@ export default function Regulatory() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por tipo ou estudo..."
+              placeholder="Search by type or study..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -301,10 +301,10 @@ export default function Regulatory() {
             }}
           >
             <SelectTrigger className="w-full md:w-[250px]">
-              <SelectValue placeholder="Filtrar por estudo" />
+              <SelectValue placeholder="Filter by study" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os estudos</SelectItem>
+              <SelectItem value="all">All studies</SelectItem>
               {projects.map((project) => (
                 <SelectItem key={project.id} value={project.id}>
                   {project.title}
@@ -314,10 +314,10 @@ export default function Regulatory() {
           </Select>
           <Select value={siteFilter} onValueChange={setSiteFilter} disabled={projectFilter === "all"}>
             <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue placeholder={projectFilter === "all" ? "Selecione um estudo" : "Filtrar por centro"} />
+              <SelectValue placeholder={projectFilter === "all" ? "Select a study" : "Filter by site"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os centros</SelectItem>
+              <SelectItem value="all">All sites</SelectItem>
               {sites.filter(s => s.project_id === projectFilter).map(s => (
                 <SelectItem key={s.id} value={s.id}>{s.code} · {s.name}</SelectItem>
               ))}
@@ -325,10 +325,10 @@ export default function Regulatory() {
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue placeholder="Filtrar por status" />
+              <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="all">All statuses</SelectItem>
               {Object.entries(statusLabels).map(([key, label]) => (
                 <SelectItem key={key} value={key}>{label}</SelectItem>
               ))}
@@ -339,8 +339,8 @@ export default function Regulatory() {
         {/* Tabs for Submissions and Reports */}
         <Tabs defaultValue="submissions" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="submissions">Submissões ({filteredSubmissions.length})</TabsTrigger>
-            <TabsTrigger value="reports">Relatórios ({filteredReports.length})</TabsTrigger>
+            <TabsTrigger value="submissions">Submissions ({filteredSubmissions.length})</TabsTrigger>
+            <TabsTrigger value="reports">Reports ({filteredReports.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="submissions">
@@ -349,20 +349,20 @@ export default function Regulatory() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Estudo</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Centro</TableHead>
-                      <TableHead>Data Planejada</TableHead>
-                      <TableHead>Data Submissão</TableHead>
+                      <TableHead>Study</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Site</TableHead>
+                      <TableHead>Planned Date</TableHead>
+                      <TableHead>Submission Date</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Prazo</TableHead>
+                      <TableHead>Deadline</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredSubmissions.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                          Nenhuma submissão encontrada
+                          No submissions found
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -387,10 +387,10 @@ export default function Regulatory() {
                               {sub.site ? `${sub.site.code} · ${sub.site.name}` : "—"}
                             </TableCell>
                             <TableCell>
-                              {sub.planned_date ? format(parseLocalDate(sub.planned_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                              {sub.planned_date ? format(parseLocalDate(sub.planned_date), "MM/dd/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
-                              {sub.submission_date ? format(parseLocalDate(sub.submission_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                              {sub.submission_date ? format(parseLocalDate(sub.submission_date), "MM/dd/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[sub.status]}>
@@ -421,19 +421,19 @@ export default function Regulatory() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Estudo</TableHead>
-                      <TableHead>Tipo de Relatório</TableHead>
-                      <TableHead>Data Limite</TableHead>
-                      <TableHead>Data Envio</TableHead>
+                      <TableHead>Study</TableHead>
+                      <TableHead>Report Type</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Submitted Date</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Prazo</TableHead>
+                      <TableHead>Deadline</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredReports.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                          Nenhum relatório encontrado
+                          No reports found
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -455,10 +455,10 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>{rep.report_type}</TableCell>
                             <TableCell>
-                              {format(parseLocalDate(rep.due_date), "dd/MM/yyyy", { locale: ptBR })}
+                              {format(parseLocalDate(rep.due_date), "MM/dd/yyyy", { locale: enUS })}
                             </TableCell>
                             <TableCell>
-                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "MM/dd/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[rep.status]}>

@@ -58,7 +58,7 @@ export default function ConfigureFlowDialog({
       setSteps(data || []);
     } catch (error: any) {
       toast({
-        title: "Erro ao carregar etapas",
+        title: "Error loading steps",
         description: error.message,
         variant: "destructive",
       });
@@ -90,8 +90,8 @@ export default function ConfigureFlowDialog({
   const handleSave = async () => {
     if (!selectedProjectId) {
       toast({
-        title: "Erro",
-        description: "Selecione um estudo",
+        title: "Error",
+        description: "Select a study",
         variant: "destructive",
       });
       return;
@@ -100,8 +100,8 @@ export default function ConfigureFlowDialog({
     const invalidSteps = steps.filter((s) => !s.step_name.trim());
     if (invalidSteps.length > 0) {
       toast({
-        title: "Erro",
-        description: "Todas as etapas devem ter um nome",
+        title: "Error",
+        description: "All steps must have a name",
         variant: "destructive",
       });
       return;
@@ -128,13 +128,13 @@ export default function ConfigureFlowDialog({
       }
 
       toast({
-        title: "Sucesso",
-        description: "Fluxo regulatório configurado com sucesso",
+        title: "Success",
+        description: "Regulatory flow configured successfully",
       });
       onSuccess();
     } catch (error: any) {
       toast({
-        title: "Erro ao salvar fluxo",
+        title: "Error saving flow",
         description: error.message,
         variant: "destructive",
       });
@@ -147,14 +147,14 @@ export default function ConfigureFlowDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Configurar Fluxo Regulatório</DialogTitle>
+          <DialogTitle>Configure Regulatory Flow</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="project">Estudo</Label>
+            <Label htmlFor="project">Study</Label>
             <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o estudo" />
+                <SelectValue placeholder="Select study" />
               </SelectTrigger>
               <SelectContent>
                 {projects.map((project) => (
@@ -169,10 +169,10 @@ export default function ConfigureFlowDialog({
           {selectedProjectId && (
             <>
               <div className="flex items-center justify-between">
-                <Label>Etapas do Fluxo</Label>
+                <Label>Flow Steps</Label>
                 <Button type="button" variant="outline" size="sm" onClick={addStep}>
                   <Plus className="h-4 w-4 mr-1" />
-                  Adicionar Etapa
+                  Add Step
                 </Button>
               </div>
 
@@ -180,7 +180,7 @@ export default function ConfigureFlowDialog({
                 {steps.length === 0 ? (
                   <Card>
                     <CardContent className="py-8 text-center text-muted-foreground">
-                      Nenhuma etapa configurada. Clique em "Adicionar Etapa" para começar.
+                      No steps configured. Click "Add Step" to begin.
                     </CardContent>
                   </Card>
                 ) : (
@@ -193,17 +193,17 @@ export default function ConfigureFlowDialog({
                           </div>
                           <div className="flex-1 space-y-3">
                             <Input
-                              placeholder="Nome da etapa"
+                              placeholder="Step name"
                               value={step.step_name}
                               onChange={(e) => updateStep(index, "step_name", e.target.value)}
                             />
                             <div className="flex items-center gap-2">
                               <Label className="text-sm text-muted-foreground whitespace-nowrap">
-                                Prazo (dias):
+                                Deadline (days):
                               </Label>
                               <Input
                                 type="number"
-                                placeholder="Ex: 30"
+                                placeholder="e.g., 30"
                                 className="w-24"
                                 value={step.deadline_days || ""}
                                 onChange={(e) =>
@@ -236,10 +236,10 @@ export default function ConfigureFlowDialog({
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              Cancel
             </Button>
             <Button onClick={handleSave} disabled={loading || !selectedProjectId}>
-              {loading ? "Salvando..." : "Salvar Fluxo"}
+              {loading ? "Saving..." : "Save Flow"}
             </Button>
           </div>
         </div>
