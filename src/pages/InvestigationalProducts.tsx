@@ -235,12 +235,51 @@ export default function InvestigationalProducts() {
     toast.success("Deleted"); loadRecords();
   };
 
-  const exportData = useMemo(() => records.map((r) => ({
+  // Inventory column filters
+  const [invFilters, setInvFilters] = useState<Record<string, string>>({
+    code: "", description: "", lot_number: "", expiration_date: "", quantity: "",
+    site: "", invoice: "", correction_invoice: "", delivery_date: "",
+    usage: "", usage_date: "", return_info: "", note: "",
+  });
+  const setInvFilter = (k: string, v: string) =>
+    setInvFilters((prev) => ({ ...prev, [k]: v }));
+  const clearInvFilters = () =>
+    setInvFilters({
+      code: "", description: "", lot_number: "", expiration_date: "", quantity: "",
+      site: "", invoice: "", correction_invoice: "", delivery_date: "",
+      usage: "", usage_date: "", return_info: "", note: "",
+    });
+  const hasInvFilters = Object.values(invFilters).some((v) => v.trim() !== "");
+
+  const filteredRecords = useMemo(() => {
+    const match = (val: any, q: string) => {
+      if (!q.trim()) return true;
+      const s = val == null ? "" : String(val);
+      return s.toLowerCase().includes(q.trim().toLowerCase());
+    };
+    return records.filter((r) =>
+      match(r.code, invFilters.code) &&
+      match(r.description, invFilters.description) &&
+      match(r.lot_number, invFilters.lot_number) &&
+      match(r.expiration_date, invFilters.expiration_date) &&
+      match(r.quantity, invFilters.quantity) &&
+      match(r.site, invFilters.site) &&
+      match(r.invoice, invFilters.invoice) &&
+      match(r.correction_invoice, invFilters.correction_invoice) &&
+      match(r.delivery_date, invFilters.delivery_date) &&
+      match(r.usage, invFilters.usage) &&
+      match(r.usage_date, invFilters.usage_date) &&
+      match(r.return_info, invFilters.return_info) &&
+      match(r.note, invFilters.note)
+    );
+  }, [records, invFilters]);
+
+  const exportData = useMemo(() => filteredRecords.map((r) => ({
     Code: r.code, Description: r.description, "Lot#": r.lot_number, Expiration: r.expiration_date,
     Quantity: r.quantity, Site: r.site, Invoice: r.invoice, "Correction Invoice": r.correction_invoice,
     "Delivery date": r.delivery_date, Usage: r.usage, "Usage date": r.usage_date,
     Return: r.return_info, Note: r.note,
-  })), [records]);
+  })), [filteredRecords]);
 
   const supplyExportData = useMemo(() => supplies.map((r) => ({
     Operation: r.operation, Date: r.date, Invoice: r.invoice, Description: r.description,
