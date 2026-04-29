@@ -235,12 +235,51 @@ export default function InvestigationalProducts() {
     toast.success("Deleted"); loadRecords();
   };
 
-  const exportData = useMemo(() => records.map((r) => ({
+  // Inventory column filters
+  const [invFilters, setInvFilters] = useState<Record<string, string>>({
+    code: "", description: "", lot_number: "", expiration_date: "", quantity: "",
+    site: "", invoice: "", correction_invoice: "", delivery_date: "",
+    usage: "", usage_date: "", return_info: "", note: "",
+  });
+  const setInvFilter = (k: string, v: string) =>
+    setInvFilters((prev) => ({ ...prev, [k]: v }));
+  const clearInvFilters = () =>
+    setInvFilters({
+      code: "", description: "", lot_number: "", expiration_date: "", quantity: "",
+      site: "", invoice: "", correction_invoice: "", delivery_date: "",
+      usage: "", usage_date: "", return_info: "", note: "",
+    });
+  const hasInvFilters = Object.values(invFilters).some((v) => v.trim() !== "");
+
+  const filteredRecords = useMemo(() => {
+    const match = (val: any, q: string) => {
+      if (!q.trim()) return true;
+      const s = val == null ? "" : String(val);
+      return s.toLowerCase().includes(q.trim().toLowerCase());
+    };
+    return records.filter((r) =>
+      match(r.code, invFilters.code) &&
+      match(r.description, invFilters.description) &&
+      match(r.lot_number, invFilters.lot_number) &&
+      match(r.expiration_date, invFilters.expiration_date) &&
+      match(r.quantity, invFilters.quantity) &&
+      match(r.site, invFilters.site) &&
+      match(r.invoice, invFilters.invoice) &&
+      match(r.correction_invoice, invFilters.correction_invoice) &&
+      match(r.delivery_date, invFilters.delivery_date) &&
+      match(r.usage, invFilters.usage) &&
+      match(r.usage_date, invFilters.usage_date) &&
+      match(r.return_info, invFilters.return_info) &&
+      match(r.note, invFilters.note)
+    );
+  }, [records, invFilters]);
+
+  const exportData = useMemo(() => filteredRecords.map((r) => ({
     Code: r.code, Description: r.description, "Lot#": r.lot_number, Expiration: r.expiration_date,
     Quantity: r.quantity, Site: r.site, Invoice: r.invoice, "Correction Invoice": r.correction_invoice,
     "Delivery date": r.delivery_date, Usage: r.usage, "Usage date": r.usage_date,
     Return: r.return_info, Note: r.note,
-  })), [records]);
+  })), [filteredRecords]);
 
   const supplyExportData = useMemo(() => supplies.map((r) => ({
     Operation: r.operation, Date: r.date, Invoice: r.invoice, Description: r.description,
@@ -420,59 +459,94 @@ export default function InvestigationalProducts() {
                     No IP records yet. Click "New IP" to get started.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Code</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Lot#</TableHead>
-                          <TableHead>Expiration</TableHead>
-                          <TableHead>Qty</TableHead>
-                          <TableHead>Site</TableHead>
-                          <TableHead>Invoice</TableHead>
-                          <TableHead>Correction Invoice</TableHead>
-                          <TableHead>Delivery</TableHead>
-                          <TableHead>Usage</TableHead>
-                          <TableHead>Usage date</TableHead>
-                          <TableHead>Return</TableHead>
-                          <TableHead>Note</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {records.map((r) => (
-                          <TableRow key={r.id}>
-                            <TableCell className="font-medium">{r.code}</TableCell>
-                            <TableCell className="text-sm">{r.description || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.lot_number || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.expiration_date || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.quantity ?? "—"}</TableCell>
-                            <TableCell className="text-sm">{r.site || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.invoice || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.correction_invoice || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.delivery_date || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.usage || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.usage_date || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.return_info || "—"}</TableCell>
-                            <TableCell className="text-sm max-w-[200px] truncate" title={r.note || ""}>
-                              {r.note || "—"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
+                  <>
+                    {hasInvFilters && (
+                      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40 text-xs text-muted-foreground">
+                        <span>
+                          Showing {filteredRecords.length} of {records.length} records
+                        </span>
+                        <Button type="button" variant="ghost" size="sm" onClick={clearInvFilters}>
+                          Clear filters
+                        </Button>
+                      </div>
+                    )}
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Code</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Lot#</TableHead>
+                            <TableHead>Expiration</TableHead>
+                            <TableHead>Qty</TableHead>
+                            <TableHead>Site</TableHead>
+                            <TableHead>Invoice</TableHead>
+                            <TableHead>Correction Invoice</TableHead>
+                            <TableHead>Delivery</TableHead>
+                            <TableHead>Usage</TableHead>
+                            <TableHead>Usage date</TableHead>
+                            <TableHead>Return</TableHead>
+                            <TableHead>Note</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                          <TableRow className="hover:bg-transparent">
+                            {[
+                              "code","description","lot_number","expiration_date","quantity",
+                              "site","invoice","correction_invoice","delivery_date",
+                              "usage","usage_date","return_info","note",
+                            ].map((k) => (
+                              <TableHead key={k} className="py-2">
+                                <Input
+                                  value={invFilters[k]}
+                                  onChange={(e) => setInvFilter(k, e.target.value)}
+                                  placeholder="Filter…"
+                                  className="h-8 text-xs"
+                                />
+                              </TableHead>
+                            ))}
+                            <TableHead />
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredRecords.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
+                                No records match the current filters.
+                              </TableCell>
+                            </TableRow>
+                          ) : filteredRecords.map((r) => (
+                            <TableRow key={r.id}>
+                              <TableCell className="font-medium">{r.code}</TableCell>
+                              <TableCell className="text-sm">{r.description || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.lot_number || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.expiration_date || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.quantity ?? "—"}</TableCell>
+                              <TableCell className="text-sm">{r.site || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.invoice || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.correction_invoice || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.delivery_date || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.usage || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.usage_date || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.return_info || "—"}</TableCell>
+                              <TableCell className="text-sm max-w-[200px] truncate" title={r.note || ""}>
+                                {r.note || "—"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                  <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
