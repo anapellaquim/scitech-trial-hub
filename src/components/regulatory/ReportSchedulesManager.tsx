@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,9 +119,9 @@ export default function ReportSchedulesManager({ projects }: Props) {
   const project = projects.find(p => p.id === projectId);
 
   const computeStartDate = (s: Schedule): Date | null => {
-    if (s.start_event === "custom_date" && s.custom_start_date) return new Date(s.custom_start_date);
-    if (s.start_event === "study_start" && project?.start_date) return new Date(project.start_date);
-    if (s.start_event === "study_end" && project?.end_date) return new Date(project.end_date);
+    if (s.start_event === "custom_date" && s.custom_start_date) return parseLocalDate(s.custom_start_date);
+    if (s.start_event === "study_start" && project?.start_date) return parseLocalDate(project.start_date);
+    if (s.start_event === "study_end" && project?.end_date) return parseLocalDate(project.end_date);
     return null;
   };
 
@@ -128,7 +129,7 @@ export default function ReportSchedulesManager({ projects }: Props) {
     const start = computeStartDate(s);
     if (!start) { toast.error("Estudo sem data de referência. Configure start/end date."); return; }
     const firstDue = addDays(start, s.first_due_offset_days);
-    const horizon = s.end_date ? new Date(s.end_date) : (project?.end_date ? new Date(project.end_date) : addMonths(new Date(), 24));
+    const horizon = s.end_date ? parseLocalDate(s.end_date) : (project?.end_date ? parseLocalDate(project.end_date) : addMonths(new Date(), 24));
     const stepMonths: Record<string, number> = { once: 0, monthly: 1, quarterly: 3, semiannual: 6, annual: 12 };
     const step = stepMonths[s.recurrence] ?? 12;
 

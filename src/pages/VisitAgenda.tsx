@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
@@ -133,13 +134,13 @@ export default function VisitAgenda() {
   });
 
   const getVisitsForDay = (day: Date) => 
-    filteredVisits.filter(v => isSameDay(new Date(v.scheduled_date), day));
+    filteredVisits.filter(v => isSameDay(parseLocalDate(v.scheduled_date), day));
 
   const getTasksForDay = (day: Date) => 
-    tasks.filter(t => t.end_date && isSameDay(new Date(t.end_date), day));
+    tasks.filter(t => t.end_date && isSameDay(parseLocalDate(t.end_date), day));
 
   const upcomingVisits = filteredVisits
-    .filter(v => new Date(v.scheduled_date) >= new Date() && v.status !== "cancelled")
+    .filter(v => parseLocalDate(v.scheduled_date) >= new Date() && v.status !== "cancelled")
     .slice(0, 10);
 
   return (
@@ -307,7 +308,7 @@ export default function VisitAgenda() {
                     <CardContent className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>{format(new Date(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}</span>
+                        <span>{format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}</span>
                         {visit.scheduled_time && (
                           <>
                             <Clock className="h-4 w-4 text-muted-foreground ml-2" />
@@ -358,7 +359,7 @@ export default function VisitAgenda() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        {format(new Date(visit.scheduled_date), "dd/MM", { locale: ptBR })}
+                        {format(parseLocalDate(visit.scheduled_date), "dd/MM", { locale: ptBR })}
                       </p>
                       {visit.scheduled_time && (
                         <p className="text-xs text-muted-foreground">{visit.scheduled_time.slice(0, 5)}</p>

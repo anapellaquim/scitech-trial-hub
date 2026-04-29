@@ -463,7 +463,7 @@ export default function Visits() {
           status: getStatus(),
           scheduled_date: editVisitScheduledDate || null,
           completed_at: editVisitCompleted && editVisitCompletedDate 
-            ? new Date(editVisitCompletedDate + "T12:00:00").toISOString() 
+            ? parseLocalDate(editVisitCompletedDate + "T12:00:00").toISOString() 
             : null,
         };
 
@@ -483,7 +483,7 @@ export default function Visits() {
           payment_status: "pending",
           payment_amount: visitType?.value || 0,
           completed_at: editVisitCompleted && editVisitCompletedDate 
-            ? new Date(editVisitCompletedDate + "T12:00:00").toISOString() 
+            ? parseLocalDate(editVisitCompletedDate + "T12:00:00").toISOString() 
             : null,
           scheduled_date: editVisitScheduledDate || null,
         });

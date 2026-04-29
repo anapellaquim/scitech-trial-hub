@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -30,7 +31,7 @@ const priorityLabels: Record<string, string> = {
 
 const formatDate = (date: string | null) => {
   if (!date) return '-';
-  return format(new Date(date), 'dd/MM/yyyy', { locale: ptBR });
+  return format(parseLocalDate(date), 'dd/MM/yyyy', { locale: ptBR });
 };
 
 export const useScheduleExport = () => {

@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -154,7 +155,7 @@ const VersionHistoryDialog = ({
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {format(new Date(version.created_at), "dd MMM yyyy 'às' HH:mm", {
+                            {format(parseLocalDate(version.created_at), "dd MMM yyyy 'às' HH:mm", {
                               locale: ptBR,
                             })}
                           </div>

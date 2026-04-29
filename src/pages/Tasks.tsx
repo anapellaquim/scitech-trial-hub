@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
@@ -208,12 +209,12 @@ export default function Tasks() {
 
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("pt-BR");
+    return parseLocalDate(date).toLocaleDateString("pt-BR");
   };
 
   const isOverdue = (endDate: string | null, status: string) => {
     if (!endDate || status === "completed" || status === "cancelled") return false;
-    return new Date(endDate) < new Date();
+    return parseLocalDate(endDate) < new Date();
   };
 
   // Apply filters
@@ -575,7 +576,7 @@ export default function Tasks() {
                         if (!a.end_date && !b.end_date) comparison = 0;
                         else if (!a.end_date) comparison = 1;
                         else if (!b.end_date) comparison = -1;
-                        else comparison = new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
+                        else comparison = parseLocalDate(a.end_date).getTime() - parseLocalDate(b.end_date).getTime();
                         break;
                       case "subtasks":
                         const subtasksA = a.subtask_count || 0;
@@ -595,7 +596,7 @@ export default function Tasks() {
                   return paginatedTasks.map((task) => {
                     const overdue = isOverdue(task.end_date, task.status);
                     const dueSoon = !overdue && task.end_date && task.status !== "completed" && task.status !== "cancelled" && (() => {
-                      const diffDays = (new Date(task.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
+                      const diffDays = (parseLocalDate(task.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
                       return diffDays >= 0 && diffDays <= 3;
                     })();
                     

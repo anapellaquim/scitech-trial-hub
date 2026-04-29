@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -160,7 +161,7 @@ export default function Regulatory() {
 
   const getDeadlineStatus = (date: string | null) => {
     if (!date) return null;
-    const dueDate = new Date(date);
+    const dueDate = parseLocalDate(date);
     const today = new Date();
     const daysUntil = differenceInDays(dueDate, today);
 
@@ -195,11 +196,11 @@ export default function Regulatory() {
 
   // Stats
   const pendingSubmissions = submissions.filter(s => s.status === "pending").length;
-  const overdueReports = reports.filter(r => r.status === "pending" && r.due_date && isPast(new Date(r.due_date))).length;
+  const overdueReports = reports.filter(r => r.status === "pending" && r.due_date && isPast(parseLocalDate(r.due_date))).length;
   const approvedSubmissions = submissions.filter(s => s.status === "approved").length;
   const upcomingDeadlines = reports.filter(r => {
     if (!r.due_date || r.status !== "pending") return false;
-    const dueDate = new Date(r.due_date);
+    const dueDate = parseLocalDate(r.due_date);
     return isWithinInterval(dueDate, { start: new Date(), end: addDays(new Date(), 30) });
   }).length;
 
@@ -391,10 +392,10 @@ export default function Regulatory() {
                               {sub.site ? `${sub.site.site_code} · ${sub.site.name}` : "—"}
                             </TableCell>
                             <TableCell>
-                              {sub.planned_date ? format(new Date(sub.planned_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                              {sub.planned_date ? format(parseLocalDate(sub.planned_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell>
-                              {sub.submission_date ? format(new Date(sub.submission_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                              {sub.submission_date ? format(parseLocalDate(sub.submission_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[sub.status]}>
@@ -459,10 +460,10 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>{rep.report_type}</TableCell>
                             <TableCell>
-                              {format(new Date(rep.due_date), "dd/MM/yyyy", { locale: ptBR })}
+                              {format(parseLocalDate(rep.due_date), "dd/MM/yyyy", { locale: ptBR })}
                             </TableCell>
                             <TableCell>
-                              {rep.submitted_date ? format(new Date(rep.submitted_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
+                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[rep.status]}>

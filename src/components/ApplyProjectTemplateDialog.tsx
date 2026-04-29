@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -159,7 +160,7 @@ export default function ApplyProjectTemplateDialog({
         subtasks?: TemplateSubtask[];
       }> = [];
 
-      const baseDate = new Date(startDate);
+      const baseDate = parseLocalDate(startDate);
       let currentPhaseStartDay = 0;
 
       // Sort phases by order

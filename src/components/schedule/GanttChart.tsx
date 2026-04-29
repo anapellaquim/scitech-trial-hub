@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useMemo, useState } from "react";
 import { format, differenceInDays, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -77,7 +78,7 @@ const calculateCriticalPath = (tasks: ScheduleTask[], dependencies: TaskDependen
     const start = task.planned_start_date || task.start_date;
     const end = task.planned_end_date || task.end_date;
     if (!start || !end) return 1;
-    return Math.max(1, differenceInDays(new Date(end), new Date(start)) + 1);
+    return Math.max(1, differenceInDays(parseLocalDate(end), parseLocalDate(start)) + 1);
   };
 
   // Forward pass - calculate earliest start (ES) and earliest finish (EF)
@@ -161,13 +162,13 @@ const calculateCriticalPath = (tasks: ScheduleTask[], dependencies: TaskDependen
     const latestEndDate = Math.max(
       ...incompleteTasks.map(t => {
         const end = t.planned_end_date || t.end_date;
-        return end ? new Date(end).getTime() : 0;
+        return end ? parseLocalDate(end).getTime() : 0;
       })
     );
     
     incompleteTasks.forEach(task => {
       const end = task.planned_end_date || task.end_date;
-      if (end && new Date(end).getTime() === latestEndDate) {
+      if (end && parseLocalDate(end).getTime() === latestEndDate) {
         criticalTasks.add(task.id);
       }
     });
@@ -222,8 +223,8 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
     let end: Date;
 
     if (periodType === "custom" && customStartDate && customEndDate) {
-      start = new Date(customStartDate);
-      end = new Date(customEndDate);
+      start = parseLocalDate(customStartDate);
+      end = parseLocalDate(customEndDate);
     } else if (periodType === "1m") {
       const baseDate = addMonths(today, viewOffset);
       start = startOfMonth(baseDate);
@@ -252,7 +253,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
         t.planned_end_date || t.end_date,
         t.actual_start_date,
         t.actual_end_date
-      ]).filter(Boolean).map(d => new Date(d!));
+      ]).filter(Boolean).map(d => parseLocalDate(d!));
 
       if (dates.length === 0) {
         return {
@@ -263,8 +264,8 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
         };
       }
 
-      const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
-      const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+      const minDate = parseLocalDate(Math.min(...dates.map(d => d.getTime())));
+      const maxDate = parseLocalDate(Math.max(...dates.map(d => d.getTime())));
       
       start = startOfMonth(addDays(minDate, -7));
       end = endOfMonth(addDays(maxDate, 14));
@@ -318,8 +319,8 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
         
         if (!taskStart && !taskEnd) return false;
         
-        const start = taskStart ? new Date(taskStart) : null;
-        const end = taskEnd ? new Date(taskEnd) : null;
+        const start = taskStart ? parseLocalDate(taskStart) : null;
+        const end = taskEnd ? parseLocalDate(taskEnd) : null;
         
         // Check if task overlaps with current period
         if (start && end) {
@@ -379,8 +380,8 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
     
     if (!taskStart || !taskEnd) return null;
 
-    const startCol = differenceInDays(new Date(taskStart), startDate);
-    const duration = differenceInDays(new Date(taskEnd), new Date(taskStart)) + 1;
+    const startCol = differenceInDays(parseLocalDate(taskStart), startDate);
+    const duration = differenceInDays(parseLocalDate(taskEnd), parseLocalDate(taskStart)) + 1;
 
     return {
       left: startCol * cellWidth,
@@ -392,8 +393,8 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
   const getActualTaskPosition = (task: ScheduleTask) => {
     if (!task.actual_start_date || !task.actual_end_date) return null;
 
-    const startCol = differenceInDays(new Date(task.actual_start_date), startDate);
-    const duration = differenceInDays(new Date(task.actual_end_date), new Date(task.actual_start_date)) + 1;
+    const startCol = differenceInDays(parseLocalDate(task.actual_start_date), startDate);
+    const duration = differenceInDays(parseLocalDate(task.actual_end_date), parseLocalDate(task.actual_start_date)) + 1;
 
     return {
       left: startCol * cellWidth,
@@ -408,7 +409,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
 
   const isOverdue = (task: ScheduleTask) => {
     const endDate = task.planned_end_date || task.end_date;
-    return endDate && new Date(endDate) < new Date() && task.status !== "completed";
+    return endDate && parseLocalDate(endDate) < new Date() && task.status !== "completed";
   };
 
   const isCritical = (taskId: string) => showCriticalPath && criticalPathTasks.has(taskId);
@@ -837,7 +838,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
                             <div className="text-xs">Progresso: {task.progress_percentage}%</div>
                             {task.planned_start_date && (
                               <div className="text-xs">
-                                Planejado: {format(new Date(task.planned_start_date), "dd/MM")} - {task.planned_end_date ? format(new Date(task.planned_end_date), "dd/MM") : "?"}
+                                Planejado: {format(parseLocalDate(task.planned_start_date), "dd/MM")} - {task.planned_end_date ? format(parseLocalDate(task.planned_end_date), "dd/MM") : "?"}
                               </div>
                             )}
                           </div>
@@ -859,7 +860,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
                         </TooltipTrigger>
                         <TooltipContent>
                           <div className="text-xs">
-                            Real: {format(new Date(task.actual_start_date!), "dd/MM")} - {format(new Date(task.actual_end_date!), "dd/MM")}
+                            Real: {format(parseLocalDate(task.actual_start_date!), "dd/MM")} - {format(parseLocalDate(task.actual_end_date!), "dd/MM")}
                           </div>
                         </TooltipContent>
                       </Tooltip>
