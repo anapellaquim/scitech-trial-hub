@@ -441,7 +441,7 @@ export default function InvestigationalProducts() {
                       <Input
                         value={invSearch}
                         onChange={(e) => setInvSearch(e.target.value)}
-                        placeholder="Search by site, invoice, code or usage…"
+                        placeholder="Search across all columns…"
                         className="h-9 max-w-md"
                       />
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
