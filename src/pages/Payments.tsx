@@ -2324,6 +2324,41 @@ export default function Payments() {
                   />
                 </div>
               )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Centro de Custo</label>
+                <Input
+                  placeholder="Ex.: CC-001 / Operações"
+                  value={vendorFormData.cost_center}
+                  onChange={(e) => setVendorFormData(prev => ({ ...prev, cost_center: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Classe de Valor</label>
+                <Input
+                  placeholder="Ex.: CAPEX, OPEX, Honorários…"
+                  value={vendorFormData.value_class}
+                  onChange={(e) => setVendorFormData(prev => ({ ...prev, value_class: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium">Estudo Vinculado</label>
+                <Select
+                  value={vendorFormData.project_id || selectedProject || "__na__"}
+                  onValueChange={(v) => setVendorFormData(prev => ({ ...prev, project_id: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o estudo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__na__">Não se aplica (sem estudo vinculado)</SelectItem>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-medium">Descrição</label>
                 <Input
