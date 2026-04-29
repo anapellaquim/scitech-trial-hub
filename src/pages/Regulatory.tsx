@@ -20,7 +20,7 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 import EditSubmissionDialog from "@/components/regulatory/EditSubmissionDialog";
 import EditReportDialog from "@/components/regulatory/EditReportDialog";
-import ReportSchedulesManager from "@/components/regulatory/ReportSchedulesManager";
+
 
 interface Project {
   id: string;
@@ -341,12 +341,7 @@ export default function Regulatory() {
           <TabsList>
             <TabsTrigger value="submissions">Submissões ({filteredSubmissions.length})</TabsTrigger>
             <TabsTrigger value="reports">Relatórios ({filteredReports.length})</TabsTrigger>
-            <TabsTrigger value="schedule">Cronograma</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="schedule">
-            <ReportSchedulesManager projects={projects} />
-          </TabsContent>
 
           <TabsContent value="submissions">
             <Card>
