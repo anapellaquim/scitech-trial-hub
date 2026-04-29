@@ -433,16 +433,17 @@ export default function InvestigationalProducts() {
                   </div>
                 ) : (
                   <>
-                    {hasInvFilters && (
-                      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40 text-xs text-muted-foreground">
-                        <span>
-                          Showing {filteredRecords.length} of {records.length} records
-                        </span>
-                        <Button type="button" variant="ghost" size="sm" onClick={clearInvFilters}>
-                          Clear filters
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-muted/30">
+                      <Input
+                        value={invSearch}
+                        onChange={(e) => setInvSearch(e.target.value)}
+                        placeholder="Search by site, invoice, code or usage…"
+                        className="h-9 max-w-md"
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {filteredRecords.length} of {records.length}
+                      </span>
+                    </div>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
@@ -461,23 +462,6 @@ export default function InvestigationalProducts() {
                             <TableHead>Return</TableHead>
                             <TableHead>Note</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                          <TableRow className="hover:bg-transparent">
-                            {[
-                              "code","description","lot_number","expiration_date","quantity",
-                              "site","invoice","correction_invoice","delivery_date",
-                              "usage","usage_date","return_info","note",
-                            ].map((k) => (
-                              <TableHead key={k} className="py-2">
-                                <Input
-                                  value={invFilters[k]}
-                                  onChange={(e) => setInvFilter(k, e.target.value)}
-                                  placeholder="Filter…"
-                                  className="h-8 text-xs"
-                                />
-                              </TableHead>
-                            ))}
-                            <TableHead />
                           </TableRow>
                         </TableHeader>
                         <TableBody>
