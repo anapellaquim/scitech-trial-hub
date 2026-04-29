@@ -1430,7 +1430,10 @@ export default function Payments() {
                         <SelectContent>
                           <SelectItem value="select">Selecione um centro</SelectItem>
                           {centerSummaries
-                            .filter((center) => center.name && center.name.trim() !== "")
+                            .filter((center) => {
+                              const name = (center.name ?? "").trim().toLowerCase();
+                              return name !== "" && name !== "sem nome";
+                            })
                             .map((center) => (
                               <SelectItem key={center.code} value={center.code}>
                                 {center.code} - {center.name}
