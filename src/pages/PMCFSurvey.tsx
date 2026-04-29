@@ -245,6 +245,7 @@ export default function PMCFSurvey() {
       onProjectChange={setSelectedProject}
       exportData={exportData}
       exportFileName="pmcf_monthly_checks"
+      hideProjectSelector
     >
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><FileText className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{stats.total}</p><p className="text-xs text-muted-foreground">Total Surveys</p></div></div></CardContent></Card>
