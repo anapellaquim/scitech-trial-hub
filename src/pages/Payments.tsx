@@ -328,6 +328,9 @@ export default function Payments() {
       recurrence_type: "none",
       recurrence_end_date: "",
       status: "programado",
+      cost_center: "",
+      value_class: "",
+      project_id: "",
     });
     loadVendorPayments();
   };
