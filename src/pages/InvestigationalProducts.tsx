@@ -468,7 +468,7 @@ export default function InvestigationalProducts() {
                           {filteredRecords.length === 0 ? (
                             <TableRow>
                               <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
-                                No records match the current filters.
+                                No records match your search.
                               </TableCell>
                             </TableRow>
                           ) : filteredRecords.map((r) => (
