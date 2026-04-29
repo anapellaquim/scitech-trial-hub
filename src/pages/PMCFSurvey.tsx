@@ -398,6 +398,12 @@ export default function PMCFSurvey() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editingSurvey ? "Edit Survey" : "New Survey"}</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2"><Label>Study *</Label>
+              <Select value={surveyForm.project_id ?? ""} onValueChange={v => setSurveyForm({ ...surveyForm, project_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Select study" /></SelectTrigger>
+                <SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.protocol_number ? `${p.protocol_number} — ` : ""}{p.title}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div><Label>Code *</Label><Input value={surveyForm.survey_code ?? ""} onChange={e => setSurveyForm({ ...surveyForm, survey_code: e.target.value })} /></div>
             <div><Label>Status</Label>
               <Select value={surveyForm.status} onValueChange={v => setSurveyForm({ ...surveyForm, status: v })}>
