@@ -16,6 +16,7 @@ interface ModulePageLayoutProps {
   showGeneralOption?: boolean;
   generalValue?: string;
   generalLabel?: string;
+  hideProjectSelector?: boolean;
 }
 
 export default function ModulePageLayout({
