@@ -76,11 +76,15 @@ export default function EditReportDialog({
   onSuccess,
 }: EditReportDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     report_type: "",
     due_date: "",
     submitted_date: "",
+    approval_date: "",
+    code: "",
     status: "pending",
     notes: "",
     recurrence_type: "none",
@@ -91,9 +95,12 @@ export default function EditReportDialog({
     if (report && open) {
       setFormData({
         project_id: report.project_id || "",
+        site_id: (report as any).site_id || "none",
         report_type: report.report_type,
         due_date: report.due_date || "",
         submitted_date: report.submitted_date || "",
+        approval_date: (report as any).approval_date || "",
+        code: (report as any).code || "",
         status: report.status,
         notes: report.notes || "",
         recurrence_type: report.recurrence_type || "none",
@@ -101,6 +108,11 @@ export default function EditReportDialog({
       });
     }
   }, [report, open]);
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
