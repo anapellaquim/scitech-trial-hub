@@ -235,44 +235,17 @@ export default function InvestigationalProducts() {
     toast.success("Deleted"); loadRecords();
   };
 
-  // Inventory column filters
-  const [invFilters, setInvFilters] = useState<Record<string, string>>({
-    code: "", description: "", lot_number: "", expiration_date: "", quantity: "",
-    site: "", invoice: "", correction_invoice: "", delivery_date: "",
-    usage: "", usage_date: "", return_info: "", note: "",
-  });
-  const setInvFilter = (k: string, v: string) =>
-    setInvFilters((prev) => ({ ...prev, [k]: v }));
-  const clearInvFilters = () =>
-    setInvFilters({
-      code: "", description: "", lot_number: "", expiration_date: "", quantity: "",
-      site: "", invoice: "", correction_invoice: "", delivery_date: "",
-      usage: "", usage_date: "", return_info: "", note: "",
-    });
-  const hasInvFilters = Object.values(invFilters).some((v) => v.trim() !== "");
+  // Inventory search (site, invoice, code, usage)
+  const [invSearch, setInvSearch] = useState("");
 
   const filteredRecords = useMemo(() => {
-    const match = (val: any, q: string) => {
-      if (!q.trim()) return true;
-      const s = val == null ? "" : String(val);
-      return s.toLowerCase().includes(q.trim().toLowerCase());
-    };
-    return records.filter((r) =>
-      match(r.code, invFilters.code) &&
-      match(r.description, invFilters.description) &&
-      match(r.lot_number, invFilters.lot_number) &&
-      match(r.expiration_date, invFilters.expiration_date) &&
-      match(r.quantity, invFilters.quantity) &&
-      match(r.site, invFilters.site) &&
-      match(r.invoice, invFilters.invoice) &&
-      match(r.correction_invoice, invFilters.correction_invoice) &&
-      match(r.delivery_date, invFilters.delivery_date) &&
-      match(r.usage, invFilters.usage) &&
-      match(r.usage_date, invFilters.usage_date) &&
-      match(r.return_info, invFilters.return_info) &&
-      match(r.note, invFilters.note)
-    );
-  }, [records, invFilters]);
+    const q = invSearch.trim().toLowerCase();
+    if (!q) return records;
+    return records.filter((r) => {
+      const fields = [r.site, r.invoice, r.code, r.usage];
+      return fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q));
+    });
+  }, [records, invSearch]);
 
   const exportData = useMemo(() => filteredRecords.map((r) => ({
     Code: r.code, Description: r.description, "Lot#": r.lot_number, Expiration: r.expiration_date,
@@ -460,16 +433,17 @@ export default function InvestigationalProducts() {
                   </div>
                 ) : (
                   <>
-                    {hasInvFilters && (
-                      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40 text-xs text-muted-foreground">
-                        <span>
-                          Showing {filteredRecords.length} of {records.length} records
-                        </span>
-                        <Button type="button" variant="ghost" size="sm" onClick={clearInvFilters}>
-                          Clear filters
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-muted/30">
+                      <Input
+                        value={invSearch}
+                        onChange={(e) => setInvSearch(e.target.value)}
+                        placeholder="Search by site, invoice, code or usage…"
+                        className="h-9 max-w-md"
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {filteredRecords.length} of {records.length}
+                      </span>
+                    </div>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
@@ -489,29 +463,12 @@ export default function InvestigationalProducts() {
                             <TableHead>Note</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                          <TableRow className="hover:bg-transparent">
-                            {[
-                              "code","description","lot_number","expiration_date","quantity",
-                              "site","invoice","correction_invoice","delivery_date",
-                              "usage","usage_date","return_info","note",
-                            ].map((k) => (
-                              <TableHead key={k} className="py-2">
-                                <Input
-                                  value={invFilters[k]}
-                                  onChange={(e) => setInvFilter(k, e.target.value)}
-                                  placeholder="Filter…"
-                                  className="h-8 text-xs"
-                                />
-                              </TableHead>
-                            ))}
-                            <TableHead />
-                          </TableRow>
                         </TableHeader>
                         <TableBody>
                           {filteredRecords.length === 0 ? (
                             <TableRow>
                               <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
-                                No records match the current filters.
+                                No records match your search.
                               </TableCell>
                             </TableRow>
                           ) : filteredRecords.map((r) => (
