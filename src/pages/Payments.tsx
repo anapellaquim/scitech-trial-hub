@@ -23,14 +23,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { parseLocalDate, todayDateOnly, formatDateOnly } from "@/lib/dateUtils";
 
-// Parse a "YYYY-MM-DD" string as a LOCAL date (avoids UTC shift that displays the previous day)
-function parseLocalDate(dateStr: string | null | undefined): Date {
-  if (!dateStr) return new Date(NaN);
-  const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  return new Date(dateStr);
-}
 
 interface Project {
   id: string;
