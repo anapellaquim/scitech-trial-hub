@@ -83,13 +83,16 @@ export default function NewReportDialog({
     try {
       const { error } = await supabase.from("regulatory_reports").insert({
         project_id: formData.project_id,
+        site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
         report_type: formData.report_type,
         due_date: formData.due_date,
+        approval_date: formData.approval_date || null,
+        code: formData.code || null,
         notes: formData.notes || null,
         status: "pending",
         recurrence_type: formData.recurrence_type,
         recurrence_end_date: formData.recurrence_end_date || null,
-      });
+      } as any);
 
       if (error) throw error;
 
@@ -101,9 +104,12 @@ export default function NewReportDialog({
       });
       onOpenChange(false);
       setFormData({ 
-        project_id: "", 
+        project_id: "",
+        site_id: "none",
         report_type: "", 
-        due_date: "", 
+        due_date: "",
+        approval_date: "",
+        code: "",
         notes: "",
         recurrence_type: "none",
         recurrence_end_date: "",
