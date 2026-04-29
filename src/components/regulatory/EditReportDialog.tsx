@@ -131,14 +131,17 @@ export default function EditReportDialog({
         .from("regulatory_reports")
         .update({
           project_id: formData.project_id,
+          site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
           report_type: formData.report_type,
           due_date: formData.due_date,
           submitted_date: formData.submitted_date || null,
+          approval_date: formData.approval_date || null,
+          code: formData.code || null,
           status: formData.status as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
           recurrence_type: formData.recurrence_type,
           recurrence_end_date: formData.recurrence_end_date || null,
-        })
+        } as any)
         .eq("id", report.id);
 
       if (error) throw error;
