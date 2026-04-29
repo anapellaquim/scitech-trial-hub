@@ -341,12 +341,7 @@ export default function Regulatory() {
           <TabsList>
             <TabsTrigger value="submissions">Submissões ({filteredSubmissions.length})</TabsTrigger>
             <TabsTrigger value="reports">Relatórios ({filteredReports.length})</TabsTrigger>
-            <TabsTrigger value="schedule">Cronograma</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="schedule">
-            <ReportSchedulesManager projects={projects} />
-          </TabsContent>
 
           <TabsContent value="submissions">
             <Card>
