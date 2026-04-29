@@ -258,7 +258,28 @@ export default function EditReportDialog({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Centro de Pesquisa</Label>
+            <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="code">Codificação do Relatório</Label>
+            <Input
+              id="code"
+              value={formData.code}
+              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              placeholder="Ex.: REL-2026-001"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="due_date">Data Limite *</Label>
               <Input
@@ -276,6 +297,15 @@ export default function EditReportDialog({
                 type="date"
                 value={formData.submitted_date}
                 onChange={(e) => setFormData({ ...formData, submitted_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Input
+                id="approval_date"
+                type="date"
+                value={formData.approval_date}
+                onChange={(e) => setFormData({ ...formData, approval_date: e.target.value })}
               />
             </div>
           </div>
