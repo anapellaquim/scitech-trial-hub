@@ -2642,7 +2642,7 @@ export type Database = {
             foreignKeyName: "regulatory_reports_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "study_sites"
+            referencedRelation: "research_centers"
             referencedColumns: ["id"]
           },
           {
@@ -2722,7 +2722,7 @@ export type Database = {
             foreignKeyName: "regulatory_submissions_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "study_sites"
+            referencedRelation: "research_centers"
             referencedColumns: ["id"]
           },
         ]

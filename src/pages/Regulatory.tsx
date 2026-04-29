@@ -29,7 +29,7 @@ interface Project {
   end_date?: string | null;
 }
 
-interface Site { id: string; site_code: string; name: string; project_id: string; }
+interface Site { id: string; code: string; name: string; project_id: string; }
 
 interface Submission {
   id: string;
@@ -114,7 +114,7 @@ export default function Regulatory() {
     try {
       const [projectsRes, sitesRes, submissionsRes, reportsRes] = await Promise.all([
         supabase.from("projects").select("id, title, start_date, end_date").order("title"),
-        supabase.from("study_sites").select("id, site_code, name, project_id").order("site_code"),
+        supabase.from("research_centers").select("id, code, name, project_id").order("code"),
         supabase.from("regulatory_submissions").select("*").order("planned_date", { ascending: true }),
         supabase.from("regulatory_reports").select("*").order("due_date", { ascending: true }),
       ]);
@@ -319,7 +319,7 @@ export default function Regulatory() {
             <SelectContent>
               <SelectItem value="all">Todos os centros</SelectItem>
               {sites.filter(s => s.project_id === projectFilter).map(s => (
-                <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>
+                <SelectItem key={s.id} value={s.id}>{s.code} · {s.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -389,7 +389,7 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>{sub.submission_type}</TableCell>
                             <TableCell className="text-sm text-muted-foreground">
-                              {sub.site ? `${sub.site.site_code} · ${sub.site.name}` : "—"}
+                              {sub.site ? `${sub.site.code} · ${sub.site.name}` : "—"}
                             </TableCell>
                             <TableCell>
                               {sub.planned_date ? format(parseLocalDate(sub.planned_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
