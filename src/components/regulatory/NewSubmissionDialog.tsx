@@ -62,8 +62,8 @@ export default function NewSubmissionDialog({
     e.preventDefault();
     if (!formData.project_id || !formData.submission_type) {
       toast({
-        title: "Erro",
-        description: "Estudo e tipo de submissão são obrigatórios",
+        title: "Error",
+        description: "Study and submission type are required",
         variant: "destructive",
       });
       return;
@@ -86,15 +86,15 @@ export default function NewSubmissionDialog({
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Submissão criada com sucesso",
+        title: "Success",
+        description: "Submission created successfully",
       });
       onOpenChange(false);
       setFormData({ project_id: "", site_id: "none", submission_type: "", planned_date: "", approval_date: "", code: "", notes: "", compliance_response: "" });
       onSuccess();
     } catch (error: any) {
       toast({
-        title: "Erro ao criar submissão",
+        title: "Error creating submission",
         description: error.message,
         variant: "destructive",
       });
@@ -107,17 +107,17 @@ export default function NewSubmissionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Nova Submissão Regulatória</DialogTitle>
+          <DialogTitle>New Regulatory Submission</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="project">Estudo *</Label>
+            <Label htmlFor="project">Study *</Label>
             <Select
               value={formData.project_id}
               onValueChange={(value) => setFormData({ ...formData, project_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o estudo" />
+                <SelectValue placeholder="Select study" />
               </SelectTrigger>
               <SelectContent>
                 {projects.map((project) => (
@@ -130,13 +130,13 @@ export default function NewSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo de Submissão *</Label>
+            <Label htmlFor="type">Submission Type *</Label>
             <Select
               value={formData.submission_type}
               onValueChange={(value) => setFormData({ ...formData, submission_type: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 {submissionTypes.map((type) => (
@@ -149,18 +149,18 @@ export default function NewSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="code">Codificação da Submissão / Emenda</Label>
+            <Label htmlFor="code">Submission / Amendment Code</Label>
             <Input
               id="code"
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              placeholder="Ex.: SUB-2026-001 ou EMD-2026-002"
+              placeholder="e.g., SUB-2026-001 or AMD-2026-002"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="planned_date">Data Planejada</Label>
+              <Label htmlFor="planned_date">Planned Date</Label>
               <Input
                 id="planned_date"
                 type="date"
@@ -169,7 +169,7 @@ export default function NewSubmissionDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Label htmlFor="approval_date">Approval Date</Label>
               <Input
                 id="approval_date"
                 type="date"
@@ -180,44 +180,44 @@ export default function NewSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Centro de Pesquisa</Label>
+            <Label>Research Center</Label>
             <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
-              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Optional" : "Select a study first"} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                <SelectItem value="none">— None (entire study) —</SelectItem>
                 {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} · {s.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Observações</Label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Observações adicionais..."
+              placeholder="Additional notes..."
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="compliance_response">Atendimento de Exigência</Label>
+            <Label htmlFor="compliance_response">Compliance Response</Label>
             <Textarea
               id="compliance_response"
               value={formData.compliance_response}
               onChange={(e) => setFormData({ ...formData, compliance_response: e.target.value })}
-              placeholder="Descreva exigências recebidas e como foram atendidas..."
+              placeholder="Describe requirements received and how they were addressed..."
               rows={3}
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Criando..." : "Criar Submissão"}
+              {loading ? "Creating..." : "Create Submission"}
             </Button>
           </div>
         </form>

@@ -50,12 +50,12 @@ const submissionTypes = [
 ];
 
 const statusOptions = [
-  { value: "pending", label: "Pendente" },
-  { value: "submitted", label: "Submetido" },
-  { value: "under_review", label: "Em Análise" },
-  { value: "approved", label: "Aprovado" },
-  { value: "rejected", label: "Rejeitado" },
-  { value: "revision_required", label: "Revisão Necessária" },
+  { value: "pending", label: "Pending" },
+  { value: "submitted", label: "Submitted" },
+  { value: "under_review", label: "Under Review" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+  { value: "revision_required", label: "Revision Required" },
 ];
 
 export default function EditSubmissionDialog({
@@ -106,8 +106,8 @@ export default function EditSubmissionDialog({
     e.preventDefault();
     if (!submission || !formData.project_id || !formData.submission_type) {
       toast({
-        title: "Erro",
-        description: "Estudo e tipo de submissão são obrigatórios",
+        title: "Error",
+        description: "Study and submission type are required",
         variant: "destructive",
       });
       return;
@@ -134,14 +134,14 @@ export default function EditSubmissionDialog({
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Submissão atualizada com sucesso",
+        title: "Success",
+        description: "Submission updated successfully",
       });
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
       toast({
-        title: "Erro ao atualizar submissão",
+        title: "Error updating submission",
         description: error.message,
         variant: "destructive",
       });
@@ -153,7 +153,7 @@ export default function EditSubmissionDialog({
   const handleDelete = async () => {
     if (!submission) return;
     
-    if (!confirm("Tem certeza que deseja excluir esta submissão?")) return;
+    if (!confirm("Are you sure you want to delete this submission?")) return;
 
     setLoading(true);
     try {
@@ -165,14 +165,14 @@ export default function EditSubmissionDialog({
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Submissão excluída com sucesso",
+        title: "Success",
+        description: "Submission deleted successfully",
       });
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
       toast({
-        title: "Erro ao excluir submissão",
+        title: "Error deleting submission",
         description: error.message,
         variant: "destructive",
       });
@@ -185,17 +185,17 @@ export default function EditSubmissionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Editar Submissão Regulatória</DialogTitle>
+          <DialogTitle>Edit Regulatory Submission</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="project">Estudo *</Label>
+            <Label htmlFor="project">Study *</Label>
             <Select
               value={formData.project_id}
               onValueChange={(value) => setFormData({ ...formData, project_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o estudo" />
+                <SelectValue placeholder="Select study" />
               </SelectTrigger>
               <SelectContent>
                 {projects.map((project) => (
@@ -208,13 +208,13 @@ export default function EditSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo de Submissão *</Label>
+            <Label htmlFor="type">Submission Type *</Label>
             <Select
               value={formData.submission_type}
               onValueChange={(value) => setFormData({ ...formData, submission_type: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 {submissionTypes.map((type) => (
@@ -233,7 +233,7 @@ export default function EditSubmissionDialog({
               onValueChange={(value) => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o status" />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
                 {statusOptions.map((option) => (
@@ -246,18 +246,18 @@ export default function EditSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="code">Codificação da Submissão / Emenda</Label>
+            <Label htmlFor="code">Submission / Amendment Code</Label>
             <Input
               id="code"
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              placeholder="Ex.: SUB-2026-001 ou EMD-2026-002"
+              placeholder="e.g., SUB-2026-001 or AMD-2026-002"
             />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="planned_date">Data Planejada</Label>
+              <Label htmlFor="planned_date">Planned Date</Label>
               <Input
                 id="planned_date"
                 type="date"
@@ -266,7 +266,7 @@ export default function EditSubmissionDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="submission_date">Data de Submissão</Label>
+              <Label htmlFor="submission_date">Submission Date</Label>
               <Input
                 id="submission_date"
                 type="date"
@@ -275,7 +275,7 @@ export default function EditSubmissionDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Label htmlFor="approval_date">Approval Date</Label>
               <Input
                 id="approval_date"
                 type="date"
@@ -286,48 +286,48 @@ export default function EditSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Centro de Pesquisa</Label>
+            <Label>Research Center</Label>
             <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
-              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Optional" : "Select a study first"} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                <SelectItem value="none">— None (entire study) —</SelectItem>
                 {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} · {s.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Observações</Label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Observações adicionais..."
+              placeholder="Additional notes..."
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="compliance_response">Atendimento de Exigência</Label>
+            <Label htmlFor="compliance_response">Compliance Response</Label>
             <Textarea
               id="compliance_response"
               value={formData.compliance_response}
               onChange={(e) => setFormData({ ...formData, compliance_response: e.target.value })}
-              placeholder="Descreva exigências recebidas e como foram atendidas..."
+              placeholder="Describe requirements received and how they were addressed..."
               rows={3}
             />
           </div>
 
           <div className="flex justify-between pt-4">
             <Button type="button" variant="destructive" onClick={handleDelete} disabled={loading}>
-              Excluir
+              Delete
             </Button>
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancelar
+                Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Salvando..." : "Salvar"}
+                {loading ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>

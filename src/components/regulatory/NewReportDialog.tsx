@@ -23,24 +23,24 @@ interface NewReportDialogProps {
 }
 
 const reportTypes = [
-  "Relatório Anual de Segurança (DSUR)",
-  "Relatório de Progresso",
-  "Relatório Final",
-  "Relatório de Evento Adverso",
-  "Relatório de Desvio de Protocolo",
-  "Relatório de Monitoramento",
-  "Relatório Periódico (IND)",
-  "Notificação de Alteração",
-  "Outro",
+  "Annual Safety Report (DSUR)",
+  "Progress Report",
+  "Final Report",
+  "Adverse Event Report",
+  "Protocol Deviation Report",
+  "Monitoring Report",
+  "Periodic Report (IND)",
+  "Change Notification",
+  "Other",
 ];
 
 const recurrenceOptions = [
-  { value: "none", label: "Sem recorrência" },
-  { value: "weekly", label: "Semanal" },
-  { value: "monthly", label: "Mensal" },
-  { value: "quarterly", label: "Trimestral" },
-  { value: "semiannual", label: "Semestral" },
-  { value: "annual", label: "Anual" },
+  { value: "none", label: "No recurrence" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "semiannual", label: "Semiannual" },
+  { value: "annual", label: "Annual" },
 ];
 
 export default function NewReportDialog({
@@ -72,8 +72,8 @@ export default function NewReportDialog({
     e.preventDefault();
     if (!formData.project_id || !formData.report_type || !formData.due_date) {
       toast({
-        title: "Erro",
-        description: "Estudo, tipo de relatório e data limite são obrigatórios",
+        title: "Error",
+        description: "Study, report type and due date are required",
         variant: "destructive",
       });
       return;
@@ -97,16 +97,16 @@ export default function NewReportDialog({
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: formData.recurrence_type !== "none" 
-          ? "Relatório criado com recorrência programada" 
-          : "Relatório criado com sucesso",
+        title: "Success",
+        description: formData.recurrence_type !== "none"
+          ? "Report created with scheduled recurrence"
+          : "Report created successfully",
       });
       onOpenChange(false);
-      setFormData({ 
+      setFormData({
         project_id: "",
         site_id: "none",
-        report_type: "", 
+        report_type: "",
         due_date: "",
         approval_date: "",
         code: "",
@@ -117,7 +117,7 @@ export default function NewReportDialog({
       onSuccess();
     } catch (error: any) {
       toast({
-        title: "Erro ao criar relatório",
+        title: "Error creating report",
         description: error.message,
         variant: "destructive",
       });
@@ -130,17 +130,17 @@ export default function NewReportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Novo Relatório Regulatório</DialogTitle>
+          <DialogTitle>New Regulatory Report</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="project">Estudo *</Label>
+            <Label htmlFor="project">Study *</Label>
             <Select
               value={formData.project_id}
               onValueChange={(value) => setFormData({ ...formData, project_id: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o estudo" />
+                <SelectValue placeholder="Select study" />
               </SelectTrigger>
               <SelectContent>
                 {projects.map((project) => (
@@ -153,13 +153,13 @@ export default function NewReportDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Tipo de Relatório *</Label>
+            <Label htmlFor="type">Report Type *</Label>
             <Select
               value={formData.report_type}
               onValueChange={(value) => setFormData({ ...formData, report_type: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 {reportTypes.map((type) => (
@@ -172,29 +172,29 @@ export default function NewReportDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Centro de Pesquisa</Label>
+            <Label>Research Center</Label>
             <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
-              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Optional" : "Select a study first"} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                <SelectItem value="none">— None (entire study) —</SelectItem>
                 {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} · {s.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="code">Codificação do Relatório</Label>
+            <Label htmlFor="code">Report Code</Label>
             <Input
               id="code"
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              placeholder="Ex.: REL-2026-001"
+              placeholder="e.g., REP-2026-001"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="due_date">Data Limite *</Label>
+              <Label htmlFor="due_date">Due Date *</Label>
               <Input
                 id="due_date"
                 type="date"
@@ -204,7 +204,7 @@ export default function NewReportDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Label htmlFor="approval_date">Approval Date</Label>
               <Input
                 id="approval_date"
                 type="date"
@@ -215,13 +215,13 @@ export default function NewReportDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="recurrence">Recorrência</Label>
+            <Label htmlFor="recurrence">Recurrence</Label>
             <Select
               value={formData.recurrence_type}
               onValueChange={(value) => setFormData({ ...formData, recurrence_type: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a recorrência" />
+                <SelectValue placeholder="Select recurrence" />
               </SelectTrigger>
               <SelectContent>
                 {recurrenceOptions.map((option) => (
@@ -235,7 +235,7 @@ export default function NewReportDialog({
 
           {formData.recurrence_type !== "none" && (
             <div className="space-y-2">
-              <Label htmlFor="recurrence_end_date">Data Final da Recorrência</Label>
+              <Label htmlFor="recurrence_end_date">Recurrence End Date</Label>
               <Input
                 id="recurrence_end_date"
                 type="date"
@@ -244,28 +244,28 @@ export default function NewReportDialog({
                 min={formData.due_date}
               />
               <p className="text-xs text-muted-foreground">
-                Deixe em branco para recorrência indefinida
+                Leave blank for indefinite recurrence
               </p>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Observações</Label>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Observações adicionais..."
+              placeholder="Additional notes..."
               rows={3}
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Criando..." : "Criar Relatório"}
+              {loading ? "Creating..." : "Create Report"}
             </Button>
           </div>
         </form>
