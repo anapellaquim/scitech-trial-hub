@@ -1,0 +1,1 @@
+DELETE FROM public.investigational_products;
