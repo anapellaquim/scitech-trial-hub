@@ -342,7 +342,7 @@ export default function PMCFSurvey() {
                       </TableRow>
                     );
                   })}
-                  {!surveys.length && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">{loading ? "Loading…" : "No surveys registered"}</TableCell></TableRow>}
+                  {!filteredSurveys.length && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">{loading ? "Loading…" : (titleSearch ? "No surveys match the search" : "No surveys registered")}</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </CardContent>
