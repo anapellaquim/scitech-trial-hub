@@ -74,18 +74,19 @@ export default function PMCFSurvey() {
   const [checkForm, setCheckForm] = useState<Partial<MonthlyCheck>>({});
 
   const loadData = async () => {
-    if (!selectedProject) return;
     setLoading(true);
-    const [{ data: s }, { data: c }] = await Promise.all([
-      supabase.from("pmcf_surveys" as any).select("*").eq("project_id", selectedProject).order("created_at", { ascending: false }),
-      supabase.from("pmcf_monthly_checks" as any).select("*").eq("project_id", selectedProject).order("reference_month", { ascending: false }),
+    const [{ data: s }, { data: c }, { data: p }] = await Promise.all([
+      supabase.from("pmcf_surveys" as any).select("*").order("created_at", { ascending: false }),
+      supabase.from("pmcf_monthly_checks" as any).select("*").order("reference_month", { ascending: false }),
+      supabase.from("projects").select("id, title, protocol_number").order("title"),
     ]);
     setSurveys((s as any) || []);
     setChecks((c as any) || []);
+    setProjects((p as any) || []);
     setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, [selectedProject]);
+  useEffect(() => { loadData(); }, []);
 
   const openNewSurvey = () => {
     setEditingSurvey(null);
