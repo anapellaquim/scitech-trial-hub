@@ -23,14 +23,12 @@ interface NewReportDialogProps {
 }
 
 const reportTypes = [
-  "Annual Safety Report (DSUR)",
-  "Progress Report",
-  "Final Report",
+  "Safety Report",
+  "Study Progress Report",
   "Adverse Event Report",
   "Protocol Deviation Report",
-  "Monitoring Report",
-  "Periodic Report (IND)",
-  "Change Notification",
+  "ANVISA Annual Progress Report",
+  "ANVISA Final Report",
   "Other",
 ];
 
