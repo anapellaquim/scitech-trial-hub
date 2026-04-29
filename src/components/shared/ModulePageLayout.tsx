@@ -16,6 +16,7 @@ interface ModulePageLayoutProps {
   showGeneralOption?: boolean;
   generalValue?: string;
   generalLabel?: string;
+  hideProjectSelector?: boolean;
 }
 
 export default function ModulePageLayout({
@@ -31,6 +32,7 @@ export default function ModulePageLayout({
   showGeneralOption = false,
   generalValue,
   generalLabel,
+  hideProjectSelector = false,
 }: ModulePageLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
@@ -42,7 +44,7 @@ export default function ModulePageLayout({
             {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <GlobalStudySelector value={selectedProject} onChange={onProjectChange} showAllOption={showAllOption} showGeneralOption={showGeneralOption} generalValue={generalValue} generalLabel={generalLabel} />
+            {!hideProjectSelector && <GlobalStudySelector value={selectedProject} onChange={onProjectChange} showAllOption={showAllOption} showGeneralOption={showGeneralOption} generalValue={generalValue} generalLabel={generalLabel} />}
             {exportData && exportFileName && (
               <ExcelExportButton data={exportData} fileName={exportFileName} />
             )}

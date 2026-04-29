@@ -59,6 +59,8 @@ const checkStatusColors: Record<string, string> = {
 
 export default function PMCFSurvey() {
   const [selectedProject, setSelectedProject] = useState<string>("");
+  const [projects, setProjects] = useState<{ id: string; title: string; protocol_number: string | null }[]>([]);
+  const [titleSearch, setTitleSearch] = useState("");
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [checks, setChecks] = useState<MonthlyCheck[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,18 +74,19 @@ export default function PMCFSurvey() {
   const [checkForm, setCheckForm] = useState<Partial<MonthlyCheck>>({});
 
   const loadData = async () => {
-    if (!selectedProject) return;
     setLoading(true);
-    const [{ data: s }, { data: c }] = await Promise.all([
-      supabase.from("pmcf_surveys" as any).select("*").eq("project_id", selectedProject).order("created_at", { ascending: false }),
-      supabase.from("pmcf_monthly_checks" as any).select("*").eq("project_id", selectedProject).order("reference_month", { ascending: false }),
+    const [{ data: s }, { data: c }, { data: p }] = await Promise.all([
+      supabase.from("pmcf_surveys" as any).select("*").order("created_at", { ascending: false }),
+      supabase.from("pmcf_monthly_checks" as any).select("*").order("reference_month", { ascending: false }),
+      supabase.from("projects").select("id, title, protocol_number").order("title"),
     ]);
     setSurveys((s as any) || []);
     setChecks((c as any) || []);
+    setProjects((p as any) || []);
     setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, [selectedProject]);
+  useEffect(() => { loadData(); }, []);
 
   const openNewSurvey = () => {
     setEditingSurvey(null);
@@ -102,7 +105,11 @@ export default function PMCFSurvey() {
       toast.error("Code and title are required");
       return;
     }
-    const payload = { ...surveyForm, project_id: selectedProject };
+    if (!surveyForm.project_id) {
+      toast.error("Study is required");
+      return;
+    }
+    const payload = { ...surveyForm };
     const { error } = editingSurvey
       ? await supabase.from("pmcf_surveys" as any).update(payload).eq("id", editingSurvey.id)
       : await supabase.from("pmcf_surveys" as any).insert(payload);
@@ -162,7 +169,8 @@ export default function PMCFSurvey() {
       return;
     }
     const status = computeStatus(checkForm.fills_count ?? 0, checkForm.expected_count ?? 0);
-    const payload = { ...checkForm, project_id: selectedProject, status };
+    const survey = surveys.find(s => s.id === checkForm.survey_id);
+    const payload = { ...checkForm, project_id: survey?.project_id, status };
     const { error } = editingCheck
       ? await supabase.from("pmcf_monthly_checks" as any).update(payload).eq("id", editingCheck.id)
       : await supabase.from("pmcf_monthly_checks" as any).insert(payload);
@@ -181,6 +189,12 @@ export default function PMCFSurvey() {
   };
 
   const surveyMap = useMemo(() => Object.fromEntries(surveys.map(s => [s.id, s])), [surveys]);
+  const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p])), [projects]);
+  const filteredSurveys = useMemo(() => {
+    const q = titleSearch.trim().toLowerCase();
+    if (!q) return surveys;
+    return surveys.filter(s => (s.title ?? "").toLowerCase().includes(q));
+  }, [surveys, titleSearch]);
 
   const stats = useMemo(() => ({
     total: surveys.length,
@@ -237,6 +251,7 @@ export default function PMCFSurvey() {
       onProjectChange={setSelectedProject}
       exportData={exportData}
       exportFileName="pmcf_monthly_checks"
+      hideProjectSelector
     >
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card><CardContent className="pt-6"><div className="flex items-center gap-3"><FileText className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{stats.total}</p><p className="text-xs text-muted-foreground">Total Surveys</p></div></div></CardContent></Card>
@@ -253,9 +268,17 @@ export default function PMCFSurvey() {
 
         <TabsContent value="surveys">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
               <CardTitle>Forms</CardTitle>
-              <Button onClick={openNewSurvey} disabled={!selectedProject}><Plus className="h-4 w-4 mr-1" />New Survey</Button>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Search by title…"
+                  value={titleSearch}
+                  onChange={(e) => setTitleSearch(e.target.value)}
+                  className="w-64"
+                />
+                <Button onClick={openNewSurvey}><Plus className="h-4 w-4 mr-1" />New Survey</Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -273,7 +296,7 @@ export default function PMCFSurvey() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {surveys.map(s => {
+                  {filteredSurveys.map(s => {
                     const t = trackingMap[s.id];
                     const pct = t?.progressPct ?? 0;
                     const barColor = pct >= 90 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
@@ -319,7 +342,7 @@ export default function PMCFSurvey() {
                       </TableRow>
                     );
                   })}
-                  {!surveys.length && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">{loading ? "Loading…" : "No surveys registered"}</TableCell></TableRow>}
+                  {!filteredSurveys.length && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">{loading ? "Loading…" : (titleSearch ? "No surveys match the search" : "No surveys registered")}</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </CardContent>
@@ -375,6 +398,12 @@ export default function PMCFSurvey() {
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editingSurvey ? "Edit Survey" : "New Survey"}</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2"><Label>Study *</Label>
+              <Select value={surveyForm.project_id ?? ""} onValueChange={v => setSurveyForm({ ...surveyForm, project_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Select study" /></SelectTrigger>
+                <SelectContent>{projects.map(p => <SelectItem key={p.id} value={p.id}>{p.protocol_number ? `${p.protocol_number} — ` : ""}{p.title}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div><Label>Code *</Label><Input value={surveyForm.survey_code ?? ""} onChange={e => setSurveyForm({ ...surveyForm, survey_code: e.target.value })} /></div>
             <div><Label>Status</Label>
               <Select value={surveyForm.status} onValueChange={v => setSurveyForm({ ...surveyForm, status: v })}>
