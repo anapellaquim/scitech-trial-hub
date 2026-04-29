@@ -13,6 +13,8 @@ interface Project {
   title: string;
 }
 
+interface Site { id: string; site_code: string; name: string; }
+
 interface NewReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
