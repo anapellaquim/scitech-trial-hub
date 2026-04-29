@@ -50,14 +50,23 @@ export default function NewReportDialog({
   onSuccess,
 }: NewReportDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     report_type: "",
     due_date: "",
+    approval_date: "",
+    code: "",
     notes: "",
     recurrence_type: "none",
     recurrence_end_date: "",
   });
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
