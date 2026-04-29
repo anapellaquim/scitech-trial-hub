@@ -48,6 +48,8 @@ export default function NewSubmissionDialog({
     site_id: "none",
     submission_type: "",
     planned_date: "",
+    approval_date: "",
+    code: "",
     notes: "",
     compliance_response: "",
   });
