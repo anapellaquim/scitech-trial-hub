@@ -305,12 +305,9 @@ export default function Payments() {
         }
 
         if (nextDate <= endDate) {
-          const y = nextDate.getFullYear();
-          const mo = String(nextDate.getMonth() + 1).padStart(2, "0");
-          const d = String(nextDate.getDate()).padStart(2, "0");
           recurrencePayments.push({
             ...paymentData,
-            payment_date: `${y}-${mo}-${d}`,
+            payment_date: formatDateOnly(nextDate),
           });
         }
       }
