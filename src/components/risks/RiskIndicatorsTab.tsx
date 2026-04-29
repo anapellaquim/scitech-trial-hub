@@ -59,15 +59,27 @@ export default function RiskIndicatorsTab({ projectId }: { projectId: string }) 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Indicator | null>(null);
   const [typeFilter, setTypeFilter] = useState("all");
-  const blank = {
-    indicator_type: "KPI" as const,
+  const blank: {
+    indicator_type: "KPI" | "KRI";
+    area: string;
+    name: string;
+    description: string;
+    target_value: string;
+    current_value: string;
+    unit: string;
+    status: "on_track" | "at_risk" | "breached";
+    measurement_frequency: string;
+    last_measured_at: string;
+    responsible: string;
+  } = {
+    indicator_type: "KPI",
     area: AREAS[0],
     name: "",
     description: "",
     target_value: "",
     current_value: "",
     unit: "",
-    status: "on_track" as const,
+    status: "on_track",
     measurement_frequency: "monthly",
     last_measured_at: todayDateOnly(),
     responsible: "",
