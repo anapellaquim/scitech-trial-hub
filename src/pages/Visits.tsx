@@ -1,3 +1,4 @@
+import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -713,7 +714,7 @@ export default function Visits() {
     const link = document.createElement("a");
     const projectName = projects.find((p) => p.id === selectedProject)?.title || "projeto";
     link.href = URL.createObjectURL(blob);
-    link.download = `visitas_${projectName}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `visitas_${projectName}_${todayDateOnly()}.csv`;
     link.click();
 
     toast.success("Arquivo exportado com sucesso!");

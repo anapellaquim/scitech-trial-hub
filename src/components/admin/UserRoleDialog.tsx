@@ -1,3 +1,4 @@
+import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -117,7 +118,7 @@ const UserRoleDialog = ({ open, onOpenChange, user, projects, studies, onSuccess
 
           <div className="space-y-2">
             <Label>Expiration Date (optional)</Label>
-            <Input type="date" value={formData.expiresAt} onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })} min={new Date().toISOString().split("T")[0]} />
+            <Input type="date" value={formData.expiresAt} onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })} min={todayDateOnly()} />
             <p className="text-xs text-muted-foreground">Leave blank for permanent role</p>
           </div>
 

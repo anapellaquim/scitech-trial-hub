@@ -1,3 +1,4 @@
+import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,7 +99,7 @@ const emptyForm = {
   requires_communication: false,
   status: "open",
   responsible: "",
-  opened_at: new Date().toISOString().split("T")[0],
+  opened_at: todayDateOnly(),
   resolved_at: "",
 };
 
@@ -128,7 +129,7 @@ export default function ChangeControl() {
     { excelHeader: "Affected Documents/Processes", dbColumn: "affected_documents" },
     { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "open" },
     { excelHeader: "Responsible", dbColumn: "responsible" },
-    { excelHeader: "Opened At", dbColumn: "opened_at", transform: (v: any) => v || new Date().toISOString().split("T")[0] },
+    { excelHeader: "Opened At", dbColumn: "opened_at", transform: (v: any) => v || todayDateOnly() },
     { excelHeader: "Resolved At", dbColumn: "resolved_at" },
   ];
   const [statusFilter, setStatusFilter] = useState("all");

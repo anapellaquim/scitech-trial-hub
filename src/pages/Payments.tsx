@@ -23,14 +23,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { parseLocalDate, todayDateOnly, formatDateOnly } from "@/lib/dateUtils";
 
-// Parse a "YYYY-MM-DD" string as a LOCAL date (avoids UTC shift that displays the previous day)
-function parseLocalDate(dateStr: string | null | undefined): Date {
-  if (!dateStr) return new Date(NaN);
-  const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  return new Date(dateStr);
-}
 
 interface Project {
   id: string;
@@ -165,7 +159,7 @@ export default function Payments() {
     category: "other",
     description: "",
     amount: "",
-    payment_date: new Date().toISOString().split("T")[0],
+    payment_date: todayDateOnly(),
     invoice_number: "",
     recurrence_type: "none",
     recurrence_end_date: "",
@@ -184,7 +178,7 @@ export default function Payments() {
   }>({
     open: false,
     paymentId: "",
-    paidAt: new Date().toISOString().split("T")[0],
+    paidAt: todayDateOnly(),
     driveFolderLink: "",
   });
 
@@ -311,12 +305,9 @@ export default function Payments() {
         }
 
         if (nextDate <= endDate) {
-          const y = nextDate.getFullYear();
-          const mo = String(nextDate.getMonth() + 1).padStart(2, "0");
-          const d = String(nextDate.getDate()).padStart(2, "0");
           recurrencePayments.push({
             ...paymentData,
-            payment_date: `${y}-${mo}-${d}`,
+            payment_date: formatDateOnly(nextDate),
           });
         }
       }
@@ -334,7 +325,7 @@ export default function Payments() {
       category: "other",
       description: "",
       amount: "",
-      payment_date: new Date().toISOString().split("T")[0],
+      payment_date: todayDateOnly(),
       invoice_number: "",
       recurrence_type: "none",
       recurrence_end_date: "",
@@ -367,7 +358,7 @@ export default function Payments() {
       setPaymentConfirmDialog({
         open: true,
         paymentId: id,
-        paidAt: new Date().toISOString().split("T")[0],
+        paidAt: todayDateOnly(),
         driveFolderLink: "",
       });
       return;
@@ -838,7 +829,7 @@ export default function Payments() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `pagamentos_${projectName}_${filterCenter || "todos"}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `pagamentos_${projectName}_${filterCenter || "todos"}_${todayDateOnly()}.csv`;
     link.click();
 
     toast.success("Arquivo exportado com sucesso!");
@@ -920,7 +911,7 @@ export default function Payments() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `pagamentos_${projectName}_${selectedCenterTab}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `pagamentos_${projectName}_${selectedCenterTab}_${todayDateOnly()}.csv`;
     link.click();
 
     toast.success("Arquivo exportado com sucesso!");
@@ -960,7 +951,7 @@ export default function Payments() {
       ? `_${historyStartDate || "inicio"}_${historyEndDate || "fim"}`
       : "";
     const centerSuffix = historyCenterFilter || "todos";
-    link.download = `historico_pagamentos_${projectName}_${centerSuffix}${dateRange}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `historico_pagamentos_${projectName}_${centerSuffix}${dateRange}_${todayDateOnly()}.csv`;
     link.click();
 
     toast.success("Histórico exportado com sucesso!");

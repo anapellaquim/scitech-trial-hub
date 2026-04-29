@@ -1,3 +1,4 @@
+import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,7 +135,7 @@ export default function CommunicationPlanList({ projectId }: Props) {
       description: "",
       channel: "email",
       frequency: "monthly",
-      start_date: new Date().toISOString().split("T")[0],
+      start_date: todayDateOnly(),
       end_date: "",
       due_day_offset: 1,
       lead_time_days: 3,

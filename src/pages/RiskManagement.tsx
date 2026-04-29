@@ -1,3 +1,4 @@
+import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,11 +75,11 @@ export default function RiskManagement() {
     { excelHeader: "Mitigation Plan", dbColumn: "mitigation_plan" },
     { excelHeader: "Responsible", dbColumn: "responsible" },
     { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "open" },
-    { excelHeader: "Identified At", dbColumn: "identified_at", transform: (v: any) => v || new Date().toISOString().split("T")[0] },
+    { excelHeader: "Identified At", dbColumn: "identified_at", transform: (v: any) => v || todayDateOnly() },
     { excelHeader: "Review Date", dbColumn: "review_date" },
   ];
   const [statusFilter, setStatusFilter] = useState("all");
-  const [form, setForm] = useState({ risk_code: "", description: "", category: "operational", probability: 3, impact: 3, mitigation_plan: "", responsible: "", status: "open", identified_at: new Date().toISOString().split("T")[0], review_date: "" });
+  const [form, setForm] = useState({ risk_code: "", description: "", category: "operational", probability: 3, impact: 3, mitigation_plan: "", responsible: "", status: "open", identified_at: todayDateOnly(), review_date: "" });
 
   useEffect(() => { const check = async () => { const { data: { session } } = await supabase.auth.getSession(); if (!session) navigate("/auth"); }; check(); }, []);
   useEffect(() => { if (selectedProject) { setProjectId(selectedProject); loadData(); } }, [selectedProject]);
@@ -105,7 +106,7 @@ export default function RiskManagement() {
 
   const handleDelete = async (id: string) => { await supabase.from("risks").delete().eq("id", id); toast.success("Deleted"); loadData(); };
 
-  const openNew = () => { setEditing(null); setForm({ risk_code: "", description: "", category: "operational", probability: 3, impact: 3, mitigation_plan: "", responsible: "", status: "open", identified_at: new Date().toISOString().split("T")[0], review_date: "" }); setDialogOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ risk_code: "", description: "", category: "operational", probability: 3, impact: 3, mitigation_plan: "", responsible: "", status: "open", identified_at: todayDateOnly(), review_date: "" }); setDialogOpen(true); };
   const openEdit = (r: Risk) => { setEditing(r); setForm({ risk_code: r.risk_code, description: r.description, category: r.category, probability: r.probability, impact: r.impact, mitigation_plan: r.mitigation_plan || "", responsible: r.responsible || "", status: r.status, identified_at: r.identified_at, review_date: r.review_date || "" }); setDialogOpen(true); };
 
   const filtered = records.filter(r => {

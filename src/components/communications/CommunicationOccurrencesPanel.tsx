@@ -1,3 +1,4 @@
+import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,7 @@ export default function OccurrencesPanel({ planId }: Props) {
   }, [load]);
 
   const markSent = async (id: string) => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayDateOnly();
     const { error } = await supabase
       .from("communication_occurrences")
       .update({ status: "sent", sent_date: today, completed_at: new Date().toISOString() })
