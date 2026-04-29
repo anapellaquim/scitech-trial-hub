@@ -235,14 +235,18 @@ export default function InvestigationalProducts() {
     toast.success("Deleted"); loadRecords();
   };
 
-  // Inventory search (site, invoice, code, usage)
+  // Inventory search across all columns
   const [invSearch, setInvSearch] = useState("");
 
   const filteredRecords = useMemo(() => {
     const q = invSearch.trim().toLowerCase();
     if (!q) return records;
     return records.filter((r) => {
-      const fields = [r.site, r.invoice, r.code, r.usage];
+      const fields = [
+        r.code, r.description, r.lot_number, r.expiration_date, r.quantity,
+        r.site, r.invoice, r.correction_invoice, r.delivery_date,
+        r.usage, r.usage_date, r.return_info, r.note,
+      ];
       return fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q));
     });
   }, [records, invSearch]);
@@ -437,7 +441,7 @@ export default function InvestigationalProducts() {
                       <Input
                         value={invSearch}
                         onChange={(e) => setInvSearch(e.target.value)}
-                        placeholder="Search by site, invoice, code or usage…"
+                        placeholder="Search across all columns…"
                         className="h-9 max-w-md"
                       />
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
