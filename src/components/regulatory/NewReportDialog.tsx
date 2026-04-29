@@ -13,7 +13,7 @@ interface Project {
   title: string;
 }
 
-interface Site { id: string; site_code: string; name: string; }
+interface Site { id: string; code: string; name: string; }
 
 interface NewReportDialogProps {
   open: boolean;
@@ -65,7 +65,7 @@ export default function NewReportDialog({
 
   useEffect(() => {
     if (!formData.project_id) { setSites([]); return; }
-    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+    supabase.from("research_centers").select("id, code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
   }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,7 +177,7 @@ export default function NewReportDialog({
               <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
-                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>)}
+                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} · {s.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
