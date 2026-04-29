@@ -59,6 +59,8 @@ const checkStatusColors: Record<string, string> = {
 
 export default function PMCFSurvey() {
   const [selectedProject, setSelectedProject] = useState<string>("");
+  const [projects, setProjects] = useState<{ id: string; title: string; protocol_number: string | null }[]>([]);
+  const [titleSearch, setTitleSearch] = useState("");
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [checks, setChecks] = useState<MonthlyCheck[]>([]);
   const [loading, setLoading] = useState(false);
