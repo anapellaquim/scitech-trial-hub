@@ -1429,11 +1429,13 @@ export default function Payments() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="select">Selecione um centro</SelectItem>
-                          {centerSummaries.map((center) => (
-                            <SelectItem key={center.code} value={center.code}>
-                              {center.code} - {center.name || "Sem nome"}
-                            </SelectItem>
-                          ))}
+                          {centerSummaries
+                            .filter((center) => center.name && center.name.trim() !== "")
+                            .map((center) => (
+                              <SelectItem key={center.code} value={center.code}>
+                                {center.code} - {center.name}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       {selectedCenterTab && (
