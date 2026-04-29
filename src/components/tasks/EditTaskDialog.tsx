@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -276,7 +277,7 @@ export default function EditTaskDialog({ task, open, onOpenChange, onSuccess }: 
   };
 
   const formatDateTime = (date: string) => {
-    return new Date(date).toLocaleString("pt-BR", {
+    return parseLocalDate(date).toLocaleString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -287,12 +288,12 @@ export default function EditTaskDialog({ task, open, onOpenChange, onSuccess }: 
 
   const formatDate = (date: string | null) => {
     if (!date) return "";
-    return new Date(date).toLocaleDateString("pt-BR");
+    return parseLocalDate(date).toLocaleDateString("pt-BR");
   };
 
   const isSubtaskOverdue = (dueDate: string | null, completed: boolean) => {
     if (!dueDate || completed) return false;
-    return new Date(dueDate) < new Date();
+    return parseLocalDate(dueDate) < new Date();
   };
 
   const completedSubtasks = subtasks.filter((s) => s.completed).length;

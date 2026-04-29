@@ -45,7 +45,7 @@ const UserRoleDialog = ({ open, onOpenChange, user, projects, studies, onSuccess
       user_id: user.id, role: formData.role, granted_by: currentUser?.id, notes: formData.notes || null,
     };
     if (formData.scope === "project" && formData.projectId) roleData.project_id = formData.projectId;
-    if (formData.expiresAt) roleData.expires_at = new Date(formData.expiresAt).toISOString();
+    if (formData.expiresAt) roleData.expires_at = parseLocalDate(formData.expiresAt).toISOString();
 
     const { error } = await supabase.from("user_roles").insert(roleData);
     setLoading(false);

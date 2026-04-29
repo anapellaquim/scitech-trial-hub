@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
@@ -146,10 +147,10 @@ const AdminAudit = () => {
       query = query.ilike("entity_type", `%${filters.entityType}%`);
     }
     if (filters.startDate) {
-      query = query.gte("created_at", new Date(filters.startDate).toISOString());
+      query = query.gte("created_at", parseLocalDate(filters.startDate).toISOString());
     }
     if (filters.endDate) {
-      const endDate = new Date(filters.endDate);
+      const endDate = parseLocalDate(filters.endDate);
       endDate.setHours(23, 59, 59, 999);
       query = query.lte("created_at", endDate.toISOString());
     }
@@ -199,7 +200,7 @@ const AdminAudit = () => {
     doc.text(`Total de registros: ${totalCount}`, 14, 36);
 
     const tableData = auditEntries.map(entry => [
-      format(new Date(entry.created_at), "dd/MM/yyyy HH:mm"),
+      format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm"),
       moduleConfig[entry.module]?.label || entry.module,
       actionConfig[entry.action]?.label || entry.action,
       entry.entity_type,
@@ -221,7 +222,7 @@ const AdminAudit = () => {
 
   const exportToExcel = () => {
     const data = auditEntries.map(entry => ({
-      "Data/Hora": format(new Date(entry.created_at), "dd/MM/yyyy HH:mm:ss"),
+      "Data/Hora": format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm:ss"),
       "Módulo": moduleConfig[entry.module]?.label || entry.module,
       "Ação": actionConfig[entry.action]?.label || entry.action,
       "Tipo de Entidade": entry.entity_type,
@@ -515,7 +516,7 @@ const AdminAudit = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-sm">
-                            {format(new Date(entry.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
+                            {format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
                           </TableCell>
                           <TableCell>{getModuleBadge(entry.module)}</TableCell>
                           <TableCell>{getActionBadge(entry.action)}</TableCell>

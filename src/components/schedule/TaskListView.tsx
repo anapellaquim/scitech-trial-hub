@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,7 +43,7 @@ export const TaskListView = ({ tasks, dependencies, profiles, onTaskClick, onRef
 
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return format(new Date(date), "dd/MM/yyyy");
+    return format(parseLocalDate(date), "dd/MM/yyyy");
   };
 
   const getDependencyNames = (taskId: string) => {
@@ -57,7 +58,7 @@ export const TaskListView = ({ tasks, dependencies, profiles, onTaskClick, onRef
 
   const isOverdue = (task: ScheduleTask) => {
     const endDate = task.planned_end_date || task.end_date;
-    return endDate && new Date(endDate) < new Date() && task.status !== "completed";
+    return endDate && parseLocalDate(endDate) < new Date() && task.status !== "completed";
   };
 
   const handleStatusChange = async (taskId: string, newStatus: string) => {

@@ -238,7 +238,7 @@ const Projects = () => {
 
   const formatDate = (date: string) => {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString('pt-BR');
+    return parseLocalDate(date).toLocaleDateString('pt-BR');
   };
 
   const getTotalPlannedBudget = (projectId: string) => {

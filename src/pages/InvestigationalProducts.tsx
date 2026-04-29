@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import CTMSNav from "@/components/CTMSNav";
@@ -81,7 +82,7 @@ const emptySupply = () => ({
 function excelDate(v: any): string | null {
   if (v === "" || v == null) return null;
   if (typeof v === "number") {
-    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    const d = parseLocalDate(Math.round((v - 25569) * 86400 * 1000));
     return d.toISOString().slice(0, 10);
   }
   const s = String(v).trim();
@@ -93,7 +94,7 @@ function excelDate(v: any): string | null {
     const dd = mdy[2].padStart(2, "0");
     return `${mdy[3]}-${mm}-${dd}`;
   }
-  const parsed = new Date(s);
+  const parsed = parseLocalDate(s);
   if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
   return null;
 }

@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -162,7 +163,7 @@ const ProjectSchedule = () => {
     const inProgress = tasks.filter(t => t.status === "in_progress").length;
     const overdue = tasks.filter(t => {
       const endDate = t.planned_end_date || t.end_date;
-      return endDate && new Date(endDate) < new Date() && t.status !== "completed";
+      return endDate && parseLocalDate(endDate) < new Date() && t.status !== "completed";
     }).length;
     const avgProgress = total > 0 
       ? Math.round(tasks.reduce((acc, t) => acc + (t.progress_percentage || 0), 0) / total)

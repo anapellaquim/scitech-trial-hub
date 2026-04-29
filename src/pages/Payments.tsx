@@ -295,13 +295,13 @@ export default function Payments() {
 
       while (nextDate < endDate) {
         if (vendorFormData.recurrence_type === "monthly") {
-          nextDate = new Date(nextDate.setMonth(nextDate.getMonth() + 1));
+          nextDate = parseLocalDate(nextDate.setMonth(nextDate.getMonth() + 1));
         } else if (vendorFormData.recurrence_type === "quarterly") {
-          nextDate = new Date(nextDate.setMonth(nextDate.getMonth() + 3));
+          nextDate = parseLocalDate(nextDate.setMonth(nextDate.getMonth() + 3));
         } else if (vendorFormData.recurrence_type === "semiannual") {
-          nextDate = new Date(nextDate.setMonth(nextDate.getMonth() + 6));
+          nextDate = parseLocalDate(nextDate.setMonth(nextDate.getMonth() + 6));
         } else if (vendorFormData.recurrence_type === "annual") {
-          nextDate = new Date(nextDate.setFullYear(nextDate.getFullYear() + 1));
+          nextDate = parseLocalDate(nextDate.setFullYear(nextDate.getFullYear() + 1));
         }
 
         if (nextDate <= endDate) {
@@ -971,9 +971,9 @@ export default function Payments() {
   // Filter visits by date range for indicators
   const filteredVisitsForIndicators = visits.filter(v => {
     if (!v.completed_at) return false;
-    const completedDate = new Date(v.completed_at);
-    if (indicatorStartDate && completedDate < new Date(indicatorStartDate)) return false;
-    if (indicatorEndDate && completedDate > new Date(indicatorEndDate + 'T23:59:59')) return false;
+    const completedDate = parseLocalDate(v.completed_at);
+    if (indicatorStartDate && completedDate < parseLocalDate(indicatorStartDate)) return false;
+    if (indicatorEndDate && completedDate > parseLocalDate(indicatorEndDate + 'T23:59:59')) return false;
     return true;
   });
 
@@ -1005,9 +1005,9 @@ export default function Payments() {
   
   // Filter vendor payments by date range for indicators
   const filteredVendorPaymentsForIndicators = vendorPayments.filter(v => {
-    const paymentDate = v.paid_at ? new Date(v.paid_at) : new Date(v.payment_date);
-    if (indicatorStartDate && paymentDate < new Date(indicatorStartDate)) return false;
-    if (indicatorEndDate && paymentDate > new Date(indicatorEndDate + 'T23:59:59')) return false;
+    const paymentDate = v.paid_at ? parseLocalDate(v.paid_at) : parseLocalDate(v.payment_date);
+    if (indicatorStartDate && paymentDate < parseLocalDate(indicatorStartDate)) return false;
+    if (indicatorEndDate && paymentDate > parseLocalDate(indicatorEndDate + 'T23:59:59')) return false;
     return true;
   });
   
@@ -1059,7 +1059,7 @@ export default function Payments() {
     // Group payments by month
     const monthlyPayments: Record<string, number> = {};
     allPayments.forEach(record => {
-      const date = new Date(record.date);
+      const date = parseLocalDate(record.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       monthlyPayments[monthKey] = (monthlyPayments[monthKey] || 0) + record.amount;
     });
@@ -1077,7 +1077,7 @@ export default function Payments() {
     let cumulative = totalPaid;
 
     for (let i = 1; i <= 6; i++) {
-      const futureDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      const futureDate = parseLocalDate(today.getFullYear(), today.getMonth() + i, 1);
       const monthName = format(futureDate, 'MMM/yy', { locale: ptBR });
       cumulative += monthlyAverage;
       projectedMonths.push({
@@ -1789,7 +1789,7 @@ export default function Payments() {
                                     <TableCell>
                                       {payment.paid_at ? (
                                         <span className="text-sm text-green-600">
-                                          {format(new Date(payment.paid_at), "dd/MM/yyyy", { locale: ptBR })}
+                                          {format(parseLocalDate(payment.paid_at), "dd/MM/yyyy", { locale: ptBR })}
                                         </span>
                                       ) : (
                                         <span className="text-muted-foreground">-</span>
@@ -1919,9 +1919,9 @@ export default function Payments() {
                               if (historyTypeFilter === "vendor") return false;
                               if (historyCenterFilter && !historyCenterFilter.startsWith("vendor:") && record.participant?.research_center !== historyCenterFilter) return false;
                               if (historyCenterFilter && historyCenterFilter.startsWith("vendor:")) return false;
-                              const recordDate = new Date(record.payment_date);
-                              if (historyStartDate && recordDate < new Date(historyStartDate)) return false;
-                              if (historyEndDate && recordDate > new Date(historyEndDate + 'T23:59:59')) return false;
+                              const recordDate = parseLocalDate(record.payment_date);
+                              if (historyStartDate && recordDate < parseLocalDate(historyStartDate)) return false;
+                              if (historyEndDate && recordDate > parseLocalDate(historyEndDate + 'T23:59:59')) return false;
                               return true;
                             })
                             .map(record => ({
@@ -1939,9 +1939,9 @@ export default function Payments() {
                               if (historyTypeFilter === "center") return false;
                               if (historyCenterFilter && historyCenterFilter.startsWith("vendor:") && payment.vendor_name !== historyCenterFilter.replace("vendor:", "")) return false;
                               if (historyCenterFilter && !historyCenterFilter.startsWith("vendor:") && historyCenterFilter !== "all" && historyCenterFilter !== "") return false;
-                              const paymentDate = payment.paid_at ? new Date(payment.paid_at) : new Date(payment.payment_date);
-                              if (historyStartDate && paymentDate < new Date(historyStartDate)) return false;
-                              if (historyEndDate && paymentDate > new Date(historyEndDate + 'T23:59:59')) return false;
+                              const paymentDate = payment.paid_at ? parseLocalDate(payment.paid_at) : parseLocalDate(payment.payment_date);
+                              if (historyStartDate && paymentDate < parseLocalDate(historyStartDate)) return false;
+                              if (historyEndDate && paymentDate > parseLocalDate(historyEndDate + 'T23:59:59')) return false;
                               return true;
                             })
                             .map(payment => ({
@@ -1954,7 +1954,7 @@ export default function Payments() {
                             }));
 
                           const combinedHistory = [...centerPayments, ...vendorPaidPayments].sort((a, b) => 
-                            new Date(b.date).getTime() - new Date(a.date).getTime()
+                            parseLocalDate(b.date).getTime() - parseLocalDate(a.date).getTime()
                           );
 
                           const csvContent = [
@@ -1991,9 +1991,9 @@ export default function Payments() {
                             if (historyTypeFilter === "vendor") return false;
                             if (historyCenterFilter && !historyCenterFilter.startsWith("vendor:") && record.participant?.research_center !== historyCenterFilter) return false;
                             if (historyCenterFilter && historyCenterFilter.startsWith("vendor:")) return false;
-                            const recordDate = new Date(record.payment_date);
-                            if (historyStartDate && recordDate < new Date(historyStartDate)) return false;
-                            if (historyEndDate && recordDate > new Date(historyEndDate + 'T23:59:59')) return false;
+                            const recordDate = parseLocalDate(record.payment_date);
+                            if (historyStartDate && recordDate < parseLocalDate(historyStartDate)) return false;
+                            if (historyEndDate && recordDate > parseLocalDate(historyEndDate + 'T23:59:59')) return false;
                             return true;
                           })
                           .map(record => ({
@@ -2014,9 +2014,9 @@ export default function Payments() {
                             if (historyTypeFilter === "center") return false;
                             if (historyCenterFilter && historyCenterFilter.startsWith("vendor:") && payment.vendor_name !== historyCenterFilter.replace("vendor:", "")) return false;
                             if (historyCenterFilter && !historyCenterFilter.startsWith("vendor:") && historyCenterFilter !== "all" && historyCenterFilter !== "") return false;
-                            const paymentDate = payment.paid_at ? new Date(payment.paid_at) : new Date(payment.payment_date);
-                            if (historyStartDate && paymentDate < new Date(historyStartDate)) return false;
-                            if (historyEndDate && paymentDate > new Date(historyEndDate + 'T23:59:59')) return false;
+                            const paymentDate = payment.paid_at ? parseLocalDate(payment.paid_at) : parseLocalDate(payment.payment_date);
+                            if (historyStartDate && paymentDate < parseLocalDate(historyStartDate)) return false;
+                            if (historyEndDate && paymentDate > parseLocalDate(historyEndDate + 'T23:59:59')) return false;
                             return true;
                           })
                           .map(payment => ({
@@ -2032,7 +2032,7 @@ export default function Payments() {
 
                         // Combine and sort by date descending
                         return [...centerPayments, ...vendorPaidPayments].sort((a, b) => 
-                          new Date(b.date).getTime() - new Date(a.date).getTime()
+                          parseLocalDate(b.date).getTime() - parseLocalDate(a.date).getTime()
                         );
                       };
 

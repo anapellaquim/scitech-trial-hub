@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -162,30 +163,30 @@ const Dashboard = () => {
 
       const isInDateRange = (dateStr: string) => {
         if (!dateStr) return false;
-        return isWithinInterval(new Date(dateStr), { start: dateRange.from, end: dateRange.to });
+        return isWithinInterval(parseLocalDate(dateStr), { start: dateRange.from, end: dateRange.to });
       };
 
       const incompleteTasks = tasks.filter(t => t.status !== "completed");
       const tasksInRange = incompleteTasks.filter(t => t.due_date && isInDateRange(t.due_date));
-      const overdueTasks = incompleteTasks.filter(t => t.due_date && isBefore(new Date(t.due_date), today));
-      const tasksNext7Days = incompleteTasks.filter(t => t.due_date && isAfter(new Date(t.due_date), today) && isBefore(new Date(t.due_date), in7Days));
-      const tasksNext30Days = incompleteTasks.filter(t => t.due_date && isAfter(new Date(t.due_date), today) && isBefore(new Date(t.due_date), in30Days));
+      const overdueTasks = incompleteTasks.filter(t => t.due_date && isBefore(parseLocalDate(t.due_date), today));
+      const tasksNext7Days = incompleteTasks.filter(t => t.due_date && isAfter(parseLocalDate(t.due_date), today) && isBefore(parseLocalDate(t.due_date), in7Days));
+      const tasksNext30Days = incompleteTasks.filter(t => t.due_date && isAfter(parseLocalDate(t.due_date), today) && isBefore(parseLocalDate(t.due_date), in30Days));
 
       const visitsInRange = visits.filter(v => isInDateRange(v.scheduled_date));
       const pendingVisits = visits.filter(v => v.status !== "completed" && v.status !== "cancelled");
-      const overdueVisits = pendingVisits.filter(v => isBefore(new Date(v.scheduled_date), today));
-      const visitsNext7Days = pendingVisits.filter(v => isAfter(new Date(v.scheduled_date), today) && isBefore(new Date(v.scheduled_date), in7Days));
-      const visitsNext30Days = pendingVisits.filter(v => isAfter(new Date(v.scheduled_date), today) && isBefore(new Date(v.scheduled_date), in30Days));
+      const overdueVisits = pendingVisits.filter(v => isBefore(parseLocalDate(v.scheduled_date), today));
+      const visitsNext7Days = pendingVisits.filter(v => isAfter(parseLocalDate(v.scheduled_date), today) && isBefore(parseLocalDate(v.scheduled_date), in7Days));
+      const visitsNext30Days = pendingVisits.filter(v => isAfter(parseLocalDate(v.scheduled_date), today) && isBefore(parseLocalDate(v.scheduled_date), in30Days));
       const completedVisits = visitsInRange.filter(v => v.status === "completed").length;
 
       const openFindings = findings.filter(f => f.status === "open");
       const criticalFindings = openFindings.filter(f => f.severity === "critical");
       
       const findingsAging = [
-        { range: "0–7 days", count: openFindings.filter(f => differenceInDays(today, new Date(f.created_at)) <= 7).length },
-        { range: "8–30 days", count: openFindings.filter(f => { const d = differenceInDays(today, new Date(f.created_at)); return d > 7 && d <= 30; }).length },
-        { range: "31–60 days", count: openFindings.filter(f => { const d = differenceInDays(today, new Date(f.created_at)); return d > 30 && d <= 60; }).length },
-        { range: "> 60 days", count: openFindings.filter(f => differenceInDays(today, new Date(f.created_at)) > 60).length },
+        { range: "0–7 days", count: openFindings.filter(f => differenceInDays(today, parseLocalDate(f.created_at)) <= 7).length },
+        { range: "8–30 days", count: openFindings.filter(f => { const d = differenceInDays(today, parseLocalDate(f.created_at)); return d > 7 && d <= 30; }).length },
+        { range: "31–60 days", count: openFindings.filter(f => { const d = differenceInDays(today, parseLocalDate(f.created_at)); return d > 30 && d <= 60; }).length },
+        { range: "> 60 days", count: openFindings.filter(f => differenceInDays(today, parseLocalDate(f.created_at)) > 60).length },
       ];
 
       const siteChecklistMap = new Map<string, { siteCode: string; siteName: string; total: number; completed: number }>();
@@ -212,7 +213,7 @@ const Dashboard = () => {
       [...overdueVisits, ...visitsNext7Days].slice(0, 5).forEach(visit => {
         upcoming.push({ id: visit.id, title: `${visit.visit_type} - ${visit.site?.name || "Site"}`, type: "visit", dueDate: visit.scheduled_date, projectCode: visit.project?.protocol_number || visit.project?.title || "", siteCode: visit.site?.site_code, visitType: visit.visit_type });
       });
-      upcoming.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+      upcoming.sort((a, b) => parseLocalDate(a.dueDate).getTime() - parseLocalDate(b.dueDate).getTime());
 
       setStats({
         totalProjects: projectsData.length, activeProjects: projectsData.filter(s => s.status === "active").length,
@@ -231,7 +232,7 @@ const Dashboard = () => {
     }
   };
 
-  const isOverdue = (dateStr: string) => isBefore(new Date(dateStr), startOfToday());
+  const isOverdue = (dateStr: string) => isBefore(parseLocalDate(dateStr), startOfToday());
   const selectedProjectData = projects.find(s => s.id === selectedProject);
 
   if (loading && projects.length === 0) {
@@ -483,7 +484,7 @@ const Dashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className={cn("text-sm font-medium", isOverdue(item.dueDate) ? "text-destructive" : "text-foreground")}>
-                          {format(new Date(item.dueDate), shortDateFormat, { locale })}
+                          {format(parseLocalDate(item.dueDate), shortDateFormat, { locale })}
                         </p>
                         {item.priority && (
                           <Badge variant={item.priority === "high" ? "destructive" : "secondary"} className="text-xs">

@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -45,18 +46,18 @@ const priorityLabels: Record<string, string> = {
 export default function TaskKanban({ tasks, onTaskClick, onStatusChange }: TaskKanbanProps) {
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return new Date(date).toLocaleDateString("pt-BR");
+    return parseLocalDate(date).toLocaleDateString("pt-BR");
   };
 
   const isOverdue = (endDate: string | null, status: string) => {
     if (!endDate || status === "completed" || status === "cancelled") return false;
-    return new Date(endDate) < new Date();
+    return parseLocalDate(endDate) < new Date();
   };
 
   const isDueSoon = (endDate: string | null, status: string) => {
     if (!endDate || status === "completed" || status === "cancelled") return false;
     const now = new Date();
-    const dueDate = new Date(endDate);
+    const dueDate = parseLocalDate(endDate);
     const diffTime = dueDate.getTime() - now.getTime();
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
     return diffDays >= 0 && diffDays <= 3;
@@ -99,7 +100,7 @@ export default function TaskKanban({ tasks, onTaskClick, onStatusChange }: TaskK
                 if (!a.end_date && !b.end_date) return 0;
                 if (!a.end_date) return 1;
                 if (!b.end_date) return -1;
-                return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
+                return parseLocalDate(a.end_date).getTime() - parseLocalDate(b.end_date).getTime();
               })
               .map((task) => (
                 <Card

@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, Check, ChevronRight } from 'lucide-react';
@@ -97,7 +98,7 @@ export function NotificationBell() {
                         {notification.message}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), {
+                        {formatDistanceToNow(parseLocalDate(notification.created_at), {
                           addSuffix: true,
                           locale: ptBR
                         })}

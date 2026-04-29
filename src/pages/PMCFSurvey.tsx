@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -138,7 +139,7 @@ export default function PMCFSurvey() {
     setEditingCheck(null);
     const survey = surveys.find(s => s.id === surveyId);
     const now = new Date();
-    const refMonth = format(new Date(now.getFullYear(), now.getMonth(), 1), "yyyy-MM-dd");
+    const refMonth = format(parseLocalDate(now.getFullYear(), now.getMonth(), 1), "yyyy-MM-dd");
     setCheckForm({
       survey_id: surveyId,
       reference_month: refMonth,
@@ -234,7 +235,7 @@ export default function PMCFSurvey() {
   const exportData = checks.map(c => ({
     Survey: surveyMap[c.survey_id]?.title ?? "",
     Code: surveyMap[c.survey_id]?.survey_code ?? "",
-    Month: format(new Date(c.reference_month), "MM/yyyy"),
+    Month: format(parseLocalDate(c.reference_month), "MM/yyyy"),
     Fills: c.fills_count,
     Expected: c.expected_count,
     Status: c.status,
@@ -331,7 +332,7 @@ export default function PMCFSurvey() {
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-0.5">{t?.totalFills ?? 0} / {t?.sampleSize ?? 0}</p>
                         </TableCell>
-                        <TableCell className="text-xs">{s.start_date ? format(new Date(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(new Date(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
+                        <TableCell className="text-xs">{s.start_date ? format(parseLocalDate(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(parseLocalDate(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
                         <TableCell><Badge className={statusColors[s.status]}>{s.status}</Badge></TableCell>
                         <TableCell>{s.form_link && <a href={s.form_link} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 text-primary" /></a>}</TableCell>
                         <TableCell className="text-right">
@@ -372,12 +373,12 @@ export default function PMCFSurvey() {
                 <TableBody>
                   {checks.map(c => (
                     <TableRow key={c.id}>
-                      <TableCell>{format(new Date(c.reference_month), "MM/yyyy")}</TableCell>
+                      <TableCell>{format(parseLocalDate(c.reference_month), "MM/yyyy")}</TableCell>
                       <TableCell>{surveyMap[c.survey_id]?.title ?? "—"}</TableCell>
                       <TableCell className="font-semibold">{c.fills_count}</TableCell>
                       <TableCell>{c.expected_count}</TableCell>
                       <TableCell><Badge className={checkStatusColors[c.status]}>{c.status.replace("_", " ")}</Badge></TableCell>
-                      <TableCell>{format(new Date(c.checked_at), "MM/dd/yyyy")}</TableCell>
+                      <TableCell>{format(parseLocalDate(c.checked_at), "MM/dd/yyyy")}</TableCell>
                       <TableCell>{c.checked_by}</TableCell>
                       <TableCell className="text-right">
                         <Button size="sm" variant="ghost" onClick={() => openEditCheck(c)}><Pencil className="h-4 w-4" /></Button>

@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -58,7 +59,7 @@ export function AlertCard({ notification, onMarkAsRead, onDismiss, onNavigate }:
   const severity = severityConfig[notification.severity];
   const Icon = config.icon;
 
-  const timeAgo = formatDistanceToNow(new Date(notification.created_at), {
+  const timeAgo = formatDistanceToNow(parseLocalDate(notification.created_at), {
     addSuffix: true,
     locale: ptBR
   });

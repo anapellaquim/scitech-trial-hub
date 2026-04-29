@@ -1,3 +1,4 @@
+import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
@@ -296,7 +297,7 @@ export default function VisitReport() {
               <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  {format(new Date(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}
+                  {format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}
                 </span>
                 {visit.scheduled_time && (
                   <span className="flex items-center gap-1">
@@ -481,7 +482,7 @@ export default function VisitReport() {
                                 </Badge>
                                 {finding.due_date && (
                                   <span className="text-xs text-muted-foreground">
-                                    Prazo: {format(new Date(finding.due_date), "dd/MM/yyyy", { locale: ptBR })}
+                                    Prazo: {format(parseLocalDate(finding.due_date), "dd/MM/yyyy", { locale: ptBR })}
                                   </span>
                                 )}
                               </div>
@@ -538,7 +539,7 @@ export default function VisitReport() {
                   <CardDescription>
                     {visit.signed_at && (
                       <span>
-                        Assinado em {format(new Date(visit.signed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        Assinado em {format(parseLocalDate(visit.signed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </span>
                     )}
                   </CardDescription>
