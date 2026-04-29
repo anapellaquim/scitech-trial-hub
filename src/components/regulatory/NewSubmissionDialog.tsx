@@ -23,16 +23,15 @@ interface NewSubmissionDialogProps {
 }
 
 const submissionTypes = [
-  "Submissão Inicial ANVISA",
-  "Emenda ao Protocolo",
-  "Termo de Consentimento",
-  "Brochura do Investigador",
-  "Relatório de Segurança",
-  "Notificação de SAE",
-  "Encerramento de Estudo",
-  "Parecer CEP",
-  "Parecer CONEP",
-  "Outro",
+  "ANVISA DICD Submission",
+  "ANVISA Protocol Submission",
+  "Coordinator Site Initial Submission",
+  "Participating Site Initial Submission",
+  "EC Protocol Amendment",
+  "ANVISA DICD Amendment",
+  "ANVISA Protocol Amendment",
+  "ANVISA Notification",
+  "Other",
 ];
 
 export default function NewSubmissionDialog({
