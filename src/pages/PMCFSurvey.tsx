@@ -268,9 +268,17 @@ export default function PMCFSurvey() {
 
         <TabsContent value="surveys">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
               <CardTitle>Forms</CardTitle>
-              <Button onClick={openNewSurvey} disabled={!selectedProject}><Plus className="h-4 w-4 mr-1" />New Survey</Button>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Search by title…"
+                  value={titleSearch}
+                  onChange={(e) => setTitleSearch(e.target.value)}
+                  className="w-64"
+                />
+                <Button onClick={openNewSurvey}><Plus className="h-4 w-4 mr-1" />New Survey</Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
