@@ -20,7 +20,7 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 import EditSubmissionDialog from "@/components/regulatory/EditSubmissionDialog";
 import EditReportDialog from "@/components/regulatory/EditReportDialog";
-import ReportSchedulesManager from "@/components/regulatory/ReportSchedulesManager";
+
 
 interface Project {
   id: string;
