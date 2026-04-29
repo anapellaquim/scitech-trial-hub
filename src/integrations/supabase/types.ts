@@ -4385,6 +4385,7 @@ export type Database = {
         Row: {
           amount: number
           category: string
+          cost_center: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -4394,17 +4395,19 @@ export type Database = {
           paid_at: string | null
           parent_payment_id: string | null
           payment_date: string
-          project_id: string
+          project_id: string | null
           recurrence_end_date: string | null
           recurrence_type: string | null
           status: string
           updated_at: string
+          value_class: string | null
           vendor_id: string | null
           vendor_name: string
         }
         Insert: {
           amount: number
           category?: string
+          cost_center?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -4414,17 +4417,19 @@ export type Database = {
           paid_at?: string | null
           parent_payment_id?: string | null
           payment_date?: string
-          project_id: string
+          project_id?: string | null
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           status?: string
           updated_at?: string
+          value_class?: string | null
           vendor_id?: string | null
           vendor_name: string
         }
         Update: {
           amount?: number
           category?: string
+          cost_center?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -4434,11 +4439,12 @@ export type Database = {
           paid_at?: string | null
           parent_payment_id?: string | null
           payment_date?: string
-          project_id?: string
+          project_id?: string | null
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           status?: string
           updated_at?: string
+          value_class?: string | null
           vendor_id?: string | null
           vendor_name?: string
         }
