@@ -296,8 +296,8 @@ export default function Payments() {
     // If recurrence is set, create future payments
     if (vendorFormData.recurrence_type !== "none" && vendorFormData.recurrence_end_date) {
       const recurrencePayments = [];
-      let nextDate = new Date(vendorFormData.payment_date);
-      const endDate = new Date(vendorFormData.recurrence_end_date);
+      let nextDate = parseLocalDate(vendorFormData.payment_date);
+      const endDate = parseLocalDate(vendorFormData.recurrence_end_date);
 
       while (nextDate < endDate) {
         if (vendorFormData.recurrence_type === "monthly") {
@@ -311,9 +311,12 @@ export default function Payments() {
         }
 
         if (nextDate <= endDate) {
+          const y = nextDate.getFullYear();
+          const mo = String(nextDate.getMonth() + 1).padStart(2, "0");
+          const d = String(nextDate.getDate()).padStart(2, "0");
           recurrencePayments.push({
             ...paymentData,
-            payment_date: nextDate.toISOString().split("T")[0],
+            payment_date: `${y}-${mo}-${d}`,
           });
         }
       }
