@@ -13,12 +13,17 @@ interface Project {
   title: string;
 }
 
+interface Site { id: string; site_code: string; name: string; }
+
 interface Report {
   id: string;
   project_id: string | null;
+  site_id?: string | null;
   report_type: string;
   due_date: string;
   submitted_date: string | null;
+  approval_date?: string | null;
+  code?: string | null;
   status: string;
   notes: string | null;
   recurrence_type?: string | null;
@@ -71,11 +76,15 @@ export default function EditReportDialog({
   onSuccess,
 }: EditReportDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     report_type: "",
     due_date: "",
     submitted_date: "",
+    approval_date: "",
+    code: "",
     status: "pending",
     notes: "",
     recurrence_type: "none",
@@ -86,9 +95,12 @@ export default function EditReportDialog({
     if (report && open) {
       setFormData({
         project_id: report.project_id || "",
+        site_id: (report as any).site_id || "none",
         report_type: report.report_type,
         due_date: report.due_date || "",
         submitted_date: report.submitted_date || "",
+        approval_date: (report as any).approval_date || "",
+        code: (report as any).code || "",
         status: report.status,
         notes: report.notes || "",
         recurrence_type: report.recurrence_type || "none",
@@ -96,6 +108,11 @@ export default function EditReportDialog({
       });
     }
   }, [report, open]);
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,14 +131,17 @@ export default function EditReportDialog({
         .from("regulatory_reports")
         .update({
           project_id: formData.project_id,
+          site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
           report_type: formData.report_type,
           due_date: formData.due_date,
           submitted_date: formData.submitted_date || null,
+          approval_date: formData.approval_date || null,
+          code: formData.code || null,
           status: formData.status as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
           recurrence_type: formData.recurrence_type,
           recurrence_end_date: formData.recurrence_end_date || null,
-        })
+        } as any)
         .eq("id", report.id);
 
       if (error) throw error;
@@ -238,7 +258,28 @@ export default function EditReportDialog({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Centro de Pesquisa</Label>
+            <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="code">Codificação do Relatório</Label>
+            <Input
+              id="code"
+              value={formData.code}
+              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              placeholder="Ex.: REL-2026-001"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="due_date">Data Limite *</Label>
               <Input
@@ -256,6 +297,15 @@ export default function EditReportDialog({
                 type="date"
                 value={formData.submitted_date}
                 onChange={(e) => setFormData({ ...formData, submitted_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Input
+                id="approval_date"
+                type="date"
+                value={formData.approval_date}
+                onChange={(e) => setFormData({ ...formData, approval_date: e.target.value })}
               />
             </div>
           </div>

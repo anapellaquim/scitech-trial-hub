@@ -2580,6 +2580,8 @@ export type Database = {
       }
       regulatory_reports: {
         Row: {
+          approval_date: string | null
+          code: string | null
           created_at: string
           due_date: string
           id: string
@@ -2588,12 +2590,15 @@ export type Database = {
           recurrence_end_date: string | null
           recurrence_type: string | null
           report_type: string
+          site_id: string | null
           status: Database["public"]["Enums"]["regulatory_status"]
           submission_id: string | null
           submitted_date: string | null
           updated_at: string
         }
         Insert: {
+          approval_date?: string | null
+          code?: string | null
           created_at?: string
           due_date: string
           id?: string
@@ -2602,12 +2607,15 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           report_type: string
+          site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_id?: string | null
           submitted_date?: string | null
           updated_at?: string
         }
         Update: {
+          approval_date?: string | null
+          code?: string | null
           created_at?: string
           due_date?: string
           id?: string
@@ -2616,6 +2624,7 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           report_type?: string
+          site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_id?: string | null
           submitted_date?: string | null
@@ -2630,6 +2639,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "regulatory_reports_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "study_sites"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "regulatory_reports_submission_id_fkey"
             columns: ["submission_id"]
             isOneToOne: false
@@ -2640,6 +2656,8 @@ export type Database = {
       }
       regulatory_submissions: {
         Row: {
+          approval_date: string | null
+          code: string | null
           compliance_response: string | null
           created_at: string
           flow_step_id: string | null
@@ -2654,6 +2672,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_date?: string | null
+          code?: string | null
           compliance_response?: string | null
           created_at?: string
           flow_step_id?: string | null
@@ -2668,6 +2688,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_date?: string | null
+          code?: string | null
           compliance_response?: string | null
           created_at?: string
           flow_step_id?: string | null

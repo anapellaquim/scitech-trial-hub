@@ -48,6 +48,8 @@ export default function NewSubmissionDialog({
     site_id: "none",
     submission_type: "",
     planned_date: "",
+    approval_date: "",
+    code: "",
     notes: "",
     compliance_response: "",
   });
@@ -75,6 +77,8 @@ export default function NewSubmissionDialog({
         site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
         submission_type: formData.submission_type,
         planned_date: formData.planned_date || null,
+        approval_date: formData.approval_date || null,
+        code: formData.code || null,
         notes: formData.notes || null,
         compliance_response: formData.compliance_response || null,
         status: "pending",
@@ -87,7 +91,7 @@ export default function NewSubmissionDialog({
         description: "Submissão criada com sucesso",
       });
       onOpenChange(false);
-      setFormData({ project_id: "", site_id: "none", submission_type: "", planned_date: "", notes: "", compliance_response: "" });
+      setFormData({ project_id: "", site_id: "none", submission_type: "", planned_date: "", approval_date: "", code: "", notes: "", compliance_response: "" });
       onSuccess();
     } catch (error: any) {
       toast({
@@ -146,13 +150,34 @@ export default function NewSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="planned_date">Data Planejada</Label>
+            <Label htmlFor="code">Codificação da Submissão / Emenda</Label>
             <Input
-              id="planned_date"
-              type="date"
-              value={formData.planned_date}
-              onChange={(e) => setFormData({ ...formData, planned_date: e.target.value })}
+              id="code"
+              value={formData.code}
+              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              placeholder="Ex.: SUB-2026-001 ou EMD-2026-002"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="planned_date">Data Planejada</Label>
+              <Input
+                id="planned_date"
+                type="date"
+                value={formData.planned_date}
+                onChange={(e) => setFormData({ ...formData, planned_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Input
+                id="approval_date"
+                type="date"
+                value={formData.approval_date}
+                onChange={(e) => setFormData({ ...formData, approval_date: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

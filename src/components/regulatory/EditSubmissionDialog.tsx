@@ -22,6 +22,8 @@ interface Submission {
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
+  approval_date?: string | null;
+  code?: string | null;
   status: string;
   notes: string | null;
   compliance_response?: string | null;
@@ -72,6 +74,8 @@ export default function EditSubmissionDialog({
     submission_type: "",
     planned_date: "",
     submission_date: "",
+    approval_date: "",
+    code: "",
     status: "pending",
     notes: "",
     compliance_response: "",
@@ -85,6 +89,8 @@ export default function EditSubmissionDialog({
         submission_type: submission.submission_type,
         planned_date: submission.planned_date || "",
         submission_date: submission.submission_date || "",
+        approval_date: (submission as any).approval_date || "",
+        code: (submission as any).code || "",
         status: submission.status,
         notes: submission.notes || "",
         compliance_response: (submission as any).compliance_response || "",
@@ -118,6 +124,8 @@ export default function EditSubmissionDialog({
           submission_type: formData.submission_type,
           planned_date: formData.planned_date || null,
           submission_date: formData.submission_date || null,
+          approval_date: formData.approval_date || null,
+          code: formData.code || null,
           status: formData.status as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
           compliance_response: formData.compliance_response || null,
@@ -238,7 +246,17 @@ export default function EditSubmissionDialog({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="code">Codificação da Submissão / Emenda</Label>
+            <Input
+              id="code"
+              value={formData.code}
+              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              placeholder="Ex.: SUB-2026-001 ou EMD-2026-002"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="planned_date">Data Planejada</Label>
               <Input
@@ -255,6 +273,15 @@ export default function EditSubmissionDialog({
                 type="date"
                 value={formData.submission_date}
                 onChange={(e) => setFormData({ ...formData, submission_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Input
+                id="approval_date"
+                type="date"
+                value={formData.approval_date}
+                onChange={(e) => setFormData({ ...formData, approval_date: e.target.value })}
               />
             </div>
           </div>

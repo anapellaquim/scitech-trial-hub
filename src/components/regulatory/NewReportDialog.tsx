@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,6 +12,8 @@ interface Project {
   id: string;
   title: string;
 }
+
+interface Site { id: string; site_code: string; name: string; }
 
 interface NewReportDialogProps {
   open: boolean;
@@ -48,14 +50,23 @@ export default function NewReportDialog({
   onSuccess,
 }: NewReportDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
   const [formData, setFormData] = useState({
     project_id: "",
+    site_id: "none",
     report_type: "",
     due_date: "",
+    approval_date: "",
+    code: "",
     notes: "",
     recurrence_type: "none",
     recurrence_end_date: "",
   });
+
+  useEffect(() => {
+    if (!formData.project_id) { setSites([]); return; }
+    supabase.from("study_sites").select("id, site_code, name").eq("project_id", formData.project_id).then(({ data }) => setSites(data || []));
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,13 +83,16 @@ export default function NewReportDialog({
     try {
       const { error } = await supabase.from("regulatory_reports").insert({
         project_id: formData.project_id,
+        site_id: formData.site_id && formData.site_id !== "none" ? formData.site_id : null,
         report_type: formData.report_type,
         due_date: formData.due_date,
+        approval_date: formData.approval_date || null,
+        code: formData.code || null,
         notes: formData.notes || null,
         status: "pending",
         recurrence_type: formData.recurrence_type,
         recurrence_end_date: formData.recurrence_end_date || null,
-      });
+      } as any);
 
       if (error) throw error;
 
@@ -90,9 +104,12 @@ export default function NewReportDialog({
       });
       onOpenChange(false);
       setFormData({ 
-        project_id: "", 
+        project_id: "",
+        site_id: "none",
         report_type: "", 
-        due_date: "", 
+        due_date: "",
+        approval_date: "",
+        code: "",
         notes: "",
         recurrence_type: "none",
         recurrence_end_date: "",
@@ -155,14 +172,46 @@ export default function NewReportDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="due_date">Data Limite *</Label>
+            <Label>Centro de Pesquisa</Label>
+            <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
+              <SelectTrigger><SelectValue placeholder={formData.project_id ? "Opcional" : "Selecione um estudo primeiro"} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Nenhum (estudo todo) —</SelectItem>
+                {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.site_code} · {s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="code">Codificação do Relatório</Label>
             <Input
-              id="due_date"
-              type="date"
-              value={formData.due_date}
-              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-              required
+              id="code"
+              value={formData.code}
+              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              placeholder="Ex.: REL-2026-001"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="due_date">Data Limite *</Label>
+              <Input
+                id="due_date"
+                type="date"
+                value={formData.due_date}
+                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="approval_date">Data de Aprovação</Label>
+              <Input
+                id="approval_date"
+                type="date"
+                value={formData.approval_date}
+                onChange={(e) => setFormData({ ...formData, approval_date: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
