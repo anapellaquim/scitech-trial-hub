@@ -180,7 +180,7 @@ export default function NewSubmissionDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Research Center</Label>
+            <Label>Site</Label>
             <Select value={formData.site_id} onValueChange={v => setFormData({ ...formData, site_id: v })} disabled={!formData.project_id}>
               <SelectTrigger><SelectValue placeholder={formData.project_id ? "Optional" : "Select a study first"} /></SelectTrigger>
               <SelectContent>
