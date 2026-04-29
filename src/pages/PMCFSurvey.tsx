@@ -169,7 +169,8 @@ export default function PMCFSurvey() {
       return;
     }
     const status = computeStatus(checkForm.fills_count ?? 0, checkForm.expected_count ?? 0);
-    const payload = { ...checkForm, project_id: selectedProject, status };
+    const survey = surveys.find(s => s.id === checkForm.survey_id);
+    const payload = { ...checkForm, project_id: survey?.project_id, status };
     const { error } = editingCheck
       ? await supabase.from("pmcf_monthly_checks" as any).update(payload).eq("id", editingCheck.id)
       : await supabase.from("pmcf_monthly_checks" as any).insert(payload);
