@@ -22,6 +22,8 @@ interface Submission {
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
+  approval_date?: string | null;
+  code?: string | null;
   status: string;
   notes: string | null;
   compliance_response?: string | null;
