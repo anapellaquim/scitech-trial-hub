@@ -189,6 +189,12 @@ export default function PMCFSurvey() {
   };
 
   const surveyMap = useMemo(() => Object.fromEntries(surveys.map(s => [s.id, s])), [surveys]);
+  const projectMap = useMemo(() => Object.fromEntries(projects.map(p => [p.id, p])), [projects]);
+  const filteredSurveys = useMemo(() => {
+    const q = titleSearch.trim().toLowerCase();
+    if (!q) return surveys;
+    return surveys.filter(s => (s.title ?? "").toLowerCase().includes(q));
+  }, [surveys, titleSearch]);
 
   const stats = useMemo(() => ({
     total: surveys.length,
