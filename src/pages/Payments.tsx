@@ -253,8 +253,13 @@ export default function Payments() {
 
     setVendorLoading(true);
     
+    const resolvedProjectId =
+      vendorFormData.project_id === "__na__"
+        ? null
+        : vendorFormData.project_id || selectedProject;
+
     const paymentData = {
-      project_id: selectedProject,
+      project_id: resolvedProjectId,
       vendor_id: vendorFormData.vendor_id || null,
       vendor_name: vendorFormData.vendor_name.trim(),
       category: vendorFormData.category,
@@ -265,6 +270,8 @@ export default function Payments() {
       recurrence_type: vendorFormData.recurrence_type,
       recurrence_end_date: vendorFormData.recurrence_end_date || null,
       status: vendorFormData.status,
+      cost_center: vendorFormData.cost_center.trim() || null,
+      value_class: vendorFormData.value_class.trim() || null,
     };
 
     const { error } = await supabase
