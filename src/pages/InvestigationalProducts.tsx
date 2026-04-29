@@ -459,59 +459,94 @@ export default function InvestigationalProducts() {
                     No IP records yet. Click "New IP" to get started.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Code</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Lot#</TableHead>
-                          <TableHead>Expiration</TableHead>
-                          <TableHead>Qty</TableHead>
-                          <TableHead>Site</TableHead>
-                          <TableHead>Invoice</TableHead>
-                          <TableHead>Correction Invoice</TableHead>
-                          <TableHead>Delivery</TableHead>
-                          <TableHead>Usage</TableHead>
-                          <TableHead>Usage date</TableHead>
-                          <TableHead>Return</TableHead>
-                          <TableHead>Note</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {records.map((r) => (
-                          <TableRow key={r.id}>
-                            <TableCell className="font-medium">{r.code}</TableCell>
-                            <TableCell className="text-sm">{r.description || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.lot_number || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.expiration_date || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.quantity ?? "—"}</TableCell>
-                            <TableCell className="text-sm">{r.site || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.invoice || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.correction_invoice || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.delivery_date || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.usage || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.usage_date || "—"}</TableCell>
-                            <TableCell className="text-sm">{r.return_info || "—"}</TableCell>
-                            <TableCell className="text-sm max-w-[200px] truncate" title={r.note || ""}>
-                              {r.note || "—"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
+                  <>
+                    {hasInvFilters && (
+                      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40 text-xs text-muted-foreground">
+                        <span>
+                          Showing {filteredRecords.length} of {records.length} records
+                        </span>
+                        <Button type="button" variant="ghost" size="sm" onClick={clearInvFilters}>
+                          Clear filters
+                        </Button>
+                      </div>
+                    )}
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Code</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Lot#</TableHead>
+                            <TableHead>Expiration</TableHead>
+                            <TableHead>Qty</TableHead>
+                            <TableHead>Site</TableHead>
+                            <TableHead>Invoice</TableHead>
+                            <TableHead>Correction Invoice</TableHead>
+                            <TableHead>Delivery</TableHead>
+                            <TableHead>Usage</TableHead>
+                            <TableHead>Usage date</TableHead>
+                            <TableHead>Return</TableHead>
+                            <TableHead>Note</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                          <TableRow className="hover:bg-transparent">
+                            {[
+                              "code","description","lot_number","expiration_date","quantity",
+                              "site","invoice","correction_invoice","delivery_date",
+                              "usage","usage_date","return_info","note",
+                            ].map((k) => (
+                              <TableHead key={k} className="py-2">
+                                <Input
+                                  value={invFilters[k]}
+                                  onChange={(e) => setInvFilter(k, e.target.value)}
+                                  placeholder="Filter…"
+                                  className="h-8 text-xs"
+                                />
+                              </TableHead>
+                            ))}
+                            <TableHead />
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredRecords.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
+                                No records match the current filters.
+                              </TableCell>
+                            </TableRow>
+                          ) : filteredRecords.map((r) => (
+                            <TableRow key={r.id}>
+                              <TableCell className="font-medium">{r.code}</TableCell>
+                              <TableCell className="text-sm">{r.description || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.lot_number || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.expiration_date || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.quantity ?? "—"}</TableCell>
+                              <TableCell className="text-sm">{r.site || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.invoice || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.correction_invoice || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.delivery_date || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.usage || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.usage_date || "—"}</TableCell>
+                              <TableCell className="text-sm">{r.return_info || "—"}</TableCell>
+                              <TableCell className="text-sm max-w-[200px] truncate" title={r.note || ""}>
+                                {r.note || "—"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-1">
+                                  <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
