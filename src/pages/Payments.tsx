@@ -1969,7 +1969,7 @@ export default function Payments() {
                           const csvContent = [
                             ["Data", "Tipo", "Centro/Vendor", "Participante/Descrição", "Valor", "Observações"].join(","),
                             ...combinedHistory.map(item => [
-                              format(new Date(item.date), "dd/MM/yyyy"),
+                              format(parseLocalDate(item.date), "dd/MM/yyyy"),
                               item.type === "center" ? "Centro" : "Vendor",
                               item.source,
                               item.description,
