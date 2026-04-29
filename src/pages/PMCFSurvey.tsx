@@ -296,7 +296,7 @@ export default function PMCFSurvey() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {surveys.map(s => {
+                  {filteredSurveys.map(s => {
                     const t = trackingMap[s.id];
                     const pct = t?.progressPct ?? 0;
                     const barColor = pct >= 90 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500";
