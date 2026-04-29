@@ -72,7 +72,7 @@ export default function SteeringDecisions() {
   const [importOpen, setImportOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState({
-    decision_code: "", meeting_origin: "", decision_date: new Date().toISOString().split("T")[0],
+    decision_code: "", meeting_origin: "", decision_date: todayDateOnly(),
     description: "", impacted_area: "", responsible: "", deadline: "", status: "pending", observations: "",
   });
 
@@ -84,7 +84,7 @@ export default function SteeringDecisions() {
   const [meetingSearch, setMeetingSearch] = useState("");
   const [meetingStatusFilter, setMeetingStatusFilter] = useState("all");
   const [meetingForm, setMeetingForm] = useState({
-    meeting_code: "", meeting_date: new Date().toISOString().split("T")[0],
+    meeting_code: "", meeting_date: todayDateOnly(),
     location: "", attendees: "", agenda: "", minutes: "", next_meeting_date: "", status: "scheduled",
   });
 
@@ -92,7 +92,7 @@ export default function SteeringDecisions() {
     { excelHeader: "Decision Code", dbColumn: "decision_code", required: true },
     { excelHeader: "Description", dbColumn: "description", required: true },
     { excelHeader: "Meeting Origin", dbColumn: "meeting_origin" },
-    { excelHeader: "Decision Date", dbColumn: "decision_date", transform: (v: any) => v || new Date().toISOString().split("T")[0] },
+    { excelHeader: "Decision Date", dbColumn: "decision_date", transform: (v: any) => v || todayDateOnly() },
     { excelHeader: "Impacted Area", dbColumn: "impacted_area" },
     { excelHeader: "Responsible", dbColumn: "responsible" },
     { excelHeader: "Deadline", dbColumn: "deadline" },
@@ -132,7 +132,7 @@ export default function SteeringDecisions() {
 
   const handleDelete = async (id: string) => { await supabase.from("steering_decisions").delete().eq("id", id); toast.success("Deleted"); loadData(); };
 
-  const openNew = () => { setEditing(null); setForm({ decision_code: "", meeting_origin: "", decision_date: new Date().toISOString().split("T")[0], description: "", impacted_area: "", responsible: "", deadline: "", status: "pending", observations: "" }); setDialogOpen(true); };
+  const openNew = () => { setEditing(null); setForm({ decision_code: "", meeting_origin: "", decision_date: todayDateOnly(), description: "", impacted_area: "", responsible: "", deadline: "", status: "pending", observations: "" }); setDialogOpen(true); };
   const openEdit = (r: Decision) => { setEditing(r); setForm({ decision_code: r.decision_code, meeting_origin: r.meeting_origin || "", decision_date: r.decision_date, description: r.description, impacted_area: r.impacted_area || "", responsible: r.responsible || "", deadline: r.deadline || "", status: r.status, observations: r.observations || "" }); setDialogOpen(true); };
 
   const handleSaveMeeting = async () => {
@@ -157,7 +157,7 @@ export default function SteeringDecisions() {
 
   const openNewMeeting = () => {
     setEditingMeeting(null);
-    setMeetingForm({ meeting_code: "", meeting_date: new Date().toISOString().split("T")[0], location: "", attendees: "", agenda: "", minutes: "", next_meeting_date: "", status: "scheduled" });
+    setMeetingForm({ meeting_code: "", meeting_date: todayDateOnly(), location: "", attendees: "", agenda: "", minutes: "", next_meeting_date: "", status: "scheduled" });
     setMeetingDialogOpen(true);
   };
   const openEditMeeting = (m: Meeting) => {

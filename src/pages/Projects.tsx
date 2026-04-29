@@ -366,7 +366,7 @@ const Projects = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `projetos_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `projetos_${todayDateOnly()}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

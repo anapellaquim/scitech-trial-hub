@@ -22,7 +22,7 @@ export function RegisterPaymentDialog({
   description,
   amount 
 }: RegisterPaymentDialogProps) {
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentDate, setPaymentDate] = useState(todayDateOnly());
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +39,7 @@ export function RegisterPaymentDialog({
     await onConfirm(paymentDate, notes);
     setLoading(false);
     setNotes("");
-    setPaymentDate(new Date().toISOString().split("T")[0]);
+    setPaymentDate(todayDateOnly());
     onOpenChange(false);
   };
 

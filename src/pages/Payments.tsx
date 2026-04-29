@@ -165,7 +165,7 @@ export default function Payments() {
     category: "other",
     description: "",
     amount: "",
-    payment_date: new Date().toISOString().split("T")[0],
+    payment_date: todayDateOnly(),
     invoice_number: "",
     recurrence_type: "none",
     recurrence_end_date: "",
@@ -184,7 +184,7 @@ export default function Payments() {
   }>({
     open: false,
     paymentId: "",
-    paidAt: new Date().toISOString().split("T")[0],
+    paidAt: todayDateOnly(),
     driveFolderLink: "",
   });
 
@@ -334,7 +334,7 @@ export default function Payments() {
       category: "other",
       description: "",
       amount: "",
-      payment_date: new Date().toISOString().split("T")[0],
+      payment_date: todayDateOnly(),
       invoice_number: "",
       recurrence_type: "none",
       recurrence_end_date: "",
@@ -367,7 +367,7 @@ export default function Payments() {
       setPaymentConfirmDialog({
         open: true,
         paymentId: id,
-        paidAt: new Date().toISOString().split("T")[0],
+        paidAt: todayDateOnly(),
         driveFolderLink: "",
       });
       return;
@@ -838,7 +838,7 @@ export default function Payments() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `pagamentos_${projectName}_${filterCenter || "todos"}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `pagamentos_${projectName}_${filterCenter || "todos"}_${todayDateOnly()}.csv`;
     link.click();
 
     toast.success("Arquivo exportado com sucesso!");
@@ -920,7 +920,7 @@ export default function Payments() {
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `pagamentos_${projectName}_${selectedCenterTab}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `pagamentos_${projectName}_${selectedCenterTab}_${todayDateOnly()}.csv`;
     link.click();
 
     toast.success("Arquivo exportado com sucesso!");
@@ -960,7 +960,7 @@ export default function Payments() {
       ? `_${historyStartDate || "inicio"}_${historyEndDate || "fim"}`
       : "";
     const centerSuffix = historyCenterFilter || "todos";
-    link.download = `historico_pagamentos_${projectName}_${centerSuffix}${dateRange}_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `historico_pagamentos_${projectName}_${centerSuffix}${dateRange}_${todayDateOnly()}.csv`;
     link.click();
 
     toast.success("Histórico exportado com sucesso!");

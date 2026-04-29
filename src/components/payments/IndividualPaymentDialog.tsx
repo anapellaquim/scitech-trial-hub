@@ -34,7 +34,7 @@ export function IndividualPaymentDialog({
   const [category, setCategory] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [paymentDate, setPaymentDate] = useState<string>(todayDateOnly());
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -54,7 +54,7 @@ export function IndividualPaymentDialog({
     setCategory("");
     setAmount("");
     setDescription("");
-    setPaymentDate(new Date().toISOString().split("T")[0]);
+    setPaymentDate(todayDateOnly());
   };
 
   const handleOpenChange = (open: boolean) => {

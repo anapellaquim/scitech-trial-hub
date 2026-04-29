@@ -134,7 +134,7 @@ export default function CommunicationPlanList({ projectId }: Props) {
       description: "",
       channel: "email",
       frequency: "monthly",
-      start_date: new Date().toISOString().split("T")[0],
+      start_date: todayDateOnly(),
       end_date: "",
       due_day_offset: 1,
       lead_time_days: 3,
