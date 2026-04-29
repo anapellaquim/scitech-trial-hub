@@ -943,7 +943,7 @@ export default function Payments() {
     ];
 
     const rows = filteredHistory.map((record) => [
-      format(new Date(record.payment_date), "dd/MM/yyyy", { locale: ptBR }),
+      format(parseLocalDate(record.payment_date), "dd/MM/yyyy", { locale: ptBR }),
       record.participant?.research_center || "-",
       record.participant?.participant_code || "-",
       record.participant?.name || "-",
