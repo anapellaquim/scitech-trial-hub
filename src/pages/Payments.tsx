@@ -1769,7 +1769,7 @@ export default function Payments() {
                                 return (
                                   <TableRow key={payment.id}>
                                     <TableCell>
-                                      {format(new Date(payment.payment_date), "dd/MM/yyyy", { locale: ptBR })}
+                                      {format(parseLocalDate(payment.payment_date), "dd/MM/yyyy", { locale: ptBR })}
                                     </TableCell>
                                     <TableCell className="font-medium">{payment.vendor_name}</TableCell>
                                     <TableCell>
