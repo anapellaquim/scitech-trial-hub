@@ -2103,7 +2103,7 @@ export default function Payments() {
                               {combinedHistory.map((record) => (
                                 <TableRow key={`${record.type}-${record.id}`}>
                                   <TableCell>
-                                    {format(new Date(record.date), "dd/MM/yyyy", { locale: ptBR })}
+                                    {format(parseLocalDate(record.date), "dd/MM/yyyy", { locale: ptBR })}
                                   </TableCell>
                                   <TableCell>
                                     {record.type === "center" ? (
