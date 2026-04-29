@@ -105,7 +105,11 @@ export default function PMCFSurvey() {
       toast.error("Code and title are required");
       return;
     }
-    const payload = { ...surveyForm, project_id: selectedProject };
+    if (!surveyForm.project_id) {
+      toast.error("Study is required");
+      return;
+    }
+    const payload = { ...surveyForm };
     const { error } = editingSurvey
       ? await supabase.from("pmcf_surveys" as any).update(payload).eq("id", editingSurvey.id)
       : await supabase.from("pmcf_surveys" as any).insert(payload);
