@@ -13,12 +13,17 @@ interface Project {
   title: string;
 }
 
+interface Site { id: string; site_code: string; name: string; }
+
 interface Report {
   id: string;
   project_id: string | null;
+  site_id?: string | null;
   report_type: string;
   due_date: string;
   submitted_date: string | null;
+  approval_date?: string | null;
+  code?: string | null;
   status: string;
   notes: string | null;
   recurrence_type?: string | null;
