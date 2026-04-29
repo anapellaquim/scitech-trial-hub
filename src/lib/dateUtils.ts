@@ -19,15 +19,19 @@ export const APP_TIMEZONE = "America/Sao_Paulo";
  * Accepts a Date instance and returns it as-is.
  * Returns an Invalid Date for null/empty input.
  */
-export function parseLocalDate(value: string | Date | null | undefined): Date {
+export function parseLocalDate(value: string | number | Date | null | undefined, ...rest: number[]): Date {
+  // Multi-arg form (year, monthIndex, day, ...) — pass through to native Date
+  if (rest.length > 0 && typeof value === "number") {
+    return new Date(value as number, ...(rest as [number, ...number[]]));
+  }
   if (value instanceof Date) return value;
-  if (!value) return new Date(NaN);
+  if (value === null || value === undefined || value === "") return new Date(NaN);
+  if (typeof value === "number") return new Date(value);
   const str = String(value);
   const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (m) {
     return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   }
-  // Fallback: let the runtime parse (timestamps with timezone are fine)
   return new Date(str);
 }
 
