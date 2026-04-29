@@ -2382,7 +2382,7 @@ export default function Payments() {
             {vendorFormData.recurrence_type !== "none" && vendorFormData.recurrence_end_date && (
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <RefreshCw className="h-3 w-3" />
-                Serão criados pagamentos recorrentes até {format(new Date(vendorFormData.recurrence_end_date), "dd/MM/yyyy", { locale: ptBR })}
+                Serão criados pagamentos recorrentes até {format(parseLocalDate(vendorFormData.recurrence_end_date), "dd/MM/yyyy", { locale: ptBR })}
               </p>
             )}
           </div>
