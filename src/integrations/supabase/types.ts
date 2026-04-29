@@ -2789,19 +2789,103 @@ export type Database = {
           },
         ]
       }
+      risk_indicators: {
+        Row: {
+          area: string
+          created_at: string
+          current_value: string | null
+          description: string | null
+          id: string
+          indicator_type: string
+          last_measured_at: string | null
+          linked_risk_id: string | null
+          measurement_frequency: string
+          name: string
+          project_id: string
+          responsible: string | null
+          status: string
+          target_value: string | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          created_at?: string
+          current_value?: string | null
+          description?: string | null
+          id?: string
+          indicator_type: string
+          last_measured_at?: string | null
+          linked_risk_id?: string | null
+          measurement_frequency?: string
+          name: string
+          project_id: string
+          responsible?: string | null
+          status?: string
+          target_value?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          current_value?: string | null
+          description?: string | null
+          id?: string
+          indicator_type?: string
+          last_measured_at?: string | null
+          linked_risk_id?: string | null
+          measurement_frequency?: string
+          name?: string
+          project_id?: string
+          responsible?: string | null
+          status?: string
+          target_value?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_indicators_linked_risk_id_fkey"
+            columns: ["linked_risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_indicators_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           category: string
+          contingency_plan: string | null
           created_at: string
           description: string
+          escalated_at: string | null
+          escalation_owner: string | null
+          escalation_reason: string | null
           id: string
           identified_at: string
           impact: number
+          materialized_at: string | null
           mitigation_plan: string | null
+          monitoring_method: string | null
+          next_review_date: string | null
+          potential_impact: string | null
           probability: number
           project_id: string
+          residual_impact: number | null
+          residual_probability: number | null
+          residual_risk_score: number | null
           responsible: string | null
           review_date: string | null
+          review_frequency: string
           risk_code: string
           risk_score: number | null
           status: string
@@ -2809,16 +2893,28 @@ export type Database = {
         }
         Insert: {
           category?: string
+          contingency_plan?: string | null
           created_at?: string
           description: string
+          escalated_at?: string | null
+          escalation_owner?: string | null
+          escalation_reason?: string | null
           id?: string
           identified_at?: string
           impact?: number
+          materialized_at?: string | null
           mitigation_plan?: string | null
+          monitoring_method?: string | null
+          next_review_date?: string | null
+          potential_impact?: string | null
           probability?: number
           project_id: string
+          residual_impact?: number | null
+          residual_probability?: number | null
+          residual_risk_score?: number | null
           responsible?: string | null
           review_date?: string | null
+          review_frequency?: string
           risk_code: string
           risk_score?: number | null
           status?: string
@@ -2826,16 +2922,28 @@ export type Database = {
         }
         Update: {
           category?: string
+          contingency_plan?: string | null
           created_at?: string
           description?: string
+          escalated_at?: string | null
+          escalation_owner?: string | null
+          escalation_reason?: string | null
           id?: string
           identified_at?: string
           impact?: number
+          materialized_at?: string | null
           mitigation_plan?: string | null
+          monitoring_method?: string | null
+          next_review_date?: string | null
+          potential_impact?: string | null
           probability?: number
           project_id?: string
+          residual_impact?: number | null
+          residual_probability?: number | null
+          residual_risk_score?: number | null
           responsible?: string | null
           review_date?: string | null
+          review_frequency?: string
           risk_code?: string
           risk_score?: number | null
           status?: string
