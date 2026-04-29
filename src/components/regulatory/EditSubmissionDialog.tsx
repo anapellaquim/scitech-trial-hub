@@ -124,6 +124,8 @@ export default function EditSubmissionDialog({
           submission_type: formData.submission_type,
           planned_date: formData.planned_date || null,
           submission_date: formData.submission_date || null,
+          approval_date: formData.approval_date || null,
+          code: formData.code || null,
           status: formData.status as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
           compliance_response: formData.compliance_response || null,
