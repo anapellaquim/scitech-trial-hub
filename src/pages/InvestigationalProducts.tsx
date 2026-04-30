@@ -248,6 +248,11 @@ export default function InvestigationalProducts() {
   );
   const setColFilter = (c: InvCol, v: string) => setColFilters((p) => ({ ...p, [c]: v }));
 
+  // Pagination
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [page, setPage] = useState<number>(1);
+  useEffect(() => { setPage(1); }, [invSearch, colFilters, pageSize]);
+
   const filteredRecords = useMemo(() => {
     const q = invSearch.trim().toLowerCase();
     return records.filter((r) => {
