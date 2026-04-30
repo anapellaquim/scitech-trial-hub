@@ -326,24 +326,39 @@ export default function InvestigationalProducts() {
   const fmtBRL = (n: number) =>
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-  // Inventory KPIs by site
+  // Inventory KPIs by site — subtracts used items (usage_date filled)
+  const isUsed = (r: IPRecord) => !!(r.usage_date && String(r.usage_date).trim());
+
   const inventoryBySite = useMemo(() => {
-    const map = new Map<string, { site: string; items: number; quantity: number }>();
+    const map = new Map<string, { site: string; items: number; used: number; quantity: number }>();
     records.forEach((r) => {
       const site = (r.site || "—").trim() || "—";
-      const cur = map.get(site) || { site, items: 0, quantity: 0 };
+      const cur = map.get(site) || { site, items: 0, used: 0, quantity: 0 };
+      const qty = Number(r.quantity || 0);
       cur.items += 1;
-      cur.quantity += Number(r.quantity || 0);
+      if (isUsed(r)) {
+        cur.used += qty;
+      } else {
+        cur.quantity += qty;
+      }
       map.set(site, cur);
     });
     return Array.from(map.values()).sort((a, b) => b.quantity - a.quantity);
   }, [records]);
 
-  const inventoryTotals = useMemo(() => ({
-    items: records.length,
-    quantity: records.reduce((sum, r) => sum + Number(r.quantity || 0), 0),
-    sites: new Set(records.map((r) => (r.site || "—").trim() || "—")).size,
-  }), [records]);
+  const inventoryTotals = useMemo(() => {
+    let total = 0, used = 0;
+    records.forEach((r) => {
+      const qty = Number(r.quantity || 0);
+      if (isUsed(r)) used += qty; else total += qty;
+    });
+    return {
+      items: records.length,
+      quantity: total,
+      used,
+      sites: new Set(records.map((r) => (r.site || "—").trim() || "—")).size,
+    };
+  }, [records]);
 
   return (
     <div className="min-h-screen bg-background">
