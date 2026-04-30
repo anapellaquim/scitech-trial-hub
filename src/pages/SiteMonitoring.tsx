@@ -277,6 +277,61 @@ export default function SiteMonitoring() {
   };
 
   const visitFindings = (vid: string) => findings.filter(f => f.monitoring_visit_id === vid);
+  const visitNotes = (vid: string) => notes.filter(n => n.monitoring_visit_id === vid);
+
+  // Monitor Notes CRUD
+  const openNotes = (v: MonitoringVisit) => {
+    setNotesVisit(v);
+    setEditingNote(null);
+    setNoteForm(emptyNote);
+    setNotesDialogOpen(true);
+  };
+  const editNote = (n: MonitorNote) => {
+    setEditingNote(n);
+    setNoteForm({
+      category: n.category || "General",
+      importance: n.importance,
+      content: n.content,
+    });
+  };
+  const cancelNoteEdit = () => { setEditingNote(null); setNoteForm(emptyNote); };
+  const saveNote = async () => {
+    if (!notesVisit) return;
+    if (!noteForm.content.trim()) { toast.error("Content is required"); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = user
+      ? await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle()
+      : { data: null as any };
+    const payload = {
+      monitoring_visit_id: notesVisit.id,
+      project_id: notesVisit.project_id,
+      author_id: user?.id || null,
+      author_name: (profile as any)?.full_name || user?.email || null,
+      category: noteForm.category || null,
+      importance: noteForm.importance,
+      content: noteForm.content.trim(),
+    };
+    if (editingNote) {
+      const { error } = await supabase.from("monitor_notes" as any)
+        .update({ category: payload.category, importance: payload.importance, content: payload.content })
+        .eq("id", editingNote.id);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Note updated");
+    } else {
+      const { error } = await supabase.from("monitor_notes" as any).insert(payload);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Note added");
+    }
+    cancelNoteEdit();
+    loadData();
+  };
+  const deleteNote = async (id: string) => {
+    if (!confirm("Delete this note?")) return;
+    const { error } = await supabase.from("monitor_notes" as any).delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Note deleted");
+    loadData();
+  };
 
   const filtered = useMemo(() => visits.filter(v => {
     const matchSearch = !search || (v.monitor_name || "").toLowerCase().includes(search.toLowerCase())
