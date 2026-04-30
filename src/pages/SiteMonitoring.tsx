@@ -387,6 +387,16 @@ export default function SiteMonitoring() {
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" title="Findings" onClick={() => openFindings(v)}><ClipboardList className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" title="Monitor Notes" onClick={() => openNotes(v)}>
+                      <span className="relative inline-flex">
+                        <StickyNote className="h-4 w-4" />
+                        {visitNotes(v.id).length > 0 && (
+                          <span className="absolute -top-1 -right-2 text-[9px] font-semibold bg-primary text-primary-foreground rounded-full px-1 leading-none py-[1px]">
+                            {visitNotes(v.id).length}
+                          </span>
+                        )}
+                      </span>
+                    </Button>
                     <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(v)}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteVisit(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
