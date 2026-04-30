@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Calendar as CalendarIcon, List, MapPin, Clock, FileText, CheckSquare } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, List, MapPin, Clock, FileText, CheckSquare, CheckCircle2, AlertTriangle } from "lucide-react";
+import KpiCards from "@/components/shared/KpiCards";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths } from "date-fns";
@@ -182,6 +183,28 @@ export default function VisitAgenda() {
             </Button>
           </div>
         </div>
+
+        {(() => {
+          const today = new Date(); today.setHours(0,0,0,0);
+          const total = filteredVisits.length;
+          const scheduled = filteredVisits.filter(v => v.status === "scheduled").length;
+          const completed = filteredVisits.filter(v => v.status === "completed").length;
+          const upcoming = filteredVisits.filter(v => v.status === "scheduled" && v.scheduled_date && new Date(v.scheduled_date) >= today).length;
+          const overdue = filteredVisits.filter(v => v.status === "scheduled" && v.scheduled_date && new Date(v.scheduled_date) < today).length;
+          const openTasks = (selectedProject === "all" ? tasks : tasks.filter(t => t.project?.title && filteredVisits.some(v => v.project?.title === t.project?.title))).filter(t => t.status !== "completed").length;
+          return (
+            <div className="mb-6">
+              <KpiCards cols={6} items={[
+                { label: "Total Visits", value: total, icon: CalendarIcon, accent: "primary" },
+                { label: "Scheduled", value: scheduled, icon: Clock, accent: "primary" },
+                { label: "Upcoming", value: upcoming, icon: CalendarIcon, accent: "primary" },
+                { label: "Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
+                { label: "Completed", value: completed, icon: CheckCircle2, accent: "success" },
+                { label: "Open Tasks", value: openTasks, icon: CheckSquare, accent: "warning" },
+              ]} />
+            </div>
+          );
+        })()}
 
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "calendar" | "list")}>
           <TabsList className="mb-6">

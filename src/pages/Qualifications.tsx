@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Upload, Users, CheckCircle2, Clock, XCircle, FileSignature, AlertTriangle } from "lucide-react";
+import KpiCards from "@/components/shared/KpiCards";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import QualificationScorecard from "@/components/qualifications/QualificationScorecard";
@@ -211,6 +212,32 @@ export default function Qualifications() {
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="qualifications" showAllOption
       actions={<div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setImportOpen(true)} disabled={!selectedProject || selectedProject === "all"}><Upload className="h-4 w-4 mr-1" />Import</Button><Button size="sm" onClick={openNew} disabled={!selectedProject || selectedProject === "all"}><Plus className="h-4 w-4 mr-1" />New Entry</Button></div>}
     >
+      {(() => {
+        const total = records.length;
+        const qualified = records.filter(r => r.qualification_status === "qualified").length;
+        const pending = records.filter(r => r.qualification_status === "pending").length;
+        const disq = records.filter(r => r.qualification_status === "disqualified").length;
+        const signed = records.filter(r => r.contract_status === "signed").length;
+        const today = new Date(); today.setHours(0,0,0,0);
+        const expiringSoon = records.filter(r => {
+          if (!r.next_qualification_date) return false;
+          const d = new Date(r.next_qualification_date);
+          const diff = (d.getTime() - today.getTime()) / 86400000;
+          return diff >= 0 && diff <= 60;
+        }).length;
+        return (
+          <div className="mb-6">
+            <KpiCards cols={6} items={[
+              { label: "Total Vendors", value: total, icon: Users, accent: "primary" },
+              { label: "Qualified", value: qualified, icon: CheckCircle2, accent: "success" },
+              { label: "Pending", value: pending, icon: Clock, accent: "warning" },
+              { label: "Disqualified", value: disq, icon: XCircle, accent: "danger" },
+              { label: "Contracts Signed", value: signed, icon: FileSignature, accent: "primary" },
+              { label: "Re-qualif. ≤ 60d", value: expiringSoon, icon: AlertTriangle, accent: "warning" },
+            ]} />
+          </div>
+        );
+      })()}
       <Tabs defaultValue="qualifications" className="w-full">
         <TabsList>
           <TabsTrigger value="qualifications">Qualifications</TabsTrigger>

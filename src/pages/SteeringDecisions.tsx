@@ -14,7 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Upload, Gavel, Clock, CheckCircle2, AlertTriangle, CalendarDays, Users } from "lucide-react";
+import KpiCards from "@/components/shared/KpiCards";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
@@ -206,6 +207,27 @@ export default function SteeringDecisions() {
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName={exportFileName}
       actions={headerActions}
     >
+      {(() => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const totalD = records.length;
+        const pending = records.filter(r => r.status === "pending").length;
+        const implemented = records.filter(r => r.status === "implemented").length;
+        const overdue = records.filter(r => r.status === "pending" && r.deadline && new Date(r.deadline) < today).length;
+        const totalM = meetings.length;
+        const upcoming = meetings.filter(m => m.status === "scheduled" && m.meeting_date && new Date(m.meeting_date) >= today).length;
+        return (
+          <div className="mb-6">
+            <KpiCards cols={6} items={[
+              { label: "Decisions", value: totalD, icon: Gavel, accent: "primary" },
+              { label: "Pending", value: pending, icon: Clock, accent: "warning" },
+              { label: "Implemented", value: implemented, icon: CheckCircle2, accent: "success" },
+              { label: "Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
+              { label: "Meetings", value: totalM, icon: Users, accent: "primary" },
+              { label: "Upcoming Meetings", value: upcoming, icon: CalendarDays, accent: "primary" },
+            ]} />
+          </div>
+        );
+      })()}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="decisions">Decisions Log</TabsTrigger>

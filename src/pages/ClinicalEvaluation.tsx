@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, History, ExternalLink, FileCheck, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, History, ExternalLink, FileCheck, AlertCircle, FileText, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import KpiCards from "@/components/shared/KpiCards";
 import { format, addMonths, parseISO, differenceInDays } from "date-fns";
 
 type DocType = "clinical_evaluation_report" | "systematic_literature_review" | "other";
@@ -304,6 +305,32 @@ export default function ClinicalEvaluation() {
             </Button>
           </div>
         </div>
+      {(() => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const total = records.length;
+        const approved = records.filter(r => r.status === "approved").length;
+        const drafts = records.filter(r => r.status === "draft" || r.status === "under_review").length;
+        const overdue = records.filter(r => r.next_review_date && new Date(r.next_review_date) < today).length;
+        const dueSoon = records.filter(r => {
+          if (!r.next_review_date) return false;
+          const d = new Date(r.next_review_date);
+          const diff = (d.getTime() - today.getTime()) / 86400000;
+          return diff >= 0 && diff <= 60;
+        }).length;
+        const archived = records.filter(r => r.status === "archived" || r.status === "superseded").length;
+        return (
+          <div className="mb-6">
+            <KpiCards cols={6} items={[
+              { label: "Total Documents", value: total, icon: FileText, accent: "primary" },
+              { label: "Approved", value: approved, icon: CheckCircle2, accent: "success" },
+              { label: "Draft / In Review", value: drafts, icon: Clock, accent: "warning" },
+              { label: "Review Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
+              { label: "Review ≤ 60d", value: dueSoon, icon: AlertCircle, accent: "warning" },
+              { label: "Archived/Superseded", value: archived, icon: FileCheck, accent: "muted" },
+            ]} />
+          </div>
+        );
+      })()}
       <Card>
         <CardContent className="p-0">
           {loading ? (
