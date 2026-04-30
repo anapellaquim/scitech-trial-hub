@@ -335,6 +335,285 @@ Deno.serve(async (req) => {
       }
     });
 
+    const in30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    // 15. SITE MONITORING VISITS - overdue / today / upcoming / no report
+    const { data: smVisits } = await supabase
+      .from('site_monitoring_visits')
+      .select('id, project_id, visit_type, status, planned_date, actual_date, report_date');
+    smVisits?.forEach((v: any) => {
+      if (v.status === 'planned' && v.planned_date) {
+        if (v.planned_date < todayStr) {
+          alerts.push({ type: 'site_monitoring_overdue', severity: 'critical',
+            title: `Monitoring visit overdue: ${v.visit_type}`,
+            message: `Site monitoring visit "${v.visit_type}" planned for ${v.planned_date} is overdue`,
+            entityType: 'site_monitoring_visit', entityId: v.id, projectId: v.project_id });
+        } else if (v.planned_date === todayStr) {
+          alerts.push({ type: 'site_monitoring_today', severity: 'warning',
+            title: `Monitoring visit today: ${v.visit_type}`,
+            message: `Site monitoring visit "${v.visit_type}" is scheduled for today`,
+            entityType: 'site_monitoring_visit', entityId: v.id, projectId: v.project_id });
+        } else if (v.planned_date <= in7Days) {
+          alerts.push({ type: 'site_monitoring_upcoming', severity: 'info',
+            title: `Upcoming monitoring visit: ${v.visit_type}`,
+            message: `Site monitoring visit "${v.visit_type}" planned for ${v.planned_date}`,
+            entityType: 'site_monitoring_visit', entityId: v.id, projectId: v.project_id });
+        }
+      }
+      if (v.status === 'completed' && v.actual_date && !v.report_date && v.actual_date < days30Ago) {
+        alerts.push({ type: 'site_monitoring_no_report', severity: 'warning',
+          title: `Monitoring report pending: ${v.visit_type}`,
+          message: `Visit completed on ${v.actual_date} has no report after 30+ days`,
+          entityType: 'site_monitoring_visit', entityId: v.id, projectId: v.project_id });
+      }
+    });
+
+    // 16. SITE MONITORING FINDINGS
+    const { data: smFindings } = await supabase
+      .from('site_monitoring_findings')
+      .select('id, severity, status, due_date, description, monitoring_visit_id, site_monitoring_visits(project_id)');
+    smFindings?.forEach((f: any) => {
+      if (f.status === 'resolved' || f.status === 'closed') return;
+      const pid = f.site_monitoring_visits?.project_id;
+      if (f.severity === 'critical') {
+        alerts.push({ type: 'site_finding_critical', severity: 'critical',
+          title: 'Critical site monitoring finding',
+          message: (f.description || '').substring(0, 120),
+          entityType: 'site_monitoring_finding', entityId: f.id, projectId: pid });
+      }
+      if (f.due_date && f.due_date < todayStr) {
+        alerts.push({ type: 'site_finding_overdue', severity: 'critical',
+          title: 'Site monitoring finding overdue',
+          message: `Due ${f.due_date}: ${(f.description || '').substring(0, 100)}`,
+          entityType: 'site_monitoring_finding', entityId: f.id, projectId: pid });
+      }
+    });
+
+    // 17. CHANGE CONTROLS - pending/in review
+    const { data: changeControls } = await supabase
+      .from('change_controls')
+      .select('id, project_id, change_type, status')
+      .in('status', ['pending', 'in_review', 'submitted']);
+    changeControls?.forEach((c: any) => {
+      alerts.push({ type: 'change_control_pending', severity: 'warning',
+        title: `Change control pending: ${c.change_type}`,
+        message: `Change control of type "${c.change_type}" is in status "${c.status}"`,
+        entityType: 'change_control', entityId: c.id, projectId: c.project_id });
+    });
+
+    // 18. RISKS - review overdue / due soon
+    const { data: risks } = await supabase
+      .from('risks')
+      .select('id, project_id, status, next_review_date')
+      .neq('status', 'closed')
+      .not('next_review_date', 'is', null);
+    risks?.forEach((r: any) => {
+      if (r.next_review_date < todayStr) {
+        alerts.push({ type: 'risk_review_overdue', severity: 'warning',
+          title: 'Risk review overdue',
+          message: `Risk review was due on ${r.next_review_date}`,
+          entityType: 'risk', entityId: r.id, projectId: r.project_id });
+      } else if (r.next_review_date <= in7Days) {
+        alerts.push({ type: 'risk_review_due_soon', severity: 'info',
+          title: 'Risk review due soon',
+          message: `Risk review due on ${r.next_review_date}`,
+          entityType: 'risk', entityId: r.id, projectId: r.project_id });
+      }
+    });
+
+    // 19. PROTOCOL DEVIATIONS - open
+    const { data: deviations } = await supabase
+      .from('protocol_deviations')
+      .select('id, project_id, deviation_type, status, deviation_date, description')
+      .in('status', ['open', 'under_review', 'pending']);
+    deviations?.forEach((d: any) => {
+      alerts.push({ type: 'deviation_open', severity: 'warning',
+        title: `Open protocol deviation: ${d.deviation_type}`,
+        message: (d.description || `Deviation on ${d.deviation_date}`).substring(0, 120),
+        entityType: 'protocol_deviation', entityId: d.id, projectId: d.project_id });
+    });
+
+    // 20. SAFETY EVENTS - open / serious
+    const { data: safetyEvents } = await supabase
+      .from('safety_events')
+      .select('id, project_id, event_type, status, severity, onset_date')
+      .neq('status', 'resolved')
+      .neq('status', 'closed');
+    safetyEvents?.forEach((s: any) => {
+      const isSerious = s.severity === 'serious' || s.severity === 'severe' || s.severity === 'critical';
+      alerts.push({
+        type: isSerious ? 'safety_event_serious' : 'safety_event_open',
+        severity: isSerious ? 'critical' : 'warning',
+        title: `${isSerious ? 'Serious safety event' : 'Safety event open'}: ${s.event_type}`,
+        message: `Onset ${s.onset_date} — status ${s.status}`,
+        entityType: 'safety_event', entityId: s.id, projectId: s.project_id });
+    });
+
+    // 21. TRAININGS - overdue / due soon
+    const { data: trainings } = await supabase
+      .from('trainings')
+      .select('id, project_id, title, due_date, status')
+      .neq('status', 'completed')
+      .not('due_date', 'is', null);
+    trainings?.forEach((t: any) => {
+      if (t.due_date < todayStr) {
+        alerts.push({ type: 'training_overdue', severity: 'critical',
+          title: `Training overdue: ${t.title}`,
+          message: `Training "${t.title}" was due on ${t.due_date}`,
+          entityType: 'training', entityId: t.id, projectId: t.project_id });
+      } else if (t.due_date <= in7Days) {
+        alerts.push({ type: 'training_due_soon', severity: 'info',
+          title: `Training due soon: ${t.title}`,
+          message: `Training "${t.title}" due on ${t.due_date}`,
+          entityType: 'training', entityId: t.id, projectId: t.project_id });
+      }
+    });
+
+    // 22. QUALIFICATION CONTRACTS - expiring / expired
+    const { data: contracts } = await supabase
+      .from('qualification_contracts')
+      .select('id, title, contract_type, status, end_date')
+      .not('end_date', 'is', null);
+    contracts?.forEach((c: any) => {
+      if (c.status === 'terminated' || c.status === 'cancelled') return;
+      if (c.end_date < todayStr) {
+        alerts.push({ type: 'qualification_contract_expired', severity: 'critical',
+          title: `Contract expired: ${c.title}`,
+          message: `Contract "${c.title}" expired on ${c.end_date}`,
+          entityType: 'qualification_contract', entityId: c.id });
+      } else if (c.end_date <= in30Days) {
+        alerts.push({ type: 'qualification_contract_expiring', severity: 'warning',
+          title: `Contract expiring: ${c.title}`,
+          message: `Contract "${c.title}" expires on ${c.end_date}`,
+          entityType: 'qualification_contract', entityId: c.id });
+      }
+    });
+
+    // 23. PMCF surveys - ending soon
+    const { data: pmcfSurveys } = await supabase
+      .from('pmcf_surveys')
+      .select('id, project_id, title, status, end_date')
+      .not('end_date', 'is', null);
+    pmcfSurveys?.forEach((p: any) => {
+      if (p.status === 'closed' || p.status === 'completed') return;
+      if (p.end_date >= todayStr && p.end_date <= in30Days) {
+        alerts.push({ type: 'pmcf_survey_ending_soon', severity: 'info',
+          title: `PMCF survey ending soon: ${p.title}`,
+          message: `Survey "${p.title}" ends on ${p.end_date}`,
+          entityType: 'pmcf_survey', entityId: p.id, projectId: p.project_id });
+      }
+    });
+
+    // 24. PMCF monthly checks - overdue
+    const { data: pmcfChecks } = await supabase
+      .from('pmcf_monthly_checks')
+      .select('id, project_id, status')
+      .in('status', ['pending', 'overdue']);
+    pmcfChecks?.forEach((c: any) => {
+      alerts.push({ type: 'pmcf_check_overdue', severity: 'warning',
+        title: 'PMCF monthly check pending',
+        message: `PMCF monthly check is in status "${c.status}"`,
+        entityType: 'pmcf_check', entityId: c.id, projectId: c.project_id });
+    });
+
+    // 25. STEERING MEETINGS - upcoming / overdue (next_meeting_date)
+    const { data: steerMeetings } = await supabase
+      .from('steering_meetings')
+      .select('id, project_id, status, meeting_date, next_meeting_date');
+    steerMeetings?.forEach((m: any) => {
+      const ref = m.next_meeting_date || m.meeting_date;
+      if (!ref) return;
+      if (m.status === 'scheduled' && ref < todayStr) {
+        alerts.push({ type: 'steering_meeting_overdue', severity: 'warning',
+          title: 'Steering meeting overdue',
+          message: `Steering meeting was scheduled for ${ref}`,
+          entityType: 'steering_meeting', entityId: m.id, projectId: m.project_id });
+      } else if (ref >= todayStr && ref <= in7Days) {
+        alerts.push({ type: 'steering_meeting_upcoming', severity: 'info',
+          title: 'Upcoming steering meeting',
+          message: `Steering meeting on ${ref}`,
+          entityType: 'steering_meeting', entityId: m.id, projectId: m.project_id });
+      }
+    });
+
+    // 26. CLINICAL EVALUATION DOCUMENTS - review due
+    const { data: ceDocs } = await supabase
+      .from('clinical_evaluation_documents')
+      .select('id, project_id, title, status, next_review_date')
+      .not('next_review_date', 'is', null);
+    ceDocs?.forEach((d: any) => {
+      if (d.next_review_date <= in30Days) {
+        const overdue = d.next_review_date < todayStr;
+        alerts.push({ type: 'clinical_evaluation_review_due',
+          severity: overdue ? 'critical' : 'warning',
+          title: `Clinical evaluation review ${overdue ? 'overdue' : 'due'}: ${d.title}`,
+          message: `Document "${d.title}" review ${overdue ? 'was due' : 'due'} on ${d.next_review_date}`,
+          entityType: 'clinical_evaluation_document', entityId: d.id, projectId: d.project_id });
+      }
+    });
+
+    // 27. COMMITTEE LETTERS - pending/draft
+    const { data: letters } = await supabase
+      .from('committee_letters')
+      .select('id, project_id, title, committee_type, status, letter_date')
+      .in('status', ['draft', 'pending', 'in_review']);
+    letters?.forEach((l: any) => {
+      alerts.push({ type: 'committee_letter_pending', severity: 'info',
+        title: `Committee letter pending: ${l.title}`,
+        message: `${l.committee_type} letter "${l.title}" is in status "${l.status}"`,
+        entityType: 'committee_letter', entityId: l.id, projectId: l.project_id });
+    });
+
+    // 28. TMF DOCUMENTS - expiring / expired
+    const { data: tmfDocs } = await supabase
+      .from('tmf_documents')
+      .select('id, project_id, file_name, status, expiration_date')
+      .not('expiration_date', 'is', null);
+    tmfDocs?.forEach((d: any) => {
+      if (d.expiration_date < todayStr) {
+        alerts.push({ type: 'tmf_document_expired', severity: 'critical',
+          title: `TMF document expired: ${d.file_name}`,
+          message: `Document expired on ${d.expiration_date}`,
+          entityType: 'tmf_document', entityId: d.id, projectId: d.project_id });
+      } else if (d.expiration_date <= in30Days) {
+        alerts.push({ type: 'tmf_document_expiring', severity: 'warning',
+          title: `TMF document expiring: ${d.file_name}`,
+          message: `Document expires on ${d.expiration_date}`,
+          entityType: 'tmf_document', entityId: d.id, projectId: d.project_id });
+      }
+    });
+
+    // 29. IP SUPPLY - expiring / expired (no project_id)
+    const { data: ipItems } = await supabase
+      .from('ip_supply')
+      .select('id, description, lot_number, expiration_date')
+      .not('expiration_date', 'is', null);
+    ipItems?.forEach((i: any) => {
+      if (i.expiration_date < todayStr) {
+        alerts.push({ type: 'ip_supply_expired', severity: 'critical',
+          title: `IP supply expired: ${i.description || i.lot_number || i.id}`,
+          message: `Lot ${i.lot_number || '—'} expired on ${i.expiration_date}`,
+          entityType: 'ip_supply', entityId: i.id });
+      } else if (i.expiration_date <= in30Days) {
+        alerts.push({ type: 'ip_supply_expiring', severity: 'warning',
+          title: `IP supply expiring: ${i.description || i.lot_number || i.id}`,
+          message: `Lot ${i.lot_number || '—'} expires on ${i.expiration_date}`,
+          entityType: 'ip_supply', entityId: i.id });
+      }
+    });
+
+    // 30. DATA QUERIES - open
+    const { data: dq } = await supabase
+      .from('data_queries')
+      .select('id, query_type, status')
+      .in('status', ['open', 'pending', 'awaiting_response']);
+    dq?.forEach((q: any) => {
+      alerts.push({ type: 'data_query_open', severity: 'info',
+        title: `Open data query: ${q.query_type}`,
+        message: `Data query of type "${q.query_type}" is ${q.status}`,
+        entityType: 'data_query', entityId: q.id });
+    });
+
     console.log(`Generated ${alerts.length} alerts`);
 
 
