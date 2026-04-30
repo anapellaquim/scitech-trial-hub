@@ -557,12 +557,20 @@ export default function InvestigationalProducts() {
                                 <TableRow className="bg-muted/20">
                                   {INV_COLS.map((c) => (
                                     <TableHead key={c} className="py-1">
-                                      <Input
-                                        value={colFilters[c]}
-                                        onChange={(e) => setColFilter(c, e.target.value)}
-                                        placeholder="Filter…"
-                                        className="h-7 text-xs"
-                                      />
+                                      <Select
+                                        value={colFilters[c] || "__all__"}
+                                        onValueChange={(v) => setColFilter(c, v === "__all__" ? "" : v)}
+                                      >
+                                        <SelectTrigger className="h-7 text-xs px-2">
+                                          <SelectValue placeholder="All" />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-72">
+                                          <SelectItem value="__all__">All</SelectItem>
+                                          {colOptions[c].map((opt) => (
+                                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     </TableHead>
                                   ))}
                                   <TableHead />
