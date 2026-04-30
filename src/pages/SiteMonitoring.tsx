@@ -29,11 +29,19 @@ interface Finding {
   description: string; action_required: string | null; due_date: string | null;
   status: string; resolved_date: string | null; resolution_notes: string | null;
 }
+interface MonitorNote {
+  id: string; monitoring_visit_id: string; project_id: string;
+  author_id: string | null; author_name: string | null;
+  category: string | null; importance: string; content: string;
+  created_at: string; updated_at: string;
+}
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
 const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
+const NOTE_CATEGORIES = ["General", "Site staff", "Subjects", "Documents", "Drug accountability", "Protocol deviation", "Action item", "Other"];
+const NOTE_IMPORTANCE = ["low", "medium", "high"];
 
 const statusColors: Record<string, string> = {
   planned: "bg-blue-100 text-blue-800",
