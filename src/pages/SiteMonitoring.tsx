@@ -469,12 +469,95 @@ export default function SiteMonitoring() {
                     <TabsTrigger value="all">All ({filtered.length})</TabsTrigger>
                     <TabsTrigger value="planned">Planned ({planned.length})</TabsTrigger>
                     <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
-                    <TabsTrigger value="overdue">Overdue ({overdue.length})</TabsTrigger>
+                    <TabsTrigger value="findings">Findings ({findings.length})</TabsTrigger>
+                    <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
                   </TabsList>
                   <TabsContent value="all">{renderTable(filtered)}</TabsContent>
                   <TabsContent value="planned">{renderTable(planned)}</TabsContent>
                   <TabsContent value="completed">{renderTable(completed)}</TabsContent>
-                  <TabsContent value="overdue">{renderTable(overdue)}</TabsContent>
+
+                  <TabsContent value="findings">
+                    {findings.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No findings recorded yet.</p>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Site</TableHead>
+                            <TableHead>Visit</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Severity</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Action Required</TableHead>
+                            <TableHead>Due Date</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Resolved</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {findings
+                            .slice()
+                            .sort((a, b) => {
+                              const va = visits.find(v => v.id === a.monitoring_visit_id);
+                              const vb = visits.find(v => v.id === b.monitoring_visit_id);
+                              return (vb?.planned_date || "").localeCompare(va?.planned_date || "");
+                            })
+                            .map(f => {
+                              const v = visits.find(x => x.id === f.monitoring_visit_id);
+                              return (
+                                <TableRow key={f.id}>
+                                  <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
+                                  <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
+                                  <TableCell>{f.category || "—"}</TableCell>
+                                  <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
+                                  <TableCell className="max-w-[260px] text-sm whitespace-pre-wrap">{f.description}</TableCell>
+                                  <TableCell className="max-w-[200px] text-sm whitespace-pre-wrap">{f.action_required || "—"}</TableCell>
+                                  <TableCell>{f.due_date || "—"}</TableCell>
+                                  <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
+                                  <TableCell>{f.resolved_date || "—"}</TableCell>
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="notes">
+                    {notes.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No monitor notes recorded yet.</p>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Site</TableHead>
+                            <TableHead>Visit</TableHead>
+                            <TableHead>Author</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Importance</TableHead>
+                            <TableHead>Note</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {notes.map(n => {
+                            const v = visits.find(x => x.id === n.monitoring_visit_id);
+                            return (
+                              <TableRow key={n.id}>
+                                <TableCell className="text-xs whitespace-nowrap">{new Date(n.created_at).toLocaleString("en-US")}</TableCell>
+                                <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
+                                <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
+                                <TableCell className="text-sm">{n.author_name || "—"}</TableCell>
+                                <TableCell>{n.category || "—"}</TableCell>
+                                <TableCell><Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge></TableCell>
+                                <TableCell className="max-w-[420px] text-sm whitespace-pre-wrap">{n.content}</TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </TabsContent>
                 </Tabs>
               )}
             </CardContent>
