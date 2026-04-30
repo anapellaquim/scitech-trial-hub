@@ -68,19 +68,35 @@ export default function Communications() {
   // Group notifications by module
   const notificationsByModule = useMemo(() => {
     const grouped: Record<string, typeof notifications> = {};
-    const moduleMap: Record<string, string> = {
-      task_: 'Tarefas',
-      visit_: 'Visitas',
-      finding_: 'Achados',
-      regulatory_: 'Regulatório',
-      payment_: 'Pagamentos',
-      document_: 'eTMF',
-      participant_: 'Participantes'
-    };
+    const moduleMap: Array<[string, string]> = [
+      ['task_', 'Tasks'],
+      ['visit_', 'Visits'],
+      ['finding_', 'Findings'],
+      ['site_monitoring_', 'Site Monitoring'],
+      ['site_finding_', 'Site Monitoring'],
+      ['regulatory_', 'Regulatory'],
+      ['payment_', 'Payments'],
+      ['document_', 'eTMF'],
+      ['tmf_document_', 'eTMF'],
+      ['participant_', 'Participants'],
+      ['communication_', 'Communications'],
+      ['change_control_', 'Change Control'],
+      ['risk_', 'Risk Management'],
+      ['deviation_', 'Protocol Deviations'],
+      ['safety_event_', 'Safety'],
+      ['training_', 'Trainings'],
+      ['qualification_', 'Qualifications'],
+      ['pmcf_', 'PMCF'],
+      ['steering_', 'Steering Committee'],
+      ['clinical_evaluation_', 'Clinical Evaluation'],
+      ['committee_letter_', 'Committees'],
+      ['ip_supply_', 'IP Supply'],
+      ['data_query_', 'Data Queries'],
+    ];
 
     notifications.forEach(n => {
-      const prefix = Object.keys(moduleMap).find(p => n.type.startsWith(p));
-      const module = prefix ? moduleMap[prefix] : 'Outros';
+      const entry = moduleMap.find(([p]) => n.type.startsWith(p));
+      const module = entry ? entry[1] : 'Other';
       if (!grouped[module]) grouped[module] = [];
       grouped[module].push(n);
     });
@@ -101,7 +117,24 @@ export default function Communications() {
       submission: '/regulatory',
       report: '/regulatory',
       payment: '/payments',
-      document: '/etmf'
+      document: '/etmf',
+      tmf_document: '/etmf',
+      site_monitoring_visit: '/site-monitoring',
+      site_monitoring_finding: '/site-monitoring',
+      change_control: '/change-control',
+      risk: '/risks',
+      protocol_deviation: '/visits',
+      safety_event: '/visits',
+      training: '/trainings',
+      qualification_contract: '/qualifications',
+      pmcf_survey: '/pmcf-survey',
+      pmcf_check: '/pmcf-survey',
+      steering_meeting: '/steering',
+      clinical_evaluation_document: '/clinical-evaluation',
+      committee_letter: '/committees',
+      ip_supply: '/ip',
+      data_query: '/visits',
+      communication_occurrence: '/communications',
     };
     
     const route = routes[entityType];
