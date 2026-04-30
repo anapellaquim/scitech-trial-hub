@@ -170,10 +170,15 @@ export default function SiteMonitoring() {
 
     if (visitsList.length > 0) {
       const ids = visitsList.map((x: any) => x.id);
-      const { data: f } = await supabase.from("site_monitoring_findings" as any).select("*").in("monitoring_visit_id", ids);
+      const [{ data: f }, { data: n }] = await Promise.all([
+        supabase.from("site_monitoring_findings" as any).select("*").in("monitoring_visit_id", ids),
+        supabase.from("monitor_notes" as any).select("*").in("monitoring_visit_id", ids).order("created_at", { ascending: false }),
+      ]);
       setFindings((f as any) || []);
+      setNotes((n as any) || []);
     } else {
       setFindings([]);
+      setNotes([]);
     }
     setLoading(false);
   }, [selectedProject]);
