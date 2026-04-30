@@ -236,21 +236,38 @@ export default function InvestigationalProducts() {
     toast.success("Deleted"); loadRecords();
   };
 
-  // Inventory search across all columns
+  // Inventory search across all columns + per-column filters
   const [invSearch, setInvSearch] = useState("");
+  const INV_COLS = [
+    "code","description","lot_number","expiration_date","quantity","site",
+    "invoice","correction_invoice","delivery_date","usage","usage_date","return_info","note",
+  ] as const;
+  type InvCol = typeof INV_COLS[number];
+  const [colFilters, setColFilters] = useState<Record<InvCol, string>>(
+    () => INV_COLS.reduce((acc, c) => ({ ...acc, [c]: "" }), {} as Record<InvCol, string>)
+  );
+  const setColFilter = (c: InvCol, v: string) => setColFilters((p) => ({ ...p, [c]: v }));
 
   const filteredRecords = useMemo(() => {
     const q = invSearch.trim().toLowerCase();
-    if (!q) return records;
     return records.filter((r) => {
-      const fields = [
-        r.code, r.description, r.lot_number, r.expiration_date, r.quantity,
-        r.site, r.invoice, r.correction_invoice, r.delivery_date,
-        r.usage, r.usage_date, r.return_info, r.note,
-      ];
-      return fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q));
+      if (q) {
+        const fields = [
+          r.code, r.description, r.lot_number, r.expiration_date, r.quantity,
+          r.site, r.invoice, r.correction_invoice, r.delivery_date,
+          r.usage, r.usage_date, r.return_info, r.note,
+        ];
+        if (!fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q))) return false;
+      }
+      for (const c of INV_COLS) {
+        const f = colFilters[c].trim().toLowerCase();
+        if (!f) continue;
+        const val = (r as any)[c];
+        if (!(val == null ? "" : String(val)).toLowerCase().includes(f)) return false;
+      }
+      return true;
     });
-  }, [records, invSearch]);
+  }, [records, invSearch, colFilters]);
 
   const exportData = useMemo(() => filteredRecords.map((r) => ({
     Code: r.code, Description: r.description, "Lot#": r.lot_number, Expiration: r.expiration_date,
