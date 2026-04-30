@@ -235,6 +235,28 @@ export default function Committees() {
     <ModulePageLayout title="Committee Management" subtitle="Committees, meetings, letters, and configurations"
       selectedProject={selectedProject} onProjectChange={setSelectedProject} exportData={exportData} exportFileName="committees"
     >
+      {(() => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const totalMeetings = records.length;
+        const completed = records.filter(r => r.status === "completed" || r.status === "finalized").length;
+        const planned = records.filter(r => r.status === "planned").length;
+        const minutesPending = records.filter(r => r.status === "minutes_pending").length;
+        const upcoming = records.filter(r => r.next_meeting_date && new Date(r.next_meeting_date) >= today).length;
+        const totalLetters = letters.length;
+        const pendingLetters = letters.filter(l => l.status === "pending_response" || l.status === "sent").length;
+        return (
+          <div className="mb-6">
+            <KpiCards cols={6} items={[
+              { label: "Meetings", value: totalMeetings, icon: Users, accent: "primary" },
+              { label: "Completed", value: completed, icon: CheckCircle2, accent: "success" },
+              { label: "Minutes Pending", value: minutesPending, icon: Clock, accent: "warning" },
+              { label: "Upcoming", value: upcoming, icon: CalendarDays, accent: "primary" },
+              { label: "Letters", value: totalLetters, icon: Mail, accent: "primary" },
+              { label: "Letters Pending", value: pendingLetters, icon: Clock, accent: "warning" },
+            ]} />
+          </div>
+        );
+      })()}
       <Tabs defaultValue="meetings" className="w-full">
         <TabsList>
           <TabsTrigger value="meetings">Meetings</TabsTrigger>
