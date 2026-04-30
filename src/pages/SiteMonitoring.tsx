@@ -603,6 +603,103 @@ export default function SiteMonitoring() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Monitor Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={(open) => { setNotesDialogOpen(open); if (!open) cancelNoteEdit(); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Monitor Notes {notesVisit && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  — {siteName(notesVisit.site_id)} {notesVisit.visit_code ? `(${notesVisit.visit_code})` : ""}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          {notesVisit && (
+            <div className="space-y-6">
+              {/* Note form */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{editingNote ? "Edit note" : "Add new note"}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Category</Label>
+                      <Select value={noteForm.category} onValueChange={v => setNoteForm({ ...noteForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{NOTE_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Importance</Label>
+                      <Select value={noteForm.importance} onValueChange={v => setNoteForm({ ...noteForm, importance: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{NOTE_IMPORTANCE.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Note *</Label>
+                    <Textarea
+                      rows={4}
+                      value={noteForm.content}
+                      onChange={e => setNoteForm({ ...noteForm, content: e.target.value })}
+                      placeholder="Record observations, follow-ups, conversations with site staff, action items, etc."
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    {editingNote && <Button variant="outline" size="sm" onClick={cancelNoteEdit}>Cancel</Button>}
+                    <Button size="sm" onClick={saveNote}>
+                      <Plus className="h-4 w-4 mr-1" />{editingNote ? "Update note" : "Add note"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Notes history */}
+              <div>
+                <h4 className="font-semibold mb-2">History ({visitNotes(notesVisit.id).length})</h4>
+                {visitNotes(notesVisit.id).length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No notes yet for this visit.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {visitNotes(notesVisit.id).map(n => (
+                      <Card key={n.id}>
+                        <CardContent className="py-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
+                                {n.category && <Badge variant="outline">{n.category}</Badge>}
+                                <span className="text-xs text-muted-foreground">
+                                  {n.author_name || "—"} · {new Date(n.created_at).toLocaleString("en-US")}
+                                  {n.updated_at !== n.created_at && " (edited)"}
+                                </span>
+                              </div>
+                              <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              <Button variant="ghost" size="icon" title="Edit" onClick={() => editNote(n)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteNote(n.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </ModulePageLayout>
   );
 }
