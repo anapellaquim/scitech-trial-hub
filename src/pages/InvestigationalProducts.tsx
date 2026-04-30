@@ -514,6 +514,19 @@ export default function InvestigationalProducts() {
                             <TableHead>Note</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
+                          <TableRow className="bg-muted/20">
+                            {INV_COLS.map((c) => (
+                              <TableHead key={c} className="py-1">
+                                <Input
+                                  value={colFilters[c]}
+                                  onChange={(e) => setColFilter(c, e.target.value)}
+                                  placeholder="Filter…"
+                                  className="h-7 text-xs"
+                                />
+                              </TableHead>
+                            ))}
+                            <TableHead />
+                          </TableRow>
                         </TableHeader>
                         <TableBody>
                           {filteredRecords.length === 0 ? (
