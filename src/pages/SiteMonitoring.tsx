@@ -106,11 +106,41 @@ export default function SiteMonitoring() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [{ data: s }, { data: v }] = await Promise.all([
-      supabase.from("study_sites").select("id,project_id,site_code,name").eq("project_id", selectedProject).order("name"),
+    const [{ data: rc }, { data: v }] = await Promise.all([
+      supabase
+        .from("research_centers")
+        .select("id,project_id,code,name,pi_name,pi_email,pi_phone,coordinator_name,coordinator_email,coordinator_phone")
+        .eq("project_id", selectedProject)
+        .order("name"),
       supabase.from("site_monitoring_visits" as any).select("*").eq("project_id", selectedProject).order("planned_date", { ascending: false }),
     ]);
-    setSites((s as any) || []);
+    const centers = ((rc as any[]) || []);
+    setSites(centers.map((c) => ({ id: c.id, project_id: c.project_id, site_code: c.code, name: c.name })));
+
+    // Auto-mirror missing centers into study_sites so the FK on site_monitoring_visits.site_id is satisfied.
+    if (centers.length > 0) {
+      const ids = centers.map((c) => c.id);
+      const { data: existing } = await supabase.from("study_sites").select("id").in("id", ids);
+      const have = new Set(((existing as any[]) || []).map((x) => x.id));
+      const missing = centers
+        .filter((c) => !have.has(c.id))
+        .map((c) => ({
+          id: c.id,
+          project_id: c.project_id,
+          site_code: c.code,
+          name: c.name,
+          pi_name: c.pi_name,
+          pi_email: c.pi_email,
+          pi_phone: c.pi_phone,
+          coordinator_name: c.coordinator_name,
+          coordinator_email: c.coordinator_email,
+          coordinator_phone: c.coordinator_phone,
+        }));
+      if (missing.length > 0) {
+        await supabase.from("study_sites").insert(missing);
+      }
+    }
+
     const visitsList = (v as any) || [];
     setVisits(visitsList);
 
