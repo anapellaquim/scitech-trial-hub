@@ -248,6 +248,11 @@ export default function InvestigationalProducts() {
   );
   const setColFilter = (c: InvCol, v: string) => setColFilters((p) => ({ ...p, [c]: v }));
 
+  // Pagination
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [page, setPage] = useState<number>(1);
+  useEffect(() => { setPage(1); }, [invSearch, colFilters, pageSize]);
+
   const filteredRecords = useMemo(() => {
     const q = invSearch.trim().toLowerCase();
     return records.filter((r) => {
@@ -484,89 +489,124 @@ export default function InvestigationalProducts() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-muted/30">
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-muted/30 flex-wrap">
                       <Input
                         value={invSearch}
                         onChange={(e) => setInvSearch(e.target.value)}
                         placeholder="Search across all columns…"
                         className="h-9 max-w-md"
                       />
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {filteredRecords.length} of {records.length}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs text-muted-foreground whitespace-nowrap">Rows per page</Label>
+                          <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                            <SelectTrigger className="h-8 w-[80px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {[10, 25, 50, 100, 250].map((n) => (
+                                <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {filteredRecords.length} of {records.length}
+                        </span>
+                      </div>
                     </div>
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Code</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Lot#</TableHead>
-                            <TableHead>Expiration</TableHead>
-                            <TableHead>Qty</TableHead>
-                            <TableHead>Site</TableHead>
-                            <TableHead>Invoice</TableHead>
-                            <TableHead>Correction Invoice</TableHead>
-                            <TableHead>Delivery</TableHead>
-                            <TableHead>Usage</TableHead>
-                            <TableHead>Usage date</TableHead>
-                            <TableHead>Return</TableHead>
-                            <TableHead>Note</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                          <TableRow className="bg-muted/20">
-                            {INV_COLS.map((c) => (
-                              <TableHead key={c} className="py-1">
-                                <Input
-                                  value={colFilters[c]}
-                                  onChange={(e) => setColFilter(c, e.target.value)}
-                                  placeholder="Filter…"
-                                  className="h-7 text-xs"
-                                />
-                              </TableHead>
-                            ))}
-                            <TableHead />
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredRecords.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
-                                No records match your search.
-                              </TableCell>
-                            </TableRow>
-                          ) : filteredRecords.map((r) => (
-                            <TableRow key={r.id}>
-                              <TableCell className="font-medium">{r.code}</TableCell>
-                              <TableCell className="text-sm">{r.description || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.lot_number || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.expiration_date || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.quantity ?? "—"}</TableCell>
-                              <TableCell className="text-sm">{r.site || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.invoice || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.correction_invoice || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.delivery_date || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.usage || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.usage_date || "—"}</TableCell>
-                              <TableCell className="text-sm">{r.return_info || "—"}</TableCell>
-                              <TableCell className="text-sm max-w-[200px] truncate" title={r.note || ""}>
-                                {r.note || "—"}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-1">
-                                  <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
+                    {(() => {
+                      const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
+                      const currentPage = Math.min(page, totalPages);
+                      const start = (currentPage - 1) * pageSize;
+                      const pageRows = filteredRecords.slice(start, start + pageSize);
+                      return (
+                        <>
+                          <div className="overflow-auto max-h-[600px]">
+                            <Table>
+                              <TableHeader className="sticky top-0 bg-background z-10">
+                                <TableRow>
+                                  <TableHead>Code</TableHead>
+                                  <TableHead>Description</TableHead>
+                                  <TableHead>Lot#</TableHead>
+                                  <TableHead>Expiration</TableHead>
+                                  <TableHead>Qty</TableHead>
+                                  <TableHead>Site</TableHead>
+                                  <TableHead>Invoice</TableHead>
+                                  <TableHead>Correction Invoice</TableHead>
+                                  <TableHead>Delivery</TableHead>
+                                  <TableHead>Usage</TableHead>
+                                  <TableHead>Usage date</TableHead>
+                                  <TableHead>Return</TableHead>
+                                  <TableHead>Note</TableHead>
+                                  <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                                <TableRow className="bg-muted/20">
+                                  {INV_COLS.map((c) => (
+                                    <TableHead key={c} className="py-1">
+                                      <Input
+                                        value={colFilters[c]}
+                                        onChange={(e) => setColFilter(c, e.target.value)}
+                                        placeholder="Filter…"
+                                        className="h-7 text-xs"
+                                      />
+                                    </TableHead>
+                                  ))}
+                                  <TableHead />
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {pageRows.length === 0 ? (
+                                  <TableRow>
+                                    <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
+                                      No records match your search.
+                                    </TableCell>
+                                  </TableRow>
+                                ) : pageRows.map((r) => (
+                                  <TableRow key={r.id}>
+                                    <TableCell className="font-medium">{r.code}</TableCell>
+                                    <TableCell className="text-sm">{r.description || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.lot_number || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.expiration_date || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.quantity ?? "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.site || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.invoice || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.correction_invoice || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.delivery_date || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.usage || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.usage_date || "—"}</TableCell>
+                                    <TableCell className="text-sm">{r.return_info || "—"}</TableCell>
+                                    <TableCell className="text-sm max-w-[200px] truncate" title={r.note || ""}>
+                                      {r.note || "—"}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex justify-end gap-1">
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => handleDelete(r.id)}>
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 px-4 py-3 border-t bg-muted/20 flex-wrap">
+                            <span className="text-xs text-muted-foreground">
+                              {filteredRecords.length === 0 ? "0" : `${start + 1}–${Math.min(start + pageSize, filteredRecords.length)}`} of {filteredRecords.length}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setPage(1)}>« First</Button>
+                              <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>‹ Prev</Button>
+                              <span className="text-xs px-2">Page {currentPage} of {totalPages}</span>
+                              <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)}>Next ›</Button>
+                              <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setPage(totalPages)}>Last »</Button>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </>
                 )}
               </CardContent>
