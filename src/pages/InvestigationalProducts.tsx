@@ -265,14 +265,29 @@ export default function InvestigationalProducts() {
         if (!fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q))) return false;
       }
       for (const c of INV_COLS) {
-        const f = colFilters[c].trim().toLowerCase();
+        const f = colFilters[c];
         if (!f) continue;
         const val = (r as any)[c];
-        if (!(val == null ? "" : String(val)).toLowerCase().includes(f)) return false;
+        const norm = val == null || val === "" ? "—" : String(val);
+        if (norm !== f) return false;
       }
       return true;
     });
   }, [records, invSearch, colFilters]);
+
+  // Unique values per column (sorted), for the column filter dropdowns
+  const colOptions = useMemo(() => {
+    const map = {} as Record<InvCol, string[]>;
+    INV_COLS.forEach((c) => {
+      const set = new Set<string>();
+      records.forEach((r) => {
+        const v = (r as any)[c];
+        set.add(v == null || v === "" ? "—" : String(v));
+      });
+      map[c] = Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    });
+    return map;
+  }, [records]);
 
   const exportData = useMemo(() => filteredRecords.map((r) => ({
     Code: r.code, Description: r.description, "Lot#": r.lot_number, Expiration: r.expiration_date,
@@ -542,12 +557,20 @@ export default function InvestigationalProducts() {
                                 <TableRow className="bg-muted/20">
                                   {INV_COLS.map((c) => (
                                     <TableHead key={c} className="py-1">
-                                      <Input
-                                        value={colFilters[c]}
-                                        onChange={(e) => setColFilter(c, e.target.value)}
-                                        placeholder="Filter…"
-                                        className="h-7 text-xs"
-                                      />
+                                      <Select
+                                        value={colFilters[c] || "__all__"}
+                                        onValueChange={(v) => setColFilter(c, v === "__all__" ? "" : v)}
+                                      >
+                                        <SelectTrigger className="h-7 text-xs px-2">
+                                          <SelectValue placeholder="All" />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-72">
+                                          <SelectItem value="__all__">All</SelectItem>
+                                          {colOptions[c].map((opt) => (
+                                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     </TableHead>
                                   ))}
                                   <TableHead />
