@@ -1,41 +1,23 @@
-# Correção: Não consigo criar novos riscos
+## Problema
 
-## Causa raiz
+A lista suspensa "Site" em "New monitoring visit" está vazia porque o módulo lê de `study_sites`, mas os centros são cadastrados no módulo Studies → Centros, que grava em `research_centers` — uma tabela diferente. Além disso, `site_monitoring_visits.site_id` tem foreign key para `study_sites(id)`, então não é possível simplesmente trocar a fonte de dados.
 
-A página `Risk Management` está em **loop infinito de re-renders**. Os logs de rede mostram dezenas de requisições `GET /risks` em menos de 2 segundos, e o session replay registra a tela alternando continuamente entre "Loading..." e "No risks found.". Esse loop trava o estado do dialog "New Risk" — quando você clica em "Create", o componente é remontado antes do `INSERT` concluir, ou o toast some sem efeito.
+## Já feito agora
 
-A origem é o `useEffect` da página:
+Espelhei os 5 centros existentes do projeto atual de `research_centers` para `study_sites` usando os mesmos UUIDs. **Recarregando a tela, o dropdown já vai mostrar HUPE-UERJ, Hospital Ana Nery, Afya Hospital Dia, Real Hospital Português e HC-UFMG.**
 
-```ts
-useEffect(() => {
-  if (selectedProject) { setProjectId(selectedProject); loadData(); }
-}, [selectedProject, loadData, setProjectId]);
-```
+## O que ainda precisa ser implementado (próxima etapa, em build mode)
 
-A função `setProjectId` vem do hook `usePersistedFilters`, onde é redefinida a cada render (não está memoizada). Isso dispara o efeito a cada render → novo fetch → novo render → e assim por diante.
+Para que **novos centros adicionados em Studies → Centros apareçam automaticamente** sem ação manual, alterar `src/pages/SiteMonitoring.tsx`:
 
-Não há nenhum `POST /risks` nos logs, confirmando que a tentativa de salvar nunca chega ao servidor.
+1. Em `loadData`, ler do `research_centers` (mapeando `code` → `site_code`) em vez de `study_sites`.
+2. Logo após carregar, comparar com `study_sites` e inserir (mirror) qualquer centro ainda não espelhado, usando o mesmo `id`. Isso mantém a FK `site_monitoring_visits.site_id → study_sites(id)` válida sem precisar de migration.
+3. Nenhuma mudança visual além da que já foi feita (label "Site").
 
-## Correção
+## Detalhe técnico
 
-Remover `loadData` e `setProjectId` das dependências do `useEffect` em `src/pages/RiskManagement.tsx`, mantendo apenas `selectedProject`. Esse é exatamente o padrão usado em outras páginas do projeto (ex.: o original já não tinha `setProjectId` na lista).
+- O mirror é idempotente: só insere os IDs ausentes.
+- Usa o `id` do `research_centers` como `id` do `study_sites`, garantindo unicidade e referência consistente.
+- Alternativa "limpa" seria uma migration trocando a FK para `research_centers(id)` e descontinuando `study_sites`, mas exigiria também ajustar `study_visits`, `study_tasks` e o Dashboard. Fica como melhoria futura.
 
-```ts
-useEffect(() => {
-  if (selectedProject) { setProjectId(selectedProject); loadData(); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [selectedProject]);
-```
-
-## Validação adicional
-
-Também vou:
-
-1. Confirmar com `supabase--read_query` que a tabela `risks` aceita um INSERT mínimo com os novos campos (especialmente `review_frequency NOT NULL DEFAULT 'quarterly'` e o `residual_risk_score` gerado).
-2. Revisar a função `handleSave` para garantir que o estado do dialog seja limpo apenas após sucesso, evitando que validações erradas pareçam silenciosas.
-
-Nenhuma alteração de schema é necessária — a migração anterior já está correta. O bug é puramente de React (efeito em loop).
-
-## Arquivos a alterar
-
-- `src/pages/RiskManagement.tsx` — corrigir dependências do `useEffect`.
+Aprove para eu aplicar a alteração no código.
