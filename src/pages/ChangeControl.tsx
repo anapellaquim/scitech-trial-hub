@@ -14,7 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, History, Upload, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, History, Upload, X, GitBranch, Clock, CheckCircle2, AlertTriangle, Lock } from "lucide-react";
+import KpiCards from "@/components/shared/KpiCards";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
