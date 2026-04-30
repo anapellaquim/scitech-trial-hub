@@ -236,21 +236,38 @@ export default function InvestigationalProducts() {
     toast.success("Deleted"); loadRecords();
   };
 
-  // Inventory search across all columns
+  // Inventory search across all columns + per-column filters
   const [invSearch, setInvSearch] = useState("");
+  const INV_COLS = [
+    "code","description","lot_number","expiration_date","quantity","site",
+    "invoice","correction_invoice","delivery_date","usage","usage_date","return_info","note",
+  ] as const;
+  type InvCol = typeof INV_COLS[number];
+  const [colFilters, setColFilters] = useState<Record<InvCol, string>>(
+    () => INV_COLS.reduce((acc, c) => ({ ...acc, [c]: "" }), {} as Record<InvCol, string>)
+  );
+  const setColFilter = (c: InvCol, v: string) => setColFilters((p) => ({ ...p, [c]: v }));
 
   const filteredRecords = useMemo(() => {
     const q = invSearch.trim().toLowerCase();
-    if (!q) return records;
     return records.filter((r) => {
-      const fields = [
-        r.code, r.description, r.lot_number, r.expiration_date, r.quantity,
-        r.site, r.invoice, r.correction_invoice, r.delivery_date,
-        r.usage, r.usage_date, r.return_info, r.note,
-      ];
-      return fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q));
+      if (q) {
+        const fields = [
+          r.code, r.description, r.lot_number, r.expiration_date, r.quantity,
+          r.site, r.invoice, r.correction_invoice, r.delivery_date,
+          r.usage, r.usage_date, r.return_info, r.note,
+        ];
+        if (!fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q))) return false;
+      }
+      for (const c of INV_COLS) {
+        const f = colFilters[c].trim().toLowerCase();
+        if (!f) continue;
+        const val = (r as any)[c];
+        if (!(val == null ? "" : String(val)).toLowerCase().includes(f)) return false;
+      }
+      return true;
     });
-  }, [records, invSearch]);
+  }, [records, invSearch, colFilters]);
 
   const exportData = useMemo(() => filteredRecords.map((r) => ({
     Code: r.code, Description: r.description, "Lot#": r.lot_number, Expiration: r.expiration_date,
@@ -309,24 +326,39 @@ export default function InvestigationalProducts() {
   const fmtBRL = (n: number) =>
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-  // Inventory KPIs by site
+  // Inventory KPIs by site — subtracts used items (usage_date filled)
+  const isUsed = (r: IPRecord) => !!(r.usage_date && String(r.usage_date).trim());
+
   const inventoryBySite = useMemo(() => {
-    const map = new Map<string, { site: string; items: number; quantity: number }>();
+    const map = new Map<string, { site: string; items: number; used: number; quantity: number }>();
     records.forEach((r) => {
       const site = (r.site || "—").trim() || "—";
-      const cur = map.get(site) || { site, items: 0, quantity: 0 };
+      const cur = map.get(site) || { site, items: 0, used: 0, quantity: 0 };
+      const qty = Number(r.quantity || 0);
       cur.items += 1;
-      cur.quantity += Number(r.quantity || 0);
+      if (isUsed(r)) {
+        cur.used += qty;
+      } else {
+        cur.quantity += qty;
+      }
       map.set(site, cur);
     });
     return Array.from(map.values()).sort((a, b) => b.quantity - a.quantity);
   }, [records]);
 
-  const inventoryTotals = useMemo(() => ({
-    items: records.length,
-    quantity: records.reduce((sum, r) => sum + Number(r.quantity || 0), 0),
-    sites: new Set(records.map((r) => (r.site || "—").trim() || "—")).size,
-  }), [records]);
+  const inventoryTotals = useMemo(() => {
+    let total = 0, used = 0;
+    records.forEach((r) => {
+      const qty = Number(r.quantity || 0);
+      if (isUsed(r)) used += qty; else total += qty;
+    });
+    return {
+      items: records.length,
+      quantity: total,
+      used,
+      sites: new Set(records.map((r) => (r.site || "—").trim() || "—")).size,
+    };
+  }, [records]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -360,7 +392,7 @@ export default function InvestigationalProducts() {
             </div>
 
             {/* Inventory KPIs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
@@ -374,11 +406,21 @@ export default function InvestigationalProducts() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Boxes className="h-4 w-4 text-primary" /> Total Quantity
+                    <Boxes className="h-4 w-4 text-primary" /> Available Quantity
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">{inventoryTotals.quantity.toLocaleString("pt-BR")}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+                    <TrendingDown className="h-4 w-4 text-red-600" /> Used (Usage date)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{inventoryTotals.used.toLocaleString("pt-BR")}</p>
                 </CardContent>
               </Card>
               <Card>
@@ -408,7 +450,8 @@ export default function InvestigationalProducts() {
                         <TableRow>
                           <TableHead>Site</TableHead>
                           <TableHead className="text-right">Items</TableHead>
-                          <TableHead className="text-right">Total Quantity</TableHead>
+                          <TableHead className="text-right">Used</TableHead>
+                          <TableHead className="text-right">Available</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -416,6 +459,9 @@ export default function InvestigationalProducts() {
                           <TableRow key={i}>
                             <TableCell className="font-medium">{s.site}</TableCell>
                             <TableCell className="text-right">{s.items.toLocaleString("pt-BR")}</TableCell>
+                            <TableCell className="text-right text-red-600">
+                              {s.used.toLocaleString("pt-BR")}
+                            </TableCell>
                             <TableCell className="text-right">
                               <Badge variant="default">{s.quantity.toLocaleString("pt-BR")}</Badge>
                             </TableCell>
@@ -467,6 +513,19 @@ export default function InvestigationalProducts() {
                             <TableHead>Return</TableHead>
                             <TableHead>Note</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                          <TableRow className="bg-muted/20">
+                            {INV_COLS.map((c) => (
+                              <TableHead key={c} className="py-1">
+                                <Input
+                                  value={colFilters[c]}
+                                  onChange={(e) => setColFilter(c, e.target.value)}
+                                  placeholder="Filter…"
+                                  className="h-7 text-xs"
+                                />
+                              </TableHead>
+                            ))}
+                            <TableHead />
                           </TableRow>
                         </TableHeader>
                         <TableBody>
