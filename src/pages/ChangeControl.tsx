@@ -321,6 +321,26 @@ export default function ChangeControl() {
         <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />New Change</Button>
       </div>}
     >
+      {(() => {
+        const total = records.length;
+        const open = records.filter(r => r.status === "open").length;
+        const review = records.filter(r => r.status === "under_review").length;
+        const approved = records.filter(r => r.status === "approved").length;
+        const implemented = records.filter(r => r.status === "implemented").length;
+        const closed = records.filter(r => r.status === "closed").length;
+        return (
+          <div className="mb-6">
+            <KpiCards cols={6} items={[
+              { label: "Total Changes", value: total, icon: GitBranch, accent: "primary" },
+              { label: "Open", value: open, icon: AlertTriangle, accent: "warning" },
+              { label: "Under Review", value: review, icon: Clock, accent: "warning" },
+              { label: "Approved", value: approved, icon: CheckCircle2, accent: "success" },
+              { label: "Implemented", value: implemented, icon: CheckCircle2, accent: "success" },
+              { label: "Closed", value: closed, icon: Lock, accent: "muted" },
+            ]} />
+          </div>
+        );
+      })()}
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
