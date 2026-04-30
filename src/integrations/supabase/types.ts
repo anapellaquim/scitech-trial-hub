@@ -1578,6 +1578,53 @@ export type Database = {
         }
         Relationships: []
       }
+      monitor_notes: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          importance: string
+          monitoring_visit_id: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          importance?: string
+          monitoring_visit_id: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          importance?: string
+          monitoring_visit_id?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitor_notes_monitoring_visit_id_fkey"
+            columns: ["monitoring_visit_id"]
+            isOneToOne: false
+            referencedRelation: "site_monitoring_visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
