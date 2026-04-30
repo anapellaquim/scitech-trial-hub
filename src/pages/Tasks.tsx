@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, CheckSquare, Calendar, User, Clock, LayoutGrid, List, FolderOpen, Layers, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, CheckSquare, Calendar, User, Clock, LayoutGrid, List, FolderOpen, Layers, ArrowUpDown, ArrowUp, ArrowDown, ListChecks, CheckCircle2, AlertTriangle, Flag } from "lucide-react";
+import KpiCards from "@/components/shared/KpiCards";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import NewTaskDialog from "@/components/tasks/NewTaskDialog";
