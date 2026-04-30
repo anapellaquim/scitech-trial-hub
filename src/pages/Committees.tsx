@@ -14,7 +14,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Users, MessageSquare, Upload, ExternalLink, Settings } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Users, MessageSquare, Upload, ExternalLink, Settings, CalendarDays, Mail, CheckCircle2, Clock } from "lucide-react";
+import KpiCards from "@/components/shared/KpiCards";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
