@@ -265,14 +265,29 @@ export default function InvestigationalProducts() {
         if (!fields.some((v) => (v == null ? "" : String(v)).toLowerCase().includes(q))) return false;
       }
       for (const c of INV_COLS) {
-        const f = colFilters[c].trim().toLowerCase();
+        const f = colFilters[c];
         if (!f) continue;
         const val = (r as any)[c];
-        if (!(val == null ? "" : String(val)).toLowerCase().includes(f)) return false;
+        const norm = val == null || val === "" ? "—" : String(val);
+        if (norm !== f) return false;
       }
       return true;
     });
   }, [records, invSearch, colFilters]);
+
+  // Unique values per column (sorted), for the column filter dropdowns
+  const colOptions = useMemo(() => {
+    const map = {} as Record<InvCol, string[]>;
+    INV_COLS.forEach((c) => {
+      const set = new Set<string>();
+      records.forEach((r) => {
+        const v = (r as any)[c];
+        set.add(v == null || v === "" ? "—" : String(v));
+      });
+      map[c] = Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    });
+    return map;
+  }, [records]);
 
   const exportData = useMemo(() => filteredRecords.map((r) => ({
     Code: r.code, Description: r.description, "Lot#": r.lot_number, Expiration: r.expiration_date,
