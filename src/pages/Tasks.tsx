@@ -268,6 +268,31 @@ export default function Tasks() {
           </Button>
         </div>
 
+        {/* KPIs */}
+        {(() => {
+          const scope = projectFilter === "all" ? tasks : tasks.filter(t => t.project_id === projectFilter);
+          const today = new Date(); today.setHours(0,0,0,0);
+          const total = scope.length;
+          const completed = scope.filter(t => t.status === "completed").length;
+          const inProgress = scope.filter(t => t.status === "in_progress").length;
+          const pending = scope.filter(t => t.status === "pending").length;
+          const overdue = scope.filter(t => t.end_date && t.status !== "completed" && t.status !== "cancelled" && new Date(t.end_date) < today).length;
+          const highPrio = scope.filter(t => t.priority === "high" && t.status !== "completed" && t.status !== "cancelled").length;
+          const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+          return (
+            <div className="mb-6">
+              <KpiCards cols={6} items={[
+                { label: "Total Tasks", value: total, icon: ListChecks, accent: "primary" },
+                { label: "In Progress", value: inProgress, icon: Clock, accent: "primary" },
+                { label: "Pending", value: pending, icon: Clock, accent: "muted" },
+                { label: "Completed", value: completed, icon: CheckCircle2, accent: "success", hint: `${completionRate}% completion` },
+                { label: "Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
+                { label: "High Priority Open", value: highPrio, icon: Flag, accent: "warning" },
+              ]} />
+            </div>
+          );
+        })()}
+
         {/* Filters */}
         <Card className="mb-6">
           <CardContent className="p-4">
