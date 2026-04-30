@@ -459,6 +459,9 @@ export default function InvestigationalProducts() {
                           <TableRow key={i}>
                             <TableCell className="font-medium">{s.site}</TableCell>
                             <TableCell className="text-right">{s.items.toLocaleString("pt-BR")}</TableCell>
+                            <TableCell className="text-right text-red-600">
+                              {s.used.toLocaleString("pt-BR")}
+                            </TableCell>
                             <TableCell className="text-right">
                               <Badge variant="default">{s.quantity.toLocaleString("pt-BR")}</Badge>
                             </TableCell>
