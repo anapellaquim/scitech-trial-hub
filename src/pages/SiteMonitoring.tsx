@@ -77,6 +77,16 @@ const emptyFinding = {
   due_date: "", status: "open", resolved_date: "", resolution_notes: "",
 };
 
+const emptyNote = {
+  category: "General", importance: "medium", content: "",
+};
+
+const importanceColors: Record<string, string> = {
+  low: "bg-blue-100 text-blue-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  high: "bg-red-100 text-red-800",
+};
+
 export default function SiteMonitoring() {
   const navigate = useNavigate();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
@@ -84,6 +94,7 @@ export default function SiteMonitoring() {
   const [sites, setSites] = useState<Site[]>([]);
   const [visits, setVisits] = useState<MonitoringVisit[]>([]);
   const [findings, setFindings] = useState<Finding[]>([]);
+  const [notes, setNotes] = useState<MonitorNote[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -99,6 +110,11 @@ export default function SiteMonitoring() {
   const [selectedVisit, setSelectedVisit] = useState<MonitoringVisit | null>(null);
   const [editingFinding, setEditingFinding] = useState<Finding | null>(null);
   const [findingForm, setFindingForm] = useState(emptyFinding);
+
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesVisit, setNotesVisit] = useState<MonitoringVisit | null>(null);
+  const [editingNote, setEditingNote] = useState<MonitorNote | null>(null);
+  const [noteForm, setNoteForm] = useState(emptyNote);
 
   useEffect(() => {
     const check = async () => {
