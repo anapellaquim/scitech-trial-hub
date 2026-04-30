@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, StickyNote } from "lucide-react";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface Site { id: string; project_id: string | null; site_code: string; name: string; }
