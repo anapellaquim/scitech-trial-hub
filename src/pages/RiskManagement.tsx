@@ -191,7 +191,8 @@ export default function RiskManagement() {
 
   useEffect(() => {
     if (selectedProject) { setProjectId(selectedProject); loadData(); }
-  }, [selectedProject, loadData, setProjectId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProject]);
 
   const handleSave = async () => {
     if (!form.risk_code.trim() || !form.description.trim()) {
