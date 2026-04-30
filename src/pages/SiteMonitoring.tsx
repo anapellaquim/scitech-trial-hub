@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, StickyNote } from "lucide-react";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface Site { id: string; project_id: string | null; site_code: string; name: string; }
@@ -29,11 +29,19 @@ interface Finding {
   description: string; action_required: string | null; due_date: string | null;
   status: string; resolved_date: string | null; resolution_notes: string | null;
 }
+interface MonitorNote {
+  id: string; monitoring_visit_id: string; project_id: string;
+  author_id: string | null; author_name: string | null;
+  category: string | null; importance: string; content: string;
+  created_at: string; updated_at: string;
+}
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
 const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
+const NOTE_CATEGORIES = ["General", "Site staff", "Subjects", "Documents", "Drug accountability", "Protocol deviation", "Action item", "Other"];
+const NOTE_IMPORTANCE = ["low", "medium", "high"];
 
 const statusColors: Record<string, string> = {
   planned: "bg-blue-100 text-blue-800",
@@ -69,6 +77,16 @@ const emptyFinding = {
   due_date: "", status: "open", resolved_date: "", resolution_notes: "",
 };
 
+const emptyNote = {
+  category: "General", importance: "medium", content: "",
+};
+
+const importanceColors: Record<string, string> = {
+  low: "bg-blue-100 text-blue-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  high: "bg-red-100 text-red-800",
+};
+
 export default function SiteMonitoring() {
   const navigate = useNavigate();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
@@ -76,6 +94,7 @@ export default function SiteMonitoring() {
   const [sites, setSites] = useState<Site[]>([]);
   const [visits, setVisits] = useState<MonitoringVisit[]>([]);
   const [findings, setFindings] = useState<Finding[]>([]);
+  const [notes, setNotes] = useState<MonitorNote[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -91,6 +110,11 @@ export default function SiteMonitoring() {
   const [selectedVisit, setSelectedVisit] = useState<MonitoringVisit | null>(null);
   const [editingFinding, setEditingFinding] = useState<Finding | null>(null);
   const [findingForm, setFindingForm] = useState(emptyFinding);
+
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesVisit, setNotesVisit] = useState<MonitoringVisit | null>(null);
+  const [editingNote, setEditingNote] = useState<MonitorNote | null>(null);
+  const [noteForm, setNoteForm] = useState(emptyNote);
 
   useEffect(() => {
     const check = async () => {
@@ -146,10 +170,15 @@ export default function SiteMonitoring() {
 
     if (visitsList.length > 0) {
       const ids = visitsList.map((x: any) => x.id);
-      const { data: f } = await supabase.from("site_monitoring_findings" as any).select("*").in("monitoring_visit_id", ids);
+      const [{ data: f }, { data: n }] = await Promise.all([
+        supabase.from("site_monitoring_findings" as any).select("*").in("monitoring_visit_id", ids),
+        supabase.from("monitor_notes" as any).select("*").in("monitoring_visit_id", ids).order("created_at", { ascending: false }),
+      ]);
       setFindings((f as any) || []);
+      setNotes((n as any) || []);
     } else {
       setFindings([]);
+      setNotes([]);
     }
     setLoading(false);
   }, [selectedProject]);
@@ -248,6 +277,61 @@ export default function SiteMonitoring() {
   };
 
   const visitFindings = (vid: string) => findings.filter(f => f.monitoring_visit_id === vid);
+  const visitNotes = (vid: string) => notes.filter(n => n.monitoring_visit_id === vid);
+
+  // Monitor Notes CRUD
+  const openNotes = (v: MonitoringVisit) => {
+    setNotesVisit(v);
+    setEditingNote(null);
+    setNoteForm(emptyNote);
+    setNotesDialogOpen(true);
+  };
+  const editNote = (n: MonitorNote) => {
+    setEditingNote(n);
+    setNoteForm({
+      category: n.category || "General",
+      importance: n.importance,
+      content: n.content,
+    });
+  };
+  const cancelNoteEdit = () => { setEditingNote(null); setNoteForm(emptyNote); };
+  const saveNote = async () => {
+    if (!notesVisit) return;
+    if (!noteForm.content.trim()) { toast.error("Content is required"); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = user
+      ? await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle()
+      : { data: null as any };
+    const payload = {
+      monitoring_visit_id: notesVisit.id,
+      project_id: notesVisit.project_id,
+      author_id: user?.id || null,
+      author_name: (profile as any)?.full_name || user?.email || null,
+      category: noteForm.category || null,
+      importance: noteForm.importance,
+      content: noteForm.content.trim(),
+    };
+    if (editingNote) {
+      const { error } = await supabase.from("monitor_notes" as any)
+        .update({ category: payload.category, importance: payload.importance, content: payload.content })
+        .eq("id", editingNote.id);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Note updated");
+    } else {
+      const { error } = await supabase.from("monitor_notes" as any).insert(payload);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Note added");
+    }
+    cancelNoteEdit();
+    loadData();
+  };
+  const deleteNote = async (id: string) => {
+    if (!confirm("Delete this note?")) return;
+    const { error } = await supabase.from("monitor_notes" as any).delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Note deleted");
+    loadData();
+  };
 
   const filtered = useMemo(() => visits.filter(v => {
     const matchSearch = !search || (v.monitor_name || "").toLowerCase().includes(search.toLowerCase())
@@ -303,6 +387,16 @@ export default function SiteMonitoring() {
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" title="Findings" onClick={() => openFindings(v)}><ClipboardList className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" title="Monitor Notes" onClick={() => openNotes(v)}>
+                      <span className="relative inline-flex">
+                        <StickyNote className="h-4 w-4" />
+                        {visitNotes(v.id).length > 0 && (
+                          <span className="absolute -top-1 -right-2 text-[9px] font-semibold bg-primary text-primary-foreground rounded-full px-1 leading-none py-[1px]">
+                            {visitNotes(v.id).length}
+                          </span>
+                        )}
+                      </span>
+                    </Button>
                     <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(v)}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteVisit(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
@@ -503,6 +597,103 @@ export default function SiteMonitoring() {
                       ))}
                     </TableBody>
                   </Table>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Monitor Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={(open) => { setNotesDialogOpen(open); if (!open) cancelNoteEdit(); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Monitor Notes {notesVisit && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  — {siteName(notesVisit.site_id)} {notesVisit.visit_code ? `(${notesVisit.visit_code})` : ""}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          {notesVisit && (
+            <div className="space-y-6">
+              {/* Note form */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{editingNote ? "Edit note" : "Add new note"}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Category</Label>
+                      <Select value={noteForm.category} onValueChange={v => setNoteForm({ ...noteForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{NOTE_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Importance</Label>
+                      <Select value={noteForm.importance} onValueChange={v => setNoteForm({ ...noteForm, importance: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{NOTE_IMPORTANCE.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Note *</Label>
+                    <Textarea
+                      rows={4}
+                      value={noteForm.content}
+                      onChange={e => setNoteForm({ ...noteForm, content: e.target.value })}
+                      placeholder="Record observations, follow-ups, conversations with site staff, action items, etc."
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    {editingNote && <Button variant="outline" size="sm" onClick={cancelNoteEdit}>Cancel</Button>}
+                    <Button size="sm" onClick={saveNote}>
+                      <Plus className="h-4 w-4 mr-1" />{editingNote ? "Update note" : "Add note"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Notes history */}
+              <div>
+                <h4 className="font-semibold mb-2">History ({visitNotes(notesVisit.id).length})</h4>
+                {visitNotes(notesVisit.id).length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No notes yet for this visit.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {visitNotes(notesVisit.id).map(n => (
+                      <Card key={n.id}>
+                        <CardContent className="py-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
+                                {n.category && <Badge variant="outline">{n.category}</Badge>}
+                                <span className="text-xs text-muted-foreground">
+                                  {n.author_name || "—"} · {new Date(n.created_at).toLocaleString("en-US")}
+                                  {n.updated_at !== n.created_at && " (edited)"}
+                                </span>
+                              </div>
+                              <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              <Button variant="ghost" size="icon" title="Edit" onClick={() => editNote(n)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteNote(n.id)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
