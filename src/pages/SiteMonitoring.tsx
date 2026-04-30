@@ -364,7 +364,7 @@ export default function SiteMonitoring() {
           <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Monitoring Visit</DialogTitle></DialogHeader>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Research Site *</Label>
+              <div><Label>Site *</Label>
                 <Select value={form.site_id} onValueChange={v => setForm({...form, site_id: v})}>
                   <SelectTrigger><SelectValue placeholder="Select site" /></SelectTrigger>
                   <SelectContent>
