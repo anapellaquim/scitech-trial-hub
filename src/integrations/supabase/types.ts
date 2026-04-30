@@ -5104,6 +5104,33 @@ export type Database = {
         | "communication_due_soon"
         | "communication_today"
         | "communication_overdue"
+        | "site_monitoring_overdue"
+        | "site_monitoring_today"
+        | "site_monitoring_upcoming"
+        | "site_monitoring_no_report"
+        | "site_finding_critical"
+        | "site_finding_overdue"
+        | "change_control_pending"
+        | "risk_review_overdue"
+        | "risk_review_due_soon"
+        | "deviation_open"
+        | "safety_event_open"
+        | "safety_event_serious"
+        | "training_overdue"
+        | "training_due_soon"
+        | "qualification_contract_expiring"
+        | "qualification_contract_expired"
+        | "pmcf_survey_ending_soon"
+        | "pmcf_check_overdue"
+        | "steering_meeting_upcoming"
+        | "steering_meeting_overdue"
+        | "clinical_evaluation_review_due"
+        | "committee_letter_pending"
+        | "tmf_document_expiring"
+        | "tmf_document_expired"
+        | "ip_supply_expiring"
+        | "ip_supply_expired"
+        | "data_query_open"
       priority_level: "low" | "medium" | "high" | "critical"
       regulatory_status:
         | "pending"
@@ -5326,6 +5353,33 @@ export const Constants = {
         "communication_due_soon",
         "communication_today",
         "communication_overdue",
+        "site_monitoring_overdue",
+        "site_monitoring_today",
+        "site_monitoring_upcoming",
+        "site_monitoring_no_report",
+        "site_finding_critical",
+        "site_finding_overdue",
+        "change_control_pending",
+        "risk_review_overdue",
+        "risk_review_due_soon",
+        "deviation_open",
+        "safety_event_open",
+        "safety_event_serious",
+        "training_overdue",
+        "training_due_soon",
+        "qualification_contract_expiring",
+        "qualification_contract_expired",
+        "pmcf_survey_ending_soon",
+        "pmcf_check_overdue",
+        "steering_meeting_upcoming",
+        "steering_meeting_overdue",
+        "clinical_evaluation_review_due",
+        "committee_letter_pending",
+        "tmf_document_expiring",
+        "tmf_document_expired",
+        "ip_supply_expiring",
+        "ip_supply_expired",
+        "data_query_open",
       ],
       priority_level: ["low", "medium", "high", "critical"],
       regulatory_status: [
