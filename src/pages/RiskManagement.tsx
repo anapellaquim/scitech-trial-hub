@@ -461,7 +461,7 @@ export default function RiskManagement() {
                           <TableCell><Badge className={statusColors[r.status] || ""}>{STATUSES.find(s => s.value === r.status)?.label || r.status}</Badge></TableCell>
                           <TableCell className="text-xs">{r.responsible || "-"}</TableCell>
                           <TableCell className={overdue ? "text-red-600 font-medium" : ""}>
-                            {r.next_review_date ? format(parseLocalDate(r.next_review_date), "MM/dd/yyyy", { locale: enUS }) : "-"}
+                            {r.next_review_date ? format(parseLocalDate(r.next_review_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">

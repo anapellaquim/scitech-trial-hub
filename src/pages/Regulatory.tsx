@@ -387,10 +387,10 @@ export default function Regulatory() {
                               {sub.site ? `${sub.site.code} · ${sub.site.name}` : "—"}
                             </TableCell>
                             <TableCell>
-                              {sub.planned_date ? format(parseLocalDate(sub.planned_date), "MM/dd/yyyy", { locale: enUS }) : "-"}
+                              {sub.planned_date ? format(parseLocalDate(sub.planned_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
-                              {sub.submission_date ? format(parseLocalDate(sub.submission_date), "MM/dd/yyyy", { locale: enUS }) : "-"}
+                              {sub.submission_date ? format(parseLocalDate(sub.submission_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[sub.status]}>
@@ -455,10 +455,10 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>{rep.report_type}</TableCell>
                             <TableCell>
-                              {format(parseLocalDate(rep.due_date), "MM/dd/yyyy", { locale: enUS })}
+                              {format(parseLocalDate(rep.due_date), "dd/MM/yyyy", { locale: enUS })}
                             </TableCell>
                             <TableCell>
-                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "MM/dd/yyyy", { locale: enUS }) : "-"}
+                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[rep.status]}>

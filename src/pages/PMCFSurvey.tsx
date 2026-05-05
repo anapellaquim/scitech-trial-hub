@@ -332,7 +332,7 @@ export default function PMCFSurvey() {
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-0.5">{t?.totalFills ?? 0} / {t?.sampleSize ?? 0}</p>
                         </TableCell>
-                        <TableCell className="text-xs">{s.start_date ? format(parseLocalDate(s.start_date), "MM/dd/yyyy") : "—"} → {s.end_date ? format(parseLocalDate(s.end_date), "MM/dd/yyyy") : "—"}</TableCell>
+                        <TableCell className="text-xs">{s.start_date ? format(parseLocalDate(s.start_date), "dd/MM/yyyy") : "—"} → {s.end_date ? format(parseLocalDate(s.end_date), "dd/MM/yyyy") : "—"}</TableCell>
                         <TableCell><Badge className={statusColors[s.status]}>{s.status}</Badge></TableCell>
                         <TableCell>{s.form_link && <a href={s.form_link} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4 text-primary" /></a>}</TableCell>
                         <TableCell className="text-right">
@@ -378,7 +378,7 @@ export default function PMCFSurvey() {
                       <TableCell className="font-semibold">{c.fills_count}</TableCell>
                       <TableCell>{c.expected_count}</TableCell>
                       <TableCell><Badge className={checkStatusColors[c.status]}>{c.status.replace("_", " ")}</Badge></TableCell>
-                      <TableCell>{format(parseLocalDate(c.checked_at), "MM/dd/yyyy")}</TableCell>
+                      <TableCell>{format(parseLocalDate(c.checked_at), "dd/MM/yyyy")}</TableCell>
                       <TableCell>{c.checked_by}</TableCell>
                       <TableCell className="text-right">
                         <Button size="sm" variant="ghost" onClick={() => openEditCheck(c)}><Pencil className="h-4 w-4" /></Button>

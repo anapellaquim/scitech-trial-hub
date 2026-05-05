@@ -299,8 +299,8 @@ export default function Trainings() {
               </div>
               {t.description && <p className="text-sm text-muted-foreground mb-2">{t.description}</p>}
               <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap mb-2">
-                {t.planned_date && <span className="flex items-center gap-1"><CalendarClock className="h-3 w-3" />Planned: {format(parseLocalDate(t.planned_date), "MM/dd/yyyy")}</span>}
-                {t.due_date && <span>Due: {format(parseLocalDate(t.due_date), "MM/dd/yyyy")}</span>}
+                {t.planned_date && <span className="flex items-center gap-1"><CalendarClock className="h-3 w-3" />Planned: {format(parseLocalDate(t.planned_date), "dd/MM/yyyy")}</span>}
+                {t.due_date && <span>Due: {format(parseLocalDate(t.due_date), "dd/MM/yyyy")}</span>}
                 {t.duration_hours != null && <span>{t.duration_hours}h</span>}
                 {t.instructor && <span>Instructor: {t.instructor}</span>}
               </div>
@@ -319,9 +319,9 @@ export default function Trainings() {
                         <TableRow key={r.id}>
                           <TableCell className="font-medium">{r.user_name}</TableCell>
                           <TableCell className="text-muted-foreground">{r.team_role || "—"}</TableCell>
-                          <TableCell>{r.assigned_at ? format(parseLocalDate(r.assigned_at), "MM/dd/yyyy") : "—"}</TableCell>
+                          <TableCell>{r.assigned_at ? format(parseLocalDate(r.assigned_at), "dd/MM/yyyy") : "—"}</TableCell>
                           <TableCell><Badge className={recordStatusBadge[r.status] ?? ""}>{r.status}</Badge></TableCell>
-                          <TableCell>{r.completed_at ? format(parseLocalDate(r.completed_at), "MM/dd/yyyy") : "—"}</TableCell>
+                          <TableCell>{r.completed_at ? format(parseLocalDate(r.completed_at), "dd/MM/yyyy") : "—"}</TableCell>
                           <TableCell className="text-right">
                             <Button variant="ghost" size="icon" onClick={() => openEditRecord(t, r)}><Pencil className="h-3 w-3" /></Button>
                             <Button variant="ghost" size="icon" onClick={() => handleDeleteRecord(r.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
