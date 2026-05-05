@@ -289,26 +289,54 @@ export const ScheduleTaskDialog = ({
             </div>
 
             <div className="col-span-2">
-              <Label htmlFor="assigned_stakeholder_id">Responsável (Stakeholder do Estudo)</Label>
+              <Label htmlFor="assignee">Responsável</Label>
               <Select
-                value={formData.assigned_stakeholder_id || "none"}
-                onValueChange={(value) => setFormData({ ...formData, assigned_stakeholder_id: value === "none" ? "" : value })}
+                value={formData.assignee}
+                onValueChange={(value) => setFormData({ ...formData, assignee: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um stakeholder" />
+                  <SelectValue placeholder="Selecione um responsável" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-80">
                   <SelectItem value="none">Não atribuído</SelectItem>
-                  {stakeholders.map(s => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.name}{s.organization ? ` — ${s.organization}` : ""}
-                    </SelectItem>
-                  ))}
+
+                  {profiles.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Usuários do Sistema</div>
+                      {profiles.map(p => (
+                        <SelectItem key={`user-${p.id}`} value={`user:${p.id}`}>
+                          {p.full_name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+
+                  {sites.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Centros do Estudo</div>
+                      {sites.map(s => (
+                        <SelectItem key={`site-${s.id}`} value={`site:${s.id}`}>
+                          {s.site_code ? `[${s.site_code}] ` : ""}{s.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+
+                  {stakeholders.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Stakeholders do Estudo</div>
+                      {stakeholders.map(s => (
+                        <SelectItem key={`st-${s.id}`} value={`stakeholder:${s.id}`}>
+                          {s.name}{s.organization ? ` — ${s.organization}` : ""}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
-              {stakeholders.length === 0 && (
+              {profiles.length === 0 && sites.length === 0 && stakeholders.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Nenhum stakeholder cadastrado para este estudo. Cadastre em Communications → Stakeholders.
+                  Nenhum responsável disponível. Cadastre usuários, centros ou stakeholders para o estudo.
                 </p>
               )}
             </div>
