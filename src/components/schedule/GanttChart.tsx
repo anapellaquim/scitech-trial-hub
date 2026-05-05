@@ -181,7 +181,7 @@ const calculateCriticalPath = (tasks: ScheduleTask[], dependencies: TaskDependen
 
 type PeriodType = "all" | "1m" | "3m" | "6m" | "custom";
 
-export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], onTaskClick, onOrderChange }: GanttChartProps) => {
+export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], sites = [], onTaskClick, onOrderChange }: GanttChartProps) => {
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>("md");
   const cellWidth = ZOOM_CONFIG[zoomLevel].cellWidth;
   const [showCriticalPath, setShowCriticalPath] = useState(true);
@@ -304,12 +304,22 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], o
       filtered = filtered.filter(task => task.status === statusFilter);
     }
     
-    // Apply assignee filter (uses stakeholder assignment, with legacy profile fallback)
+    // Apply assignee filter (matches user / stakeholder / site / unassigned)
     if (assigneeFilter !== "all") {
       if (assigneeFilter === "unassigned") {
-        filtered = filtered.filter(task => !(task as any).assigned_stakeholder_id && !task.assigned_to);
+        filtered = filtered.filter(task => {
+          const t = task as any;
+          return !t.assigned_stakeholder_id && !t.assigned_site_id && !task.assigned_to;
+        });
       } else {
-        filtered = filtered.filter(task => (task as any).assigned_stakeholder_id === assigneeFilter);
+        const [type, id] = assigneeFilter.split(":");
+        filtered = filtered.filter(task => {
+          const t = task as any;
+          if (type === "user") return task.assigned_to === id;
+          if (type === "stakeholder") return t.assigned_stakeholder_id === id;
+          if (type === "site") return t.assigned_site_id === id;
+          return false;
+        });
       }
     }
     
@@ -405,10 +415,14 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], o
   };
 
   const getResponsibleName = (task: ScheduleTask) => {
-    const stId = (task as any).assigned_stakeholder_id as string | null | undefined;
-    if (stId) {
-      const s = stakeholders.find(x => x.id === stId);
+    const t = task as any;
+    if (t.assigned_stakeholder_id) {
+      const s = stakeholders.find(x => x.id === t.assigned_stakeholder_id);
       if (s) return s.organization ? `${s.name} (${s.organization})` : s.name;
+    }
+    if (t.assigned_site_id) {
+      const site = sites.find(x => x.id === t.assigned_site_id);
+      if (site) return `Centro: ${site.site_code ? `[${site.site_code}] ` : ""}${site.name}`;
     }
     if (task.assigned_to) {
       return profiles.find(p => p.id === task.assigned_to)?.full_name || "Desconhecido";
