@@ -33,6 +33,7 @@ interface GanttChartProps {
   tasks: ScheduleTask[];
   dependencies: TaskDependency[];
   profiles: Profile[];
+  stakeholders?: Stakeholder[];
   onTaskClick: (task: ScheduleTask) => void;
   onOrderChange?: (taskIds: string[]) => void;
 }
