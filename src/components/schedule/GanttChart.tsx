@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, GripVertical, Filter, X } from "lucide-react";
-import { ScheduleTask, TaskDependency, Profile } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
 import { Badge as BadgeUI } from "@/components/ui/badge";
 
 type ZoomLevel = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
