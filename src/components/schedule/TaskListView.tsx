@@ -8,13 +8,14 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ScheduleTask, TaskDependency, Profile } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
 import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban } from "lucide-react";
 
 interface TaskListViewProps {
   tasks: ScheduleTask[];
   dependencies: TaskDependency[];
   profiles: Profile[];
+  stakeholders?: Stakeholder[];
   onTaskClick: (task: ScheduleTask) => void;
   onRefresh: () => void;
 }
@@ -33,12 +34,19 @@ const priorityConfig: Record<string, { label: string; color: string }> = {
   critical: { label: "Crítica", color: "text-red-600" },
 };
 
-export const TaskListView = ({ tasks, dependencies, profiles, onTaskClick, onRefresh }: TaskListViewProps) => {
+export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [], onTaskClick, onRefresh }: TaskListViewProps) => {
   const [updatingTask, setUpdatingTask] = useState<string | null>(null);
 
-  const getProfileName = (userId: string | null) => {
-    if (!userId) return "Não atribuído";
-    return profiles.find(p => p.id === userId)?.full_name || "Desconhecido";
+  const getResponsibleName = (task: ScheduleTask) => {
+    const stId = (task as any).assigned_stakeholder_id as string | null | undefined;
+    if (stId) {
+      const s = stakeholders.find(x => x.id === stId);
+      if (s) return s.organization ? `${s.name} (${s.organization})` : s.name;
+    }
+    if (task.assigned_to) {
+      return profiles.find(p => p.id === task.assigned_to)?.full_name || "Desconhecido";
+    }
+    return "Não atribuído";
   };
 
   const formatDate = (date: string | null) => {
@@ -188,7 +196,7 @@ export const TaskListView = ({ tasks, dependencies, profiles, onTaskClick, onRef
                   <div className="text-muted-foreground">{formatDate(task.actual_end_date)}</div>
                 </TableCell>
                 <TableCell className="text-sm">
-                  {getProfileName(task.assigned_to)}
+                  {getResponsibleName(task)}
                 </TableCell>
                 <TableCell className="text-sm">
                   <div className="truncate max-w-[150px]" title={getDependencyNames(task.id)}>

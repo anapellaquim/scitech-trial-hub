@@ -15,7 +15,7 @@ import { TaskListView } from "@/components/schedule/TaskListView";
 import { ScheduleTaskDialog } from "@/components/schedule/ScheduleTaskDialog";
 import ApplyProjectTemplateDialog from "@/components/ApplyProjectTemplateDialog";
 import ManageProjectTemplatesDialog from "@/components/ManageProjectTemplatesDialog";
-import { ScheduleTask, TaskDependency, Profile, Project } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Project, Stakeholder } from "@/types/schedule";
 import { useScheduleExport } from "@/hooks/useScheduleExport";
 const ProjectSchedule = () => {
   const { projectId } = useParams();
@@ -26,6 +26,7 @@ const ProjectSchedule = () => {
   const [dependencies, setDependencies] = useState<TaskDependency[]>([]);
   
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ScheduleTask | null>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
@@ -81,6 +82,16 @@ const ProjectSchedule = () => {
 
       if (profilesError) throw profilesError;
       setProfiles(profilesData || []);
+
+      // Fetch project stakeholders (used as task assignees)
+      const { data: stakeholdersData, error: stakeholdersError } = await supabase
+        .from("communication_stakeholders")
+        .select("id, name, organization, stakeholder_type, project_id")
+        .eq("project_id", projectId)
+        .order("name");
+
+      if (stakeholdersError) throw stakeholdersError;
+      setStakeholders(stakeholdersData || []);
     } catch (error: any) {
       toast.error("Erro ao carregar dados: " + error.message);
     } finally {
@@ -296,6 +307,7 @@ const ProjectSchedule = () => {
                   tasks={tasks} 
                   dependencies={dependencies}
                   profiles={profiles}
+                  stakeholders={stakeholders}
                   onTaskClick={handleTaskClick}
                   onOrderChange={handleOrderChange}
                 />
@@ -316,6 +328,7 @@ const ProjectSchedule = () => {
                   tasks={tasks}
                   dependencies={dependencies}
                   profiles={profiles}
+                  stakeholders={stakeholders}
                   onTaskClick={handleTaskClick}
                   onRefresh={fetchData}
                 />

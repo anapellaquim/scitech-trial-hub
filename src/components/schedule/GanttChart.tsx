@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, GripVertical, Filter, X } from "lucide-react";
-import { ScheduleTask, TaskDependency, Profile } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
 import { Badge as BadgeUI } from "@/components/ui/badge";
 
 type ZoomLevel = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
@@ -33,6 +33,7 @@ interface GanttChartProps {
   tasks: ScheduleTask[];
   dependencies: TaskDependency[];
   profiles: Profile[];
+  stakeholders?: Stakeholder[];
   onTaskClick: (task: ScheduleTask) => void;
   onOrderChange?: (taskIds: string[]) => void;
 }
@@ -179,7 +180,7 @@ const calculateCriticalPath = (tasks: ScheduleTask[], dependencies: TaskDependen
 
 type PeriodType = "all" | "1m" | "3m" | "6m" | "custom";
 
-export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrderChange }: GanttChartProps) => {
+export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], onTaskClick, onOrderChange }: GanttChartProps) => {
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>("md");
   const cellWidth = ZOOM_CONFIG[zoomLevel].cellWidth;
   const [showCriticalPath, setShowCriticalPath] = useState(true);
@@ -302,12 +303,12 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
       filtered = filtered.filter(task => task.status === statusFilter);
     }
     
-    // Apply assignee filter
+    // Apply assignee filter (uses stakeholder assignment, with legacy profile fallback)
     if (assigneeFilter !== "all") {
       if (assigneeFilter === "unassigned") {
-        filtered = filtered.filter(task => !task.assigned_to);
+        filtered = filtered.filter(task => !(task as any).assigned_stakeholder_id && !task.assigned_to);
       } else {
-        filtered = filtered.filter(task => task.assigned_to === assigneeFilter);
+        filtered = filtered.filter(task => (task as any).assigned_stakeholder_id === assigneeFilter);
       }
     }
     
@@ -402,9 +403,16 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
     };
   };
 
-  const getProfileName = (userId: string | null) => {
-    if (!userId) return "Não atribuído";
-    return profiles.find(p => p.id === userId)?.full_name || "Desconhecido";
+  const getResponsibleName = (task: ScheduleTask) => {
+    const stId = (task as any).assigned_stakeholder_id as string | null | undefined;
+    if (stId) {
+      const s = stakeholders.find(x => x.id === stId);
+      if (s) return s.organization ? `${s.name} (${s.organization})` : s.name;
+    }
+    if (task.assigned_to) {
+      return profiles.find(p => p.id === task.assigned_to)?.full_name || "Desconhecido";
+    }
+    return "Não atribuído";
   };
 
   const isOverdue = (task: ScheduleTask) => {
@@ -601,9 +609,9 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
               <SelectContent>
                 <SelectItem value="all">Todos responsáveis</SelectItem>
                 <SelectItem value="unassigned">Não atribuído</SelectItem>
-                {profiles.map(profile => (
-                  <SelectItem key={profile.id} value={profile.id}>
-                    {profile.full_name}
+                {stakeholders.map(s => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.organization ? `${s.name} (${s.organization})` : s.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -788,7 +796,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrder
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground truncate ml-6">
-                      {getProfileName(task.assigned_to)}
+                      {getResponsibleName(task)}
                     </div>
                   </div>
                   <div className="flex-1 relative" style={{ height: 56 }}>
