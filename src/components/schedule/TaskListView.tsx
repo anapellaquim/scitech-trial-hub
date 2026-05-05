@@ -196,7 +196,7 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
                   <div className="text-muted-foreground">{formatDate(task.actual_end_date)}</div>
                 </TableCell>
                 <TableCell className="text-sm">
-                  {getProfileName(task.assigned_to)}
+                  {getResponsibleName(task)}
                 </TableCell>
                 <TableCell className="text-sm">
                   <div className="truncate max-w-[150px]" title={getDependencyNames(task.id)}>
