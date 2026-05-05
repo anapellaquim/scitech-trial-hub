@@ -24,7 +24,7 @@ const ProjectSchedule = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<ScheduleTask[]>([]);
   const [dependencies, setDependencies] = useState<TaskDependency[]>([]);
-  const [raciAssignments, setRaciAssignments] = useState<TaskRACI[]>([]);
+  
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ScheduleTask | null>(null);
