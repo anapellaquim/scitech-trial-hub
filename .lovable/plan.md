@@ -1,23 +1,25 @@
-## Problema
+## Corrigir "Não atribuído" nas tarefas do cronograma
 
-A lista suspensa "Site" em "New monitoring visit" está vazia porque o módulo lê de `study_sites`, mas os centros são cadastrados no módulo Studies → Centros, que grava em `research_centers` — uma tabela diferente. Além disso, `site_monitoring_visits.site_id` tem foreign key para `study_sites(id)`, então não é possível simplesmente trocar a fonte de dados.
+A coluna Responsável da Lista e do Gantt mostra "Não atribuído" porque ainda lê `tasks.assigned_to` (que agora é sempre `null`), enquanto o responsável real foi gravado em `tasks.assigned_stakeholder_id` (vinculado aos Stakeholders do estudo).
 
-## Já feito agora
+### Mudanças
 
-Espelhei os 5 centros existentes do projeto atual de `research_centers` para `study_sites` usando os mesmos UUIDs. **Recarregando a tela, o dropdown já vai mostrar HUPE-UERJ, Hospital Ana Nery, Afya Hospital Dia, Real Hospital Português e HC-UFMG.**
+1. **`src/pages/ProjectSchedule.tsx`**
+   - Buscar `communication_stakeholders` filtrados pelo `project_id`.
+   - Guardar em estado `stakeholders` e passar para `TaskListView` e `GanttChart`.
 
-## O que ainda precisa ser implementado (próxima etapa, em build mode)
+2. **`src/components/schedule/TaskListView.tsx`**
+   - Aceitar nova prop `stakeholders`.
+   - Função `getResponsibleName(task)`: retorna `stakeholder.name` (com `organization` em parênteses se houver) quando `assigned_stakeholder_id` existir; fallback para `profiles` via `assigned_to` (tarefas legadas); senão "Não atribuído".
+   - Trocar `getProfileName(task.assigned_to)` por `getResponsibleName(task)`.
 
-Para que **novos centros adicionados em Studies → Centros apareçam automaticamente** sem ação manual, alterar `src/pages/SiteMonitoring.tsx`:
+3. **`src/components/schedule/GanttChart.tsx`**
+   - Aceitar nova prop `stakeholders`.
+   - Mesma função `getResponsibleName`.
+   - Atualizar o filtro "Responsável": opções listadas a partir dos stakeholders do projeto; comparação por `assigned_stakeholder_id` (mantendo "Todos" e "Não atribuído").
+   - Trocar a renderização da linha que mostra o responsável.
 
-1. Em `loadData`, ler do `research_centers` (mapeando `code` → `site_code`) em vez de `study_sites`.
-2. Logo após carregar, comparar com `study_sites` e inserir (mirror) qualquer centro ainda não espelhado, usando o mesmo `id`. Isso mantém a FK `site_monitoring_visits.site_id → study_sites(id)` válida sem precisar de migration.
-3. Nenhuma mudança visual além da que já foi feita (label "Site").
+4. **`src/types/schedule.ts`** — já tem `Stakeholder`; nada a alterar.
 
-## Detalhe técnico
-
-- O mirror é idempotente: só insere os IDs ausentes.
-- Usa o `id` do `research_centers` como `id` do `study_sites`, garantindo unicidade e referência consistente.
-- Alternativa "limpa" seria uma migration trocando a FK para `research_centers(id)` e descontinuando `study_sites`, mas exigiria também ajustar `study_visits`, `study_tasks` e o Dashboard. Fica como melhoria futura.
-
-Aprove para eu aplicar a alteração no código.
+### Observação
+Não é necessária migração — o campo `assigned_stakeholder_id` já existe e os Stakeholders já são carregados corretamente no diálogo de tarefa.
