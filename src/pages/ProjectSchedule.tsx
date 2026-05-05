@@ -15,7 +15,7 @@ import { TaskListView } from "@/components/schedule/TaskListView";
 import { ScheduleTaskDialog } from "@/components/schedule/ScheduleTaskDialog";
 import ApplyProjectTemplateDialog from "@/components/ApplyProjectTemplateDialog";
 import ManageProjectTemplatesDialog from "@/components/ManageProjectTemplatesDialog";
-import { ScheduleTask, TaskDependency, Profile, Project, Stakeholder } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Project, Stakeholder, StudySite } from "@/types/schedule";
 import { useScheduleExport } from "@/hooks/useScheduleExport";
 const ProjectSchedule = () => {
   const { projectId } = useParams();
