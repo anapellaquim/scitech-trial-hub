@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { EditPaymentDialog } from "@/components/payments/EditPaymentDialog";
 import { RegisterPaymentDialog } from "@/components/payments/RegisterPaymentDialog";
 import { IndividualPaymentDialog } from "@/components/payments/IndividualPaymentDialog";
+import { NewCenterPaymentDialog } from "@/components/payments/NewCenterPaymentDialog";
 import { EditParticipantPaymentsDialog } from "@/components/payments/EditParticipantPaymentsDialog";
 import { VendorManagementDialog } from "@/components/payments/VendorManagementDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
