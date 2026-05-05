@@ -11,7 +11,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Users, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { GanttChart } from "@/components/schedule/GanttChart";
-import { RACIMatrix } from "@/components/schedule/RACIMatrix";
 import { TaskListView } from "@/components/schedule/TaskListView";
 import { ScheduleTaskDialog } from "@/components/schedule/ScheduleTaskDialog";
 import ApplyProjectTemplateDialog from "@/components/ApplyProjectTemplateDialog";
