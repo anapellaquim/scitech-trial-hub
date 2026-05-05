@@ -272,23 +272,28 @@ export const ScheduleTaskDialog = ({
             </div>
 
             <div className="col-span-2">
-              <Label htmlFor="assigned_to">Responsável</Label>
+              <Label htmlFor="assigned_stakeholder_id">Responsável (Stakeholder do Estudo)</Label>
               <Select
-                value={formData.assigned_to || "none"}
-                onValueChange={(value) => setFormData({ ...formData, assigned_to: value === "none" ? "" : value })}
+                value={formData.assigned_stakeholder_id || "none"}
+                onValueChange={(value) => setFormData({ ...formData, assigned_stakeholder_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um responsável" />
+                  <SelectValue placeholder="Selecione um stakeholder" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Não atribuído</SelectItem>
-                  {profiles.map(profile => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.full_name}
+                  {stakeholders.map(s => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}{s.organization ? ` — ${s.organization}` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {stakeholders.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Nenhum stakeholder cadastrado para este estudo. Cadastre em Communications → Stakeholders.
+                </p>
+              )}
             </div>
           </div>
 
