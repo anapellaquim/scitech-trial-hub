@@ -34,12 +34,13 @@ export const ScheduleTaskDialog = ({
   onSave
 }: ScheduleTaskDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     status: "pending",
     priority: "medium",
-    assigned_to: "",
+    assigned_stakeholder_id: "",
     planned_start_date: "",
     planned_end_date: "",
     actual_start_date: "",
@@ -47,6 +48,16 @@ export const ScheduleTaskDialog = ({
     progress_percentage: 0,
   });
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!projectId) { setStakeholders([]); return; }
+    supabase
+      .from("communication_stakeholders")
+      .select("id, name, organization, stakeholder_type, project_id")
+      .eq("project_id", projectId)
+      .order("name")
+      .then(({ data }) => setStakeholders((data as Stakeholder[]) || []));
+  }, [projectId]);
 
   useEffect(() => {
     if (task) {
