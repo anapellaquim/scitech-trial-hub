@@ -796,7 +796,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], o
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground truncate ml-6">
-                      {getProfileName(task.assigned_to)}
+                      {getResponsibleName(task)}
                     </div>
                   </div>
                   <div className="flex-1 relative" style={{ height: 56 }}>
