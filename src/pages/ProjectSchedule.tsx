@@ -8,15 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Users, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings } from "lucide-react";
+import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { GanttChart } from "@/components/schedule/GanttChart";
-import { RACIMatrix } from "@/components/schedule/RACIMatrix";
 import { TaskListView } from "@/components/schedule/TaskListView";
 import { ScheduleTaskDialog } from "@/components/schedule/ScheduleTaskDialog";
 import ApplyProjectTemplateDialog from "@/components/ApplyProjectTemplateDialog";
 import ManageProjectTemplatesDialog from "@/components/ManageProjectTemplatesDialog";
-import { ScheduleTask, TaskDependency, TaskRACI, Profile, Project } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Project } from "@/types/schedule";
 import { useScheduleExport } from "@/hooks/useScheduleExport";
 const ProjectSchedule = () => {
   const { projectId } = useParams();
@@ -25,7 +24,7 @@ const ProjectSchedule = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<ScheduleTask[]>([]);
   const [dependencies, setDependencies] = useState<TaskDependency[]>([]);
-  const [raciAssignments, setRaciAssignments] = useState<TaskRACI[]>([]);
+  
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ScheduleTask | null>(null);
@@ -73,14 +72,6 @@ const ProjectSchedule = () => {
         if (depsError) throw depsError;
         setDependencies(depsData || []);
 
-        // Fetch RACI assignments
-        const { data: raciData, error: raciError } = await supabase
-          .from("task_raci")
-          .select("*")
-          .in("task_id", taskIds);
-
-        if (raciError) throw raciError;
-        setRaciAssignments(raciData || []);
       }
 
       // Fetch profiles
@@ -147,7 +138,7 @@ const ProjectSchedule = () => {
 
   const handleExport = (type: 'excel' | 'pdf') => {
     if (!project) return;
-    const exportData = { project, tasks, dependencies, raciAssignments, profiles };
+    const exportData = { project, tasks, dependencies, raciAssignments: [], profiles };
     if (type === 'excel') {
       exportToExcel(exportData);
       toast.success('Cronograma exportado para Excel');
@@ -290,10 +281,6 @@ const ProjectSchedule = () => {
               <Table2 className="h-4 w-4" />
               Lista
             </TabsTrigger>
-            <TabsTrigger value="raci" className="gap-2">
-              <Users className="h-4 w-4" />
-              RACI
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="gantt">
@@ -336,25 +323,6 @@ const ProjectSchedule = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="raci">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Matriz RACI
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RACIMatrix 
-                  tasks={tasks}
-                  raciAssignments={raciAssignments}
-                  profiles={profiles}
-                  projectId={projectId}
-                  onRefresh={fetchData}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
 
         {/* Task Dialog */}
