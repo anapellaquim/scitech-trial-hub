@@ -8,13 +8,14 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ScheduleTask, TaskDependency, Profile } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
 import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban } from "lucide-react";
 
 interface TaskListViewProps {
   tasks: ScheduleTask[];
   dependencies: TaskDependency[];
   profiles: Profile[];
+  stakeholders?: Stakeholder[];
   onTaskClick: (task: ScheduleTask) => void;
   onRefresh: () => void;
 }
