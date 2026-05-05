@@ -138,7 +138,7 @@ const ProjectSchedule = () => {
 
   const handleExport = (type: 'excel' | 'pdf') => {
     if (!project) return;
-    const exportData = { project, tasks, dependencies, raciAssignments, profiles };
+    const exportData = { project, tasks, dependencies, raciAssignments: [], profiles };
     if (type === 'excel') {
       exportToExcel(exportData);
       toast.success('Cronograma exportado para Excel');
