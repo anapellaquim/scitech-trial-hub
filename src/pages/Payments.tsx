@@ -2192,6 +2192,17 @@ export default function Payments() {
         onConfirm={registerIndividualPayment}
       />
 
+      <NewCenterPaymentDialog
+        open={newCenterPaymentOpen}
+        onOpenChange={setNewCenterPaymentOpen}
+        defaultProjectId={selectedProject}
+        defaultCenterCode={selectedCenterTab}
+        onCreated={() => {
+          loadVendorPayments();
+          loadPaymentHistory();
+        }}
+      />
+
       <VendorManagementDialog
         open={vendorManagementOpen}
         onOpenChange={setVendorManagementOpen}
