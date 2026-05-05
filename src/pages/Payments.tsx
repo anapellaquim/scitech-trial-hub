@@ -1836,12 +1836,13 @@ export default function Payments() {
                                   </TableRow>
                                 );
                               })}
-                            </TableBody>
-                          </Table>
-                          <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
-                      </>
-                    )}
+                              </TableBody>
+                            </Table>
+                            <ScrollBar orientation="horizontal" />
+                          </ScrollArea>
+                        </>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
