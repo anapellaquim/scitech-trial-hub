@@ -335,25 +335,6 @@ const ProjectSchedule = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="raci">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Matriz RACI
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RACIMatrix 
-                  tasks={tasks}
-                  raciAssignments={raciAssignments}
-                  profiles={profiles}
-                  projectId={projectId}
-                  onRefresh={fetchData}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
 
         {/* Task Dialog */}
