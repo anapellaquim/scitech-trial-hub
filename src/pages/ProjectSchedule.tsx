@@ -328,6 +328,7 @@ const ProjectSchedule = () => {
                   tasks={tasks}
                   dependencies={dependencies}
                   profiles={profiles}
+                  stakeholders={stakeholders}
                   onTaskClick={handleTaskClick}
                   onRefresh={fetchData}
                 />
