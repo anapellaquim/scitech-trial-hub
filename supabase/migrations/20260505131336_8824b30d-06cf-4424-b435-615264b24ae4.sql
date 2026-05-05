@@ -1,0 +1,1 @@
+ALTER TABLE public.vendor_payments ADD COLUMN IF NOT EXISTS protheus_code text;

@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { EditPaymentDialog } from "@/components/payments/EditPaymentDialog";
 import { RegisterPaymentDialog } from "@/components/payments/RegisterPaymentDialog";
 import { IndividualPaymentDialog } from "@/components/payments/IndividualPaymentDialog";
+import { NewCenterPaymentDialog } from "@/components/payments/NewCenterPaymentDialog";
 import { EditParticipantPaymentsDialog } from "@/components/payments/EditParticipantPaymentsDialog";
 import { VendorManagementDialog } from "@/components/payments/VendorManagementDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -144,6 +145,7 @@ export default function Payments() {
   const [historyCenterFilter, setHistoryCenterFilter] = useState<string>("");
   const [historyTypeFilter, setHistoryTypeFilter] = useState<string>("");
   const [individualPaymentDialogOpen, setIndividualPaymentDialogOpen] = useState(false);
+  const [newCenterPaymentOpen, setNewCenterPaymentOpen] = useState(false);
   const [editParticipantPaymentsOpen, setEditParticipantPaymentsOpen] = useState(false);
   const [editingParticipant, setEditingParticipant] = useState<ParticipantPayment | null>(null);
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<Set<string>>(new Set());
@@ -1423,6 +1425,13 @@ export default function Payments() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-2 flex-wrap">
+                      <Button
+                        variant="default"
+                        onClick={() => setNewCenterPaymentOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Novo Pagamento
+                      </Button>
                       <Select value={selectedCenterTab || "select"} onValueChange={(v) => setSelectedCenterTab(v === "select" ? "" : v)}>
                         <SelectTrigger className="w-[200px]">
                           <SelectValue placeholder="Selecione um centro" />
@@ -2181,6 +2190,17 @@ export default function Payments() {
         onOpenChange={setIndividualPaymentDialogOpen}
         centerCode={selectedCenterTab}
         onConfirm={registerIndividualPayment}
+      />
+
+      <NewCenterPaymentDialog
+        open={newCenterPaymentOpen}
+        onOpenChange={setNewCenterPaymentOpen}
+        defaultProjectId={selectedProject}
+        defaultCenterCode={selectedCenterTab}
+        onCreated={() => {
+          loadVendorPayments();
+          loadPaymentHistory();
+        }}
       />
 
       <VendorManagementDialog
