@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Users, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings } from "lucide-react";
+import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { GanttChart } from "@/components/schedule/GanttChart";
 import { TaskListView } from "@/components/schedule/TaskListView";
