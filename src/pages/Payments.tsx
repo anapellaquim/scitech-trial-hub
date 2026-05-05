@@ -1719,40 +1719,41 @@ export default function Payments() {
                   </CardHeader>
                   <CardContent className="space-y-6">
 
-                     {/* Vendor payments list (exclude center-category manual entries) */}
-                    {(() => { const _vp = vendorPayments.filter(p => p.category !== "center"); return null; })()}
-                    {vendorPayments.filter(p => p.category !== "center").length === 0 ? (
-                      <div className="text-center py-8">
-                        <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">
-                          Nenhum pagamento de vendor registrado
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex justify-between items-center">
-                          <p className="text-sm text-muted-foreground">
-                            {vendorPayments.length} pagamento(s) • Total: {formatCurrency(vendorPayments.reduce((sum, p) => sum + Number(p.amount), 0))}
+                    {/* Vendor payments list (exclude center-category manual entries) */}
+                    {(() => {
+                      const vendorOnlyPayments = vendorPayments.filter(p => p.category !== "center");
+                      return vendorOnlyPayments.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-muted-foreground">
+                            Nenhum pagamento de vendor registrado
                           </p>
                         </div>
-                        <ScrollArea className="w-full">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Data Prog.</TableHead>
-                                <TableHead>Fornecedor</TableHead>
-                                <TableHead>Categoria</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Data Pgto.</TableHead>
-                                <TableHead>Recorrência</TableHead>
-                                <TableHead>Nº NF</TableHead>
-                                <TableHead className="text-right">Valor</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {vendorPayments.map((payment) => {
-                                const categoryLabels: Record<string, string> = {
+                      ) : (
+                        <>
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm text-muted-foreground">
+                              {vendorOnlyPayments.length} pagamento(s) • Total: {formatCurrency(vendorOnlyPayments.reduce((sum, p) => sum + Number(p.amount), 0))}
+                            </p>
+                          </div>
+                          <ScrollArea className="w-full">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Data Prog.</TableHead>
+                                  <TableHead>Fornecedor</TableHead>
+                                  <TableHead>Categoria</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Data Pgto.</TableHead>
+                                  <TableHead>Recorrência</TableHead>
+                                  <TableHead>Nº NF</TableHead>
+                                  <TableHead className="text-right">Valor</TableHead>
+                                  <TableHead className="w-[50px]"></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {vendorOnlyPayments.map((payment) => {
+                                  const categoryLabels: Record<string, string> = {
                                   overhead: "Overhead",
                                   startup: "Start-up",
                                   regulatory: "Regulatório",
