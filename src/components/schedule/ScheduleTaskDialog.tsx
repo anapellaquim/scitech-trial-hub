@@ -113,13 +113,17 @@ export const ScheduleTaskDialog = ({
 
     setLoading(true);
     try {
+      const [aType, aId] = formData.assignee.includes(":")
+        ? formData.assignee.split(":")
+        : ["none", ""];
       const taskData = {
         title: formData.title,
         description: formData.description || null,
         status: formData.status,
         priority: formData.priority,
-        assigned_stakeholder_id: formData.assigned_stakeholder_id || null,
-        assigned_to: null,
+        assigned_to: aType === "user" ? aId : null,
+        assigned_stakeholder_id: aType === "stakeholder" ? aId : null,
+        assigned_site_id: aType === "site" ? aId : null,
         planned_start_date: formData.planned_start_date || null,
         planned_end_date: formData.planned_end_date || null,
         actual_start_date: formData.actual_start_date || null,
