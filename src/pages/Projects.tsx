@@ -530,7 +530,7 @@ const Projects = () => {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Ver cronograma do projeto com Gantt, dependências e matriz RACI</p>
+                          <p>Ver cronograma do projeto com Gantt e dependências</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -839,7 +839,7 @@ const Projects = () => {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Ver cronograma do projeto com Gantt, dependências e matriz RACI</p>
+                            <p>Ver cronograma do projeto com Gantt e dependências</p>
                           </TooltipContent>
                         </Tooltip>
                       </TableCell>
