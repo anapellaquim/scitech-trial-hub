@@ -289,10 +289,6 @@ const ProjectSchedule = () => {
               <Table2 className="h-4 w-4" />
               Lista
             </TabsTrigger>
-            <TabsTrigger value="raci" className="gap-2">
-              <Users className="h-4 w-4" />
-              RACI
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="gantt">
