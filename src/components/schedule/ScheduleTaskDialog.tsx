@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { X, Plus } from "lucide-react";
 
 interface ScheduleTaskDialogProps {
