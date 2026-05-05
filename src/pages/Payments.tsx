@@ -1505,6 +1505,92 @@ export default function Payments() {
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {/* Manual center payments (created via "Novo Pagamento") */}
+                    {(() => {
+                      const manualCenterPayments = vendorPayments.filter(p => p.category === "center");
+                      if (manualCenterPayments.length === 0) return null;
+                      return (
+                        <div className="mb-6 border rounded-lg p-4 bg-muted/30">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-semibold text-sm flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              Pagamentos Manuais do Centro
+                            </h3>
+                            <span className="text-sm text-muted-foreground">
+                              {manualCenterPayments.length} pagamento(s) • Total: {formatCurrency(manualCenterPayments.reduce((s, p) => s + Number(p.amount), 0))}
+                            </span>
+                          </div>
+                          <ScrollArea className="w-full">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Data Prog.</TableHead>
+                                  <TableHead>Centro</TableHead>
+                                  <TableHead>Descrição</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Data Pgto.</TableHead>
+                                  <TableHead>Nº NF</TableHead>
+                                  <TableHead>Cód. Protheus</TableHead>
+                                  <TableHead>Centro de Custo</TableHead>
+                                  <TableHead>Classe de Valor</TableHead>
+                                  <TableHead className="text-right">Valor</TableHead>
+                                  <TableHead className="w-[50px]"></TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {manualCenterPayments.map((payment) => (
+                                  <TableRow key={payment.id}>
+                                    <TableCell>{format(parseLocalDate(payment.payment_date), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                                    <TableCell className="font-medium">{payment.vendor_name}</TableCell>
+                                    <TableCell className="max-w-[200px] truncate">{payment.description || "-"}</TableCell>
+                                    <TableCell>
+                                      <Select
+                                        value={payment.status}
+                                        onValueChange={(v) => updateVendorPaymentStatus(payment.id, v)}
+                                      >
+                                        <SelectTrigger className="w-[130px] h-8">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="programado">Programado</SelectItem>
+                                          <SelectItem value="pago">Pago</SelectItem>
+                                          <SelectItem value="cancelado">Cancelado</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </TableCell>
+                                    <TableCell>
+                                      {payment.paid_at ? (
+                                        <span className="text-sm text-green-600">
+                                          {format(parseLocalDate(payment.paid_at), "dd/MM/yyyy", { locale: ptBR })}
+                                        </span>
+                                      ) : (
+                                        <span className="text-muted-foreground">-</span>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>{payment.invoice_number || "-"}</TableCell>
+                                    <TableCell>{(payment as any).protheus_code || "-"}</TableCell>
+                                    <TableCell>{payment.cost_center || "-"}</TableCell>
+                                    <TableCell>{payment.value_class || "-"}</TableCell>
+                                    <TableCell className="text-right font-medium">{formatCurrency(Number(payment.amount))}</TableCell>
+                                    <TableCell>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="text-destructive hover:text-destructive"
+                                        onClick={() => deleteVendorPayment(payment.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                            <ScrollBar orientation="horizontal" />
+                          </ScrollArea>
+                        </div>
+                      );
+                    })()}
                     {!selectedCenterTab ? (
                       <div className="text-center py-8">
                         <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
