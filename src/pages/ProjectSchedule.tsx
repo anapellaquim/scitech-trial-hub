@@ -26,6 +26,7 @@ const ProjectSchedule = () => {
   const [dependencies, setDependencies] = useState<TaskDependency[]>([]);
   
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<ScheduleTask | null>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
