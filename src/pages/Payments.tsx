@@ -145,6 +145,7 @@ export default function Payments() {
   const [historyCenterFilter, setHistoryCenterFilter] = useState<string>("");
   const [historyTypeFilter, setHistoryTypeFilter] = useState<string>("");
   const [individualPaymentDialogOpen, setIndividualPaymentDialogOpen] = useState(false);
+  const [newCenterPaymentOpen, setNewCenterPaymentOpen] = useState(false);
   const [editParticipantPaymentsOpen, setEditParticipantPaymentsOpen] = useState(false);
   const [editingParticipant, setEditingParticipant] = useState<ParticipantPayment | null>(null);
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<Set<string>>(new Set());
