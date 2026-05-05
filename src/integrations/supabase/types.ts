@@ -3978,6 +3978,7 @@ export type Database = {
         Row: {
           actual_end_date: string | null
           actual_start_date: string | null
+          assigned_stakeholder_id: string | null
           assigned_to: string | null
           created_at: string
           created_by: string | null
@@ -3998,6 +3999,7 @@ export type Database = {
         Insert: {
           actual_end_date?: string | null
           actual_start_date?: string | null
+          assigned_stakeholder_id?: string | null
           assigned_to?: string | null
           created_at?: string
           created_by?: string | null
@@ -4018,6 +4020,7 @@ export type Database = {
         Update: {
           actual_end_date?: string | null
           actual_start_date?: string | null
+          assigned_stakeholder_id?: string | null
           assigned_to?: string | null
           created_at?: string
           created_by?: string | null
@@ -4036,6 +4039,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_stakeholder_id_fkey"
+            columns: ["assigned_stakeholder_id"]
+            isOneToOne: false
+            referencedRelation: "communication_stakeholders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_assigned_to_fkey"
             columns: ["assigned_to"]
