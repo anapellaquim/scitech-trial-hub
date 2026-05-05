@@ -2024,9 +2024,10 @@ export default function Payments() {
                             original: record,
                           }));
 
-                        // Map vendor payments (only paid ones)
+                        // Map vendor payments (only paid ones, excluding manual center entries)
                         const vendorPaidPayments = vendorPayments
                           .filter(payment => {
+                            if (payment.category === "center") return false;
                             if (payment.status !== "pago") return false;
                             if (historyTypeFilter === "center") return false;
                             if (historyCenterFilter && historyCenterFilter.startsWith("vendor:") && payment.vendor_name !== historyCenterFilter.replace("vendor:", "")) return false;
@@ -2047,8 +2048,30 @@ export default function Payments() {
                             original: payment,
                           }));
 
+                        // Map manual center payments (category === "center")
+                        const manualCenterPayments = vendorPayments
+                          .filter(payment => {
+                            if (payment.category !== "center") return false;
+                            if (historyTypeFilter === "vendor") return false;
+                            if (historyCenterFilter && historyCenterFilter.startsWith("vendor:")) return false;
+                            const paymentDate = payment.paid_at ? parseLocalDate(payment.paid_at) : parseLocalDate(payment.payment_date);
+                            if (historyStartDate && paymentDate < parseLocalDate(historyStartDate)) return false;
+                            if (historyEndDate && paymentDate > parseLocalDate(historyEndDate + 'T23:59:59')) return false;
+                            return true;
+                          })
+                          .map(payment => ({
+                            id: payment.id,
+                            date: payment.paid_at || payment.payment_date,
+                            type: "center" as const,
+                            source: payment.vendor_name,
+                            description: payment.description || "Pagamento manual",
+                            amount: Number(payment.amount),
+                            notes: payment.invoice_number ? `NF: ${payment.invoice_number}` : null,
+                            original: payment as any,
+                          }));
+
                         // Combine and sort by date descending
-                        return [...centerPayments, ...vendorPaidPayments].sort((a, b) => 
+                        return [...centerPayments, ...vendorPaidPayments, ...manualCenterPayments].sort((a, b) => 
                           parseLocalDate(b.date).getTime() - parseLocalDate(a.date).getTime()
                         );
                       };
