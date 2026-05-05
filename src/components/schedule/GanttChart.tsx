@@ -621,14 +621,37 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
               <SelectTrigger className="w-40 h-8">
                 <SelectValue placeholder="Responsável" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-80">
                 <SelectItem value="all">Todos responsáveis</SelectItem>
                 <SelectItem value="unassigned">Não atribuído</SelectItem>
-                {stakeholders.map(s => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.organization ? `${s.name} (${s.organization})` : s.name}
-                  </SelectItem>
-                ))}
+                {profiles.length > 0 && (
+                  <>
+                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Usuários</div>
+                    {profiles.map(p => (
+                      <SelectItem key={`u-${p.id}`} value={`user:${p.id}`}>{p.full_name}</SelectItem>
+                    ))}
+                  </>
+                )}
+                {sites.length > 0 && (
+                  <>
+                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Centros</div>
+                    {sites.map(s => (
+                      <SelectItem key={`si-${s.id}`} value={`site:${s.id}`}>
+                        {s.site_code ? `[${s.site_code}] ` : ""}{s.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
+                {stakeholders.length > 0 && (
+                  <>
+                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Stakeholders</div>
+                    {stakeholders.map(s => (
+                      <SelectItem key={`st-${s.id}`} value={`stakeholder:${s.id}`}>
+                        {s.organization ? `${s.name} (${s.organization})` : s.name}
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
               </SelectContent>
             </Select>
 
