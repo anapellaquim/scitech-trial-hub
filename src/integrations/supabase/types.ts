@@ -4573,6 +4573,7 @@ export type Database = {
           parent_payment_id: string | null
           payment_date: string
           project_id: string | null
+          protheus_code: string | null
           recurrence_end_date: string | null
           recurrence_type: string | null
           status: string
@@ -4595,6 +4596,7 @@ export type Database = {
           parent_payment_id?: string | null
           payment_date?: string
           project_id?: string | null
+          protheus_code?: string | null
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           status?: string
@@ -4617,6 +4619,7 @@ export type Database = {
           parent_payment_id?: string | null
           payment_date?: string
           project_id?: string | null
+          protheus_code?: string | null
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           status?: string
