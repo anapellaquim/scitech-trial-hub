@@ -3978,6 +3978,7 @@ export type Database = {
         Row: {
           actual_end_date: string | null
           actual_start_date: string | null
+          assigned_site_id: string | null
           assigned_stakeholder_id: string | null
           assigned_to: string | null
           created_at: string
@@ -3999,6 +4000,7 @@ export type Database = {
         Insert: {
           actual_end_date?: string | null
           actual_start_date?: string | null
+          assigned_site_id?: string | null
           assigned_stakeholder_id?: string | null
           assigned_to?: string | null
           created_at?: string
@@ -4020,6 +4022,7 @@ export type Database = {
         Update: {
           actual_end_date?: string | null
           actual_start_date?: string | null
+          assigned_site_id?: string | null
           assigned_stakeholder_id?: string | null
           assigned_to?: string | null
           created_at?: string
@@ -4039,6 +4042,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_site_id_fkey"
+            columns: ["assigned_site_id"]
+            isOneToOne: false
+            referencedRelation: "study_sites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_assigned_stakeholder_id_fkey"
             columns: ["assigned_stakeholder_id"]

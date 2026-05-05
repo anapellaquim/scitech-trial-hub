@@ -14,8 +14,17 @@ export interface ScheduleTask {
   actual_end_date: string | null;
   progress_percentage: number;
   assigned_to: string | null;
+  assigned_stakeholder_id?: string | null;
+  assigned_site_id?: string | null;
   project_id: string | null;
   display_order: number | null;
+}
+
+export interface StudySite {
+  id: string;
+  name: string;
+  site_code: string | null;
+  project_id: string | null;
 }
 
 export interface TaskDependency {

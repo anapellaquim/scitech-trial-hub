@@ -1,0 +1,2 @@
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS assigned_site_id uuid REFERENCES public.study_sites(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_tasks_assigned_site ON public.tasks(assigned_site_id);

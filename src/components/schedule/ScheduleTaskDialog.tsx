@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { X, Plus } from "lucide-react";
 
 interface ScheduleTaskDialogProps {
@@ -35,12 +35,14 @@ export const ScheduleTaskDialog = ({
 }: ScheduleTaskDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
+  const [sites, setSites] = useState<StudySite[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     status: "pending",
     priority: "medium",
-    assigned_stakeholder_id: "",
+    // Unified assignee value: "none" | `user:<id>` | `stakeholder:<id>` | `site:<id>`
+    assignee: "none",
     planned_start_date: "",
     planned_end_date: "",
     actual_start_date: "",
@@ -50,23 +52,34 @@ export const ScheduleTaskDialog = ({
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!projectId) { setStakeholders([]); return; }
+    if (!projectId) { setStakeholders([]); setSites([]); return; }
     supabase
       .from("communication_stakeholders")
       .select("id, name, organization, stakeholder_type, project_id")
       .eq("project_id", projectId)
       .order("name")
       .then(({ data }) => setStakeholders((data as Stakeholder[]) || []));
+    supabase
+      .from("study_sites")
+      .select("id, name, site_code, project_id")
+      .eq("project_id", projectId)
+      .order("name")
+      .then(({ data }) => setSites((data as StudySite[]) || []));
   }, [projectId]);
 
   useEffect(() => {
     if (task) {
+      const t = task as any;
+      let assignee = "none";
+      if (t.assigned_stakeholder_id) assignee = `stakeholder:${t.assigned_stakeholder_id}`;
+      else if (t.assigned_site_id) assignee = `site:${t.assigned_site_id}`;
+      else if (t.assigned_to) assignee = `user:${t.assigned_to}`;
       setFormData({
         title: task.title,
         description: task.description || "",
         status: task.status,
         priority: task.priority || "medium",
-        assigned_stakeholder_id: (task as any).assigned_stakeholder_id || "",
+        assignee,
         planned_start_date: task.planned_start_date || "",
         planned_end_date: task.planned_end_date || "",
         actual_start_date: task.actual_start_date || "",
@@ -80,7 +93,7 @@ export const ScheduleTaskDialog = ({
         description: "",
         status: "pending",
         priority: "medium",
-        assigned_stakeholder_id: "",
+        assignee: "none",
         planned_start_date: "",
         planned_end_date: "",
         actual_start_date: "",
@@ -100,13 +113,17 @@ export const ScheduleTaskDialog = ({
 
     setLoading(true);
     try {
+      const [aType, aId] = formData.assignee.includes(":")
+        ? formData.assignee.split(":")
+        : ["none", ""];
       const taskData = {
         title: formData.title,
         description: formData.description || null,
         status: formData.status,
         priority: formData.priority,
-        assigned_stakeholder_id: formData.assigned_stakeholder_id || null,
-        assigned_to: null,
+        assigned_to: aType === "user" ? aId : null,
+        assigned_stakeholder_id: aType === "stakeholder" ? aId : null,
+        assigned_site_id: aType === "site" ? aId : null,
         planned_start_date: formData.planned_start_date || null,
         planned_end_date: formData.planned_end_date || null,
         actual_start_date: formData.actual_start_date || null,
@@ -272,26 +289,54 @@ export const ScheduleTaskDialog = ({
             </div>
 
             <div className="col-span-2">
-              <Label htmlFor="assigned_stakeholder_id">Responsável (Stakeholder do Estudo)</Label>
+              <Label htmlFor="assignee">Responsável</Label>
               <Select
-                value={formData.assigned_stakeholder_id || "none"}
-                onValueChange={(value) => setFormData({ ...formData, assigned_stakeholder_id: value === "none" ? "" : value })}
+                value={formData.assignee}
+                onValueChange={(value) => setFormData({ ...formData, assignee: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um stakeholder" />
+                  <SelectValue placeholder="Selecione um responsável" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-80">
                   <SelectItem value="none">Não atribuído</SelectItem>
-                  {stakeholders.map(s => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.name}{s.organization ? ` — ${s.organization}` : ""}
-                    </SelectItem>
-                  ))}
+
+                  {profiles.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Usuários do Sistema</div>
+                      {profiles.map(p => (
+                        <SelectItem key={`user-${p.id}`} value={`user:${p.id}`}>
+                          {p.full_name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+
+                  {sites.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Centros do Estudo</div>
+                      {sites.map(s => (
+                        <SelectItem key={`site-${s.id}`} value={`site:${s.id}`}>
+                          {s.site_code ? `[${s.site_code}] ` : ""}{s.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+
+                  {stakeholders.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Stakeholders do Estudo</div>
+                      {stakeholders.map(s => (
+                        <SelectItem key={`st-${s.id}`} value={`stakeholder:${s.id}`}>
+                          {s.name}{s.organization ? ` — ${s.organization}` : ""}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
-              {stakeholders.length === 0 && (
+              {profiles.length === 0 && sites.length === 0 && stakeholders.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Nenhum stakeholder cadastrado para este estudo. Cadastre em Communications → Stakeholders.
+                  Nenhum responsável disponível. Cadastre usuários, centros ou stakeholders para o estudo.
                 </p>
               )}
             </div>

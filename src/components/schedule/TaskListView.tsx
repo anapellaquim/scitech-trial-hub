@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban } from "lucide-react";
 
 interface TaskListViewProps {
@@ -16,6 +16,7 @@ interface TaskListViewProps {
   dependencies: TaskDependency[];
   profiles: Profile[];
   stakeholders?: Stakeholder[];
+  sites?: StudySite[];
   onTaskClick: (task: ScheduleTask) => void;
   onRefresh: () => void;
 }
@@ -34,14 +35,18 @@ const priorityConfig: Record<string, { label: string; color: string }> = {
   critical: { label: "Crítica", color: "text-red-600" },
 };
 
-export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [], onTaskClick, onRefresh }: TaskListViewProps) => {
+export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [], sites = [], onTaskClick, onRefresh }: TaskListViewProps) => {
   const [updatingTask, setUpdatingTask] = useState<string | null>(null);
 
   const getResponsibleName = (task: ScheduleTask) => {
-    const stId = (task as any).assigned_stakeholder_id as string | null | undefined;
-    if (stId) {
-      const s = stakeholders.find(x => x.id === stId);
+    const t = task as any;
+    if (t.assigned_stakeholder_id) {
+      const s = stakeholders.find(x => x.id === t.assigned_stakeholder_id);
       if (s) return s.organization ? `${s.name} (${s.organization})` : s.name;
+    }
+    if (t.assigned_site_id) {
+      const site = sites.find(x => x.id === t.assigned_site_id);
+      if (site) return `Centro: ${site.site_code ? `[${site.site_code}] ` : ""}${site.name}`;
     }
     if (task.assigned_to) {
       return profiles.find(p => p.id === task.assigned_to)?.full_name || "Desconhecido";
