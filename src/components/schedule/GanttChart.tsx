@@ -403,9 +403,16 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], o
     };
   };
 
-  const getProfileName = (userId: string | null) => {
-    if (!userId) return "Não atribuído";
-    return profiles.find(p => p.id === userId)?.full_name || "Desconhecido";
+  const getResponsibleName = (task: ScheduleTask) => {
+    const stId = (task as any).assigned_stakeholder_id as string | null | undefined;
+    if (stId) {
+      const s = stakeholders.find(x => x.id === stId);
+      if (s) return s.organization ? `${s.name} (${s.organization})` : s.name;
+    }
+    if (task.assigned_to) {
+      return profiles.find(p => p.id === task.assigned_to)?.full_name || "Desconhecido";
+    }
+    return "Não atribuído";
   };
 
   const isOverdue = (task: ScheduleTask) => {
