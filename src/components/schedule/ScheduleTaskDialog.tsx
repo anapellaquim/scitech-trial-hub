@@ -35,12 +35,14 @@ export const ScheduleTaskDialog = ({
 }: ScheduleTaskDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
+  const [sites, setSites] = useState<StudySite[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     status: "pending",
     priority: "medium",
-    assigned_stakeholder_id: "",
+    // Unified assignee value: "none" | `user:<id>` | `stakeholder:<id>` | `site:<id>`
+    assignee: "none",
     planned_start_date: "",
     planned_end_date: "",
     actual_start_date: "",
@@ -50,23 +52,34 @@ export const ScheduleTaskDialog = ({
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!projectId) { setStakeholders([]); return; }
+    if (!projectId) { setStakeholders([]); setSites([]); return; }
     supabase
       .from("communication_stakeholders")
       .select("id, name, organization, stakeholder_type, project_id")
       .eq("project_id", projectId)
       .order("name")
       .then(({ data }) => setStakeholders((data as Stakeholder[]) || []));
+    supabase
+      .from("study_sites")
+      .select("id, name, site_code, project_id")
+      .eq("project_id", projectId)
+      .order("name")
+      .then(({ data }) => setSites((data as StudySite[]) || []));
   }, [projectId]);
 
   useEffect(() => {
     if (task) {
+      const t = task as any;
+      let assignee = "none";
+      if (t.assigned_stakeholder_id) assignee = `stakeholder:${t.assigned_stakeholder_id}`;
+      else if (t.assigned_site_id) assignee = `site:${t.assigned_site_id}`;
+      else if (t.assigned_to) assignee = `user:${t.assigned_to}`;
       setFormData({
         title: task.title,
         description: task.description || "",
         status: task.status,
         priority: task.priority || "medium",
-        assigned_stakeholder_id: (task as any).assigned_stakeholder_id || "",
+        assignee,
         planned_start_date: task.planned_start_date || "",
         planned_end_date: task.planned_end_date || "",
         actual_start_date: task.actual_start_date || "",
@@ -80,7 +93,7 @@ export const ScheduleTaskDialog = ({
         description: "",
         status: "pending",
         priority: "medium",
-        assigned_stakeholder_id: "",
+        assignee: "none",
         planned_start_date: "",
         planned_end_date: "",
         actual_start_date: "",
