@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ScheduleTask, TaskDependency, Profile } from "@/types/schedule";
+import { ScheduleTask, TaskDependency, Profile, Stakeholder } from "@/types/schedule";
 import { X, Plus } from "lucide-react";
 
 interface ScheduleTaskDialogProps {
@@ -34,12 +34,13 @@ export const ScheduleTaskDialog = ({
   onSave
 }: ScheduleTaskDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     status: "pending",
     priority: "medium",
-    assigned_to: "",
+    assigned_stakeholder_id: "",
     planned_start_date: "",
     planned_end_date: "",
     actual_start_date: "",
@@ -49,13 +50,23 @@ export const ScheduleTaskDialog = ({
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!projectId) { setStakeholders([]); return; }
+    supabase
+      .from("communication_stakeholders")
+      .select("id, name, organization, stakeholder_type, project_id")
+      .eq("project_id", projectId)
+      .order("name")
+      .then(({ data }) => setStakeholders((data as Stakeholder[]) || []));
+  }, [projectId]);
+
+  useEffect(() => {
     if (task) {
       setFormData({
         title: task.title,
         description: task.description || "",
         status: task.status,
         priority: task.priority || "medium",
-        assigned_to: task.assigned_to || "",
+        assigned_stakeholder_id: (task as any).assigned_stakeholder_id || "",
         planned_start_date: task.planned_start_date || "",
         planned_end_date: task.planned_end_date || "",
         actual_start_date: task.actual_start_date || "",
@@ -69,7 +80,7 @@ export const ScheduleTaskDialog = ({
         description: "",
         status: "pending",
         priority: "medium",
-        assigned_to: "",
+        assigned_stakeholder_id: "",
         planned_start_date: "",
         planned_end_date: "",
         actual_start_date: "",
@@ -94,7 +105,8 @@ export const ScheduleTaskDialog = ({
         description: formData.description || null,
         status: formData.status,
         priority: formData.priority,
-        assigned_to: formData.assigned_to || null,
+        assigned_stakeholder_id: formData.assigned_stakeholder_id || null,
+        assigned_to: null,
         planned_start_date: formData.planned_start_date || null,
         planned_end_date: formData.planned_end_date || null,
         actual_start_date: formData.actual_start_date || null,
@@ -260,23 +272,28 @@ export const ScheduleTaskDialog = ({
             </div>
 
             <div className="col-span-2">
-              <Label htmlFor="assigned_to">Responsável</Label>
+              <Label htmlFor="assigned_stakeholder_id">Responsável (Stakeholder do Estudo)</Label>
               <Select
-                value={formData.assigned_to || "none"}
-                onValueChange={(value) => setFormData({ ...formData, assigned_to: value === "none" ? "" : value })}
+                value={formData.assigned_stakeholder_id || "none"}
+                onValueChange={(value) => setFormData({ ...formData, assigned_stakeholder_id: value === "none" ? "" : value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um responsável" />
+                  <SelectValue placeholder="Selecione um stakeholder" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Não atribuído</SelectItem>
-                  {profiles.map(profile => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.full_name}
+                  {stakeholders.map(s => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}{s.organization ? ` — ${s.organization}` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {stakeholders.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Nenhum stakeholder cadastrado para este estudo. Cadastre em Communications → Stakeholders.
+                </p>
+              )}
             </div>
           </div>
 

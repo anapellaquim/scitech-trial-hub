@@ -1,0 +1,2 @@
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS assigned_stakeholder_id uuid REFERENCES public.communication_stakeholders(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_tasks_assigned_stakeholder ON public.tasks(assigned_stakeholder_id);
