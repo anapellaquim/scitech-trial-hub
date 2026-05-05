@@ -180,7 +180,7 @@ const calculateCriticalPath = (tasks: ScheduleTask[], dependencies: TaskDependen
 
 type PeriodType = "all" | "1m" | "3m" | "6m" | "custom";
 
-export const GanttChart = ({ tasks, dependencies, profiles, onTaskClick, onOrderChange }: GanttChartProps) => {
+export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], onTaskClick, onOrderChange }: GanttChartProps) => {
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>("md");
   const cellWidth = ZOOM_CONFIG[zoomLevel].cellWidth;
   const [showCriticalPath, setShowCriticalPath] = useState(true);
