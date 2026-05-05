@@ -93,6 +93,16 @@ const ProjectSchedule = () => {
 
       if (stakeholdersError) throw stakeholdersError;
       setStakeholders(stakeholdersData || []);
+
+      // Fetch study sites for this project (used as task assignees)
+      const { data: sitesData, error: sitesError } = await supabase
+        .from("study_sites")
+        .select("id, name, site_code, project_id")
+        .eq("project_id", projectId)
+        .order("name");
+
+      if (sitesError) throw sitesError;
+      setSites(sitesData || []);
     } catch (error: any) {
       toast.error("Erro ao carregar dados: " + error.message);
     } finally {
