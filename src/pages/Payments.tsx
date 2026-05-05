@@ -1425,6 +1425,13 @@ export default function Payments() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-2 flex-wrap">
+                      <Button
+                        variant="default"
+                        onClick={() => setNewCenterPaymentOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Novo Pagamento
+                      </Button>
                       <Select value={selectedCenterTab || "select"} onValueChange={(v) => setSelectedCenterTab(v === "select" ? "" : v)}>
                         <SelectTrigger className="w-[200px]">
                           <SelectValue placeholder="Selecione um centro" />
