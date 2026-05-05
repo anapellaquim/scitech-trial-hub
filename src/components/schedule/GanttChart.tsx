@@ -609,9 +609,9 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], o
               <SelectContent>
                 <SelectItem value="all">Todos responsáveis</SelectItem>
                 <SelectItem value="unassigned">Não atribuído</SelectItem>
-                {profiles.map(profile => (
-                  <SelectItem key={profile.id} value={profile.id}>
-                    {profile.full_name}
+                {stakeholders.map(s => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.organization ? `${s.name} (${s.organization})` : s.name}
                   </SelectItem>
                 ))}
               </SelectContent>
