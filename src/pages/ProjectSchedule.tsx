@@ -72,14 +72,6 @@ const ProjectSchedule = () => {
         if (depsError) throw depsError;
         setDependencies(depsData || []);
 
-        // Fetch RACI assignments
-        const { data: raciData, error: raciError } = await supabase
-          .from("task_raci")
-          .select("*")
-          .in("task_id", taskIds);
-
-        if (raciError) throw raciError;
-        setRaciAssignments(raciData || []);
       }
 
       // Fetch profiles
