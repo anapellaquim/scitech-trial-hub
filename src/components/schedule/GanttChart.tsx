@@ -303,12 +303,12 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], o
       filtered = filtered.filter(task => task.status === statusFilter);
     }
     
-    // Apply assignee filter
+    // Apply assignee filter (uses stakeholder assignment, with legacy profile fallback)
     if (assigneeFilter !== "all") {
       if (assigneeFilter === "unassigned") {
-        filtered = filtered.filter(task => !task.assigned_to);
+        filtered = filtered.filter(task => !(task as any).assigned_stakeholder_id && !task.assigned_to);
       } else {
-        filtered = filtered.filter(task => task.assigned_to === assigneeFilter);
+        filtered = filtered.filter(task => (task as any).assigned_stakeholder_id === assigneeFilter);
       }
     }
     
