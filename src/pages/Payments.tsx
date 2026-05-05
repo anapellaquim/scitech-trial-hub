@@ -1719,8 +1719,9 @@ export default function Payments() {
                   </CardHeader>
                   <CardContent className="space-y-6">
 
-                    {/* Vendor payments list */}
-                    {vendorPayments.length === 0 ? (
+                     {/* Vendor payments list (exclude center-category manual entries) */}
+                    {(() => { const _vp = vendorPayments.filter(p => p.category !== "center"); return null; })()}
+                    {vendorPayments.filter(p => p.category !== "center").length === 0 ? (
                       <div className="text-center py-8">
                         <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                         <p className="text-muted-foreground">
