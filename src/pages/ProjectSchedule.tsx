@@ -319,6 +319,7 @@ const ProjectSchedule = () => {
                   dependencies={dependencies}
                   profiles={profiles}
                   stakeholders={stakeholders}
+                  sites={sites}
                   onTaskClick={handleTaskClick}
                   onOrderChange={handleOrderChange}
                 />
@@ -340,6 +341,7 @@ const ProjectSchedule = () => {
                   dependencies={dependencies}
                   profiles={profiles}
                   stakeholders={stakeholders}
+                  sites={sites}
                   onTaskClick={handleTaskClick}
                   onRefresh={fetchData}
                 />
