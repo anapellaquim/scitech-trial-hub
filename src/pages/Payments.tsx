@@ -110,6 +110,9 @@ interface VendorPayment {
   status: string;
   paid_at: string | null;
   drive_folder_link: string | null;
+  cost_center?: string | null;
+  value_class?: string | null;
+  protheus_code?: string | null;
   created_at: string;
 }
 
