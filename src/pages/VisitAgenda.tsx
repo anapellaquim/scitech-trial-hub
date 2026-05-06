@@ -100,19 +100,28 @@ export default function VisitAgenda() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return;
 
+      const { data: isAdminData } = await supabase.rpc('has_role', {
+        _user_id: authUser.id,
+        _role: 'admin' as any,
+      });
+
+      let tasksQuery = supabase
+        .from("tasks")
+        .select("id, title, end_date, status, priority, project:projects(title)")
+        .not("end_date", "is", null)
+        .not("status", "eq", "cancelled");
+
+      if (!isAdminData) {
+        tasksQuery = tasksQuery.eq("assigned_to", authUser.id);
+      }
+
       const [visitsRes, projectsRes, tasksRes] = await Promise.all([
         supabase
           .from("study_visits")
           .select("*, project:projects(id, title), research_center:research_centers(id, code, name)")
           .order("scheduled_date", { ascending: true }),
         supabase.from("projects").select("id, title").order("title"),
-        supabase
-          .from("tasks")
-          .select("id, title, end_date, status, priority, project:projects(title)")
-          .eq("assigned_to", authUser.id)
-          .not("end_date", "is", null)
-          .not("status", "eq", "cancelled")
-          .order("end_date", { ascending: true }),
+        tasksQuery.order("end_date", { ascending: true }),
       ]);
 
       if (visitsRes.error) throw visitsRes.error;
