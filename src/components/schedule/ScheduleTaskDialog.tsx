@@ -24,7 +24,59 @@ interface Subtask {
   completed: boolean;
   due_date: string | null;
   item_order: number;
+  assignees?: string[];
 }
+
+type AssigneeOption = { value: string; label: string; group: string };
+
+const MultiAssigneeSelect = ({
+  options,
+  value,
+  onChange,
+  placeholder = "Selecionar responsáveis",
+}: {
+  options: AssigneeOption[];
+  value: string[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const toggle = (v: string) =>
+    onChange(value.includes(v) ? value.filter(x => x !== v) : [...value, v]);
+  const groups = Array.from(new Set(options.map(o => o.group)));
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" role="combobox" className="w-full justify-between font-normal">
+          <span className="truncate">
+            {value.length === 0
+              ? placeholder
+              : `${value.length} selecionado(s)`}
+          </span>
+          <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar..." />
+          <CommandList className="max-h-72">
+            <CommandEmpty>Nenhum resultado.</CommandEmpty>
+            {groups.map(g => (
+              <CommandGroup key={g} heading={g}>
+                {options.filter(o => o.group === g).map(o => (
+                  <CommandItem key={o.value} value={o.label} onSelect={() => toggle(o.value)}>
+                    <Check className={cn("mr-2 h-4 w-4", value.includes(o.value) ? "opacity-100" : "opacity-0")} />
+                    {o.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ))}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 interface ScheduleTaskDialogProps {
   open: boolean;
