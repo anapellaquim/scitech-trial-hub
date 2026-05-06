@@ -348,6 +348,17 @@ export const ScheduleTaskDialog = ({
         }
       }
 
+      // Save multiple assignees
+      if (taskId) {
+        await supabase.from("task_assignees").delete().eq("task_id", taskId);
+        if (taskAssignees.length > 0) {
+          await supabase.from("task_assignees").insert(taskAssignees.map(v => {
+            const [t, id] = v.split(":");
+            return { task_id: taskId, assignee_type: t, assignee_id: id };
+          }));
+        }
+      }
+
       toast.success(task ? "Tarefa atualizada" : "Tarefa criada");
       onSave();
     } catch (error: any) {
