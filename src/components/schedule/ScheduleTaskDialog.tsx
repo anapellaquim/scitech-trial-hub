@@ -510,52 +510,24 @@ export const ScheduleTaskDialog = ({
             </div>
 
             <div className="col-span-2">
-              <Label htmlFor="assignee">Responsável</Label>
-              <Select
-                value={formData.assignee}
-                onValueChange={(value) => setFormData({ ...formData, assignee: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um responsável" />
-                </SelectTrigger>
-                <SelectContent className="max-h-80">
-                  <SelectItem value="none">Não atribuído</SelectItem>
-
-                  {profiles.length > 0 && (
-                    <>
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Usuários do Sistema</div>
-                      {profiles.map(p => (
-                        <SelectItem key={`user-${p.id}`} value={`user:${p.id}`}>
-                          {p.full_name}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-
-                  {sites.length > 0 && (
-                    <>
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Centros do Estudo</div>
-                      {sites.map(s => (
-                        <SelectItem key={`site-${s.id}`} value={`site:${s.id}`}>
-                          {s.site_code ? `[${s.site_code}] ` : ""}{s.name}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-
-                  {stakeholders.length > 0 && (
-                    <>
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Stakeholders do Estudo</div>
-                      {stakeholders.map(s => (
-                        <SelectItem key={`st-${s.id}`} value={`stakeholder:${s.id}`}>
-                          {s.name}{s.organization ? ` — ${s.organization}` : ""}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-              {profiles.length === 0 && sites.length === 0 && stakeholders.length === 0 && (
+              <Label>Responsáveis</Label>
+              <MultiAssigneeSelect
+                options={assigneeOptions}
+                value={taskAssignees}
+                onChange={setTaskAssignees}
+                placeholder="Selecione um ou mais responsáveis"
+              />
+              {taskAssignees.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {taskAssignees.map(v => (
+                    <Badge key={v} variant="secondary" className="gap-1">
+                      {assigneeLabel(v)}
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => setTaskAssignees(taskAssignees.filter(x => x !== v))} />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {assigneeOptions.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Nenhum responsável disponível. Cadastre usuários, centros ou stakeholders para o estudo.
                 </p>
