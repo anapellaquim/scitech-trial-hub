@@ -282,9 +282,9 @@ export const ScheduleTaskDialog = ({
 
     setLoading(true);
     try {
-      const [aType, aId] = formData.assignee.includes(":")
-        ? formData.assignee.split(":")
-        : ["none", ""];
+      // Use first assignee for legacy single-assignee columns (back-compat)
+      const first = taskAssignees[0];
+      const [aType, aId] = first ? first.split(":") : ["none", ""];
       const taskData = {
         title: formData.title,
         description: formData.description || null,
