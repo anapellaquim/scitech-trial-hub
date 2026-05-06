@@ -514,6 +514,12 @@ export const ScheduleTaskDialog = ({
           </DialogFooter>
         </form>
       </DialogContent>
+      <ManagePhasesDialog
+        open={managePhasesOpen}
+        onOpenChange={setManagePhasesOpen}
+        projectId={projectId}
+        onChanged={refreshPhases}
+      />
     </Dialog>
   );
 };
