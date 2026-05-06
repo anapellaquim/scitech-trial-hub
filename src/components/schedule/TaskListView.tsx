@@ -59,6 +59,7 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
   const [updatingTask, setUpdatingTask] = useState<string | null>(null);
   const [phaseFilter, setPhaseFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const subtasksApi = useTaskSubtasks();
   const [visibleCols, setVisibleCols] = useState<Record<ColKey, boolean>>({
     code: true, phase: true, task: true, status: true, priority: true,
     progress: true, planned: true, actual: true, responsible: true, dependencies: true,
