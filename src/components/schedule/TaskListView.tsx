@@ -1,18 +1,20 @@
 import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
-import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban, Columns3, Filter, X } from "lucide-react";
+import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban, Columns3, Filter, X, ChevronRight, ChevronDown } from "lucide-react";
 import { ProjectPhase } from "@/hooks/usePhases";
 import { buildPhaseNumbering, contrastText } from "@/lib/phaseNumbering";
+import { useTaskSubtasks } from "@/hooks/useTaskSubtasks";
 
 interface TaskListViewProps {
   tasks: ScheduleTask[];
@@ -57,6 +59,7 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
   const [updatingTask, setUpdatingTask] = useState<string | null>(null);
   const [phaseFilter, setPhaseFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const subtasksApi = useTaskSubtasks();
   const [visibleCols, setVisibleCols] = useState<Record<ColKey, boolean>>({
     code: true, phase: true, task: true, status: true, priority: true,
     progress: true, planned: true, actual: true, responsible: true, dependencies: true,
@@ -248,10 +251,13 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
               const overdue = isOverdue(task);
               const isUpdating = updatingTask === task.id;
               const info = numbering.get(task.id);
+              const isExpanded = subtasksApi.expanded.has(task.id);
+              const subs = subtasksApi.byTask[task.id] ?? [];
+              const colCount = (Object.keys(visibleCols) as ColKey[]).filter(k => visibleCols[k]).length;
 
               return (
+                <React.Fragment key={task.id}>
                 <TableRow
-                  key={task.id}
                   className={`cursor-pointer hover:bg-muted/50 ${overdue ? "bg-red-50 dark:bg-red-950/20" : ""}`}
                 >
                   {isVis("code") && (
@@ -277,13 +283,22 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
                     </TableCell>
                   )}
                   {isVis("task") && (
-                    <TableCell onClick={() => onTaskClick(task)}>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{task.title}</span>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 -ml-1 shrink-0"
+                          onClick={(e) => { e.stopPropagation(); subtasksApi.toggleExpanded(task.id); }}
+                          title={isExpanded ? "Recolher subtarefas" : "Expandir subtarefas"}
+                        >
+                          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </Button>
+                        <span className="font-medium cursor-pointer" onClick={() => onTaskClick(task)}>{task.title}</span>
                         {overdue && <AlertCircle className="h-4 w-4 text-red-500" />}
                       </div>
                       {task.description && (
-                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                        <div className="text-xs text-muted-foreground truncate max-w-[200px] ml-7">
                           {task.description}
                         </div>
                       )}
@@ -350,6 +365,39 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
                     </TableCell>
                   )}
                 </TableRow>
+                {isExpanded && (
+                  <TableRow className="bg-muted/20 hover:bg-muted/20">
+                    <TableCell colSpan={colCount} className="py-2">
+                      <div className="pl-10 pr-2">
+                        {subs.length === 0 ? (
+                          <div className="text-xs text-muted-foreground py-1">
+                            Nenhuma subtarefa. Abra a tarefa para adicionar.
+                          </div>
+                        ) : (
+                          <ul className="space-y-1">
+                            {subs.map(s => (
+                              <li key={s.id} className="flex items-center gap-2 text-sm">
+                                <Checkbox
+                                  checked={s.completed}
+                                  onCheckedChange={() => subtasksApi.toggleCompleted(s)}
+                                />
+                                <span className={s.completed ? "line-through text-muted-foreground" : ""}>
+                                  {s.title}
+                                </span>
+                                {s.due_date && (
+                                  <span className="text-xs text-muted-foreground ml-auto">
+                                    {formatDate(s.due_date)}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                </React.Fragment>
               );
             })}
           </TableBody>

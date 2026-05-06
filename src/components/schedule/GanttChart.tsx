@@ -1,5 +1,5 @@
 import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import {
   format,
   differenceInDays,
@@ -42,11 +42,14 @@ import {
   Maximize2,
   PanelLeftClose,
   PanelLeftOpen,
+  ChevronDown,
 } from "lucide-react";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { Badge as BadgeUI } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectPhase } from "@/hooks/usePhases";
 import { buildPhaseNumbering, contrastText } from "@/lib/phaseNumbering";
+import { useTaskSubtasks } from "@/hooks/useTaskSubtasks";
 
 type ZoomLevel = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
 type ScaleUnit = "quarter" | "month" | "week" | "day";
@@ -197,6 +200,7 @@ export const GanttChart = ({
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [phaseFilter, setPhaseFilter] = useState<string>("all");
   const [taskColCollapsed, setTaskColCollapsed] = useState(false);
+  const subtasksApi = useTaskSubtasks();
 
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
@@ -908,8 +912,8 @@ export const GanttChart = ({
               const phaseFg = phaseBg ? contrastText(phaseBg) : undefined;
 
               return (
+                <React.Fragment key={task.id}>
                 <div
-                  key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
                   onDragOver={(e) => handleDragOver(e, task.id)}
@@ -974,6 +978,17 @@ export const GanttChart = ({
                             <div className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 hover:bg-muted rounded">
                               <GripVertical className="h-4 w-4 text-muted-foreground" />
                             </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 -ml-1 shrink-0"
+                              onClick={(e) => { e.stopPropagation(); subtasksApi.toggleExpanded(task.id); }}
+                              title="Subtarefas"
+                            >
+                              {subtasksApi.expanded.has(task.id)
+                                ? <ChevronDown className="h-3.5 w-3.5" />
+                                : <ChevronRight className="h-3.5 w-3.5" />}
+                            </Button>
                             {critical && <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />}
                             <span
                               className={`font-medium text-sm truncate flex-1 cursor-pointer hover:underline ${critical ? "text-amber-700 dark:text-amber-400" : ""}`}
@@ -1065,6 +1080,73 @@ export const GanttChart = ({
                     )}
                   </div>
                 </div>
+                {subtasksApi.expanded.has(task.id) && (
+                  <div className="flex border-b bg-muted/10">
+                    <div
+                      className="border-r sticky left-0 z-10 bg-muted/10"
+                      style={{ width: taskColWidth, minWidth: taskColWidth }}
+                    >
+                      <div className="pl-12 pr-2 py-2">
+                        {(subtasksApi.byTask[task.id] ?? []).length === 0 ? (
+                          <div className="text-xs text-muted-foreground">
+                            Nenhuma subtarefa.
+                          </div>
+                        ) : (
+                          <ul className="space-y-1">
+                            {(subtasksApi.byTask[task.id] ?? []).map(s => (
+                              <li key={s.id} className="flex items-center gap-2 text-xs">
+                                <Checkbox
+                                  checked={s.completed}
+                                  onCheckedChange={() => subtasksApi.toggleCompleted(s)}
+                                />
+                                <span className={`truncate ${s.completed ? "line-through text-muted-foreground" : ""}`}>
+                                  {s.title}
+                                </span>
+                                {s.due_date && (
+                                  <span className="text-[10px] text-muted-foreground ml-auto whitespace-nowrap">
+                                    {format(parseLocalDate(s.due_date), "dd/MM")}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1 relative" style={{ minHeight: 32 }}>
+                      <div className="absolute inset-0 flex">
+                        {units.map((u, idx) => (
+                          <div
+                            key={idx}
+                            className={`border-r ${u.isWeekend ? "bg-muted/20" : ""}`}
+                            style={{ width: u.days * pxPerDay }}
+                          />
+                        ))}
+                      </div>
+                      {(subtasksApi.byTask[task.id] ?? []).map(s => {
+                        if (!s.due_date) return null;
+                        const dayIndex = differenceInDays(parseLocalDate(s.due_date), startDate);
+                        if (dayIndex < 0 || dayIndex > totalDays) return null;
+                        const left = dayIndex * pxPerDay + pxPerDay / 2;
+                        return (
+                          <Tooltip key={s.id}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className={`absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 ${s.completed ? "bg-green-500" : "bg-blue-500"}`}
+                                style={{ left: left - 5 }}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="text-xs font-medium">{s.title}</div>
+                              <div className="text-xs">{format(parseLocalDate(s.due_date), "dd/MM/yyyy")}</div>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                </React.Fragment>
               );
             })}
 
