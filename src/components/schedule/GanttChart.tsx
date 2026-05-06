@@ -855,9 +855,6 @@ export const GanttChart = ({
                     style={{ width: u.days * pxPerDay }}
                   >
                     <div className="font-medium truncate px-1">{u.label}</div>
-                    {unitConfig.unit === "day" && (
-                      <div className="text-muted-foreground">{format(u.startDate, "EEE", { locale: ptBR })}</div>
-                    )}
                   </div>
                 ))}
               </div>
