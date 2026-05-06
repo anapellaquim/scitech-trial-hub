@@ -382,6 +382,13 @@ const ProjectSchedule = () => {
           open={isManageTemplatesOpen}
           onOpenChange={setIsManageTemplatesOpen}
         />
+
+        <ManagePhasesDialog
+          open={isManagePhasesOpen}
+          onOpenChange={setIsManagePhasesOpen}
+          projectId={projectId!}
+          onChanged={fetchData}
+        />
       </main>
     </div>
   );
