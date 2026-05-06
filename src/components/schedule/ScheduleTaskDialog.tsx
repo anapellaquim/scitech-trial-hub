@@ -544,6 +544,52 @@ export const ScheduleTaskDialog = ({
             )}
           </div>
 
+          {/* Subtasks */}
+          {task && (
+            <div className="space-y-2">
+              <Label>Subtarefas</Label>
+              <div className="space-y-1">
+                {subtasks.map((s) => (
+                  <div key={s.id} className="flex items-center gap-2 rounded border px-2 py-1">
+                    <Checkbox checked={s.completed} onCheckedChange={() => toggleSubtask(s)} />
+                    <span className={`flex-1 text-sm ${s.completed ? "line-through text-muted-foreground" : ""}`}>
+                      {s.title}
+                    </span>
+                    {s.due_date && (
+                      <span className="text-xs text-muted-foreground">{s.due_date}</span>
+                    )}
+                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteSubtask(s.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {subtasks.length === 0 && (
+                  <p className="text-xs text-muted-foreground">Nenhuma subtarefa.</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nova subtarefa"
+                  value={newSubtask}
+                  onChange={(e) => setNewSubtask(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubtask(); } }}
+                />
+                <Input
+                  type="date"
+                  className="w-40"
+                  value={newSubtaskDueDate}
+                  onChange={(e) => setNewSubtaskDueDate(e.target.value)}
+                />
+                <Button type="button" onClick={addSubtask} disabled={!newSubtask.trim()}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {!task && (
+            <p className="text-xs text-muted-foreground">Salve a tarefa para adicionar subtarefas.</p>
+          )}
+
           <DialogFooter className="gap-2">
             {task && (
               <Button
