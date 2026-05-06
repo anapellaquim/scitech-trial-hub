@@ -195,6 +195,7 @@ export const GanttChart = ({
   const [viewOffset, setViewOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
+  const [phaseFilter, setPhaseFilter] = useState<string>("all");
   const [taskColCollapsed, setTaskColCollapsed] = useState(false);
 
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
@@ -211,8 +212,19 @@ export const GanttChart = ({
   const unitConfig = ZOOM_CONFIG[zoomLevel];
   const pxPerDay = unitConfig.unitWidth / UNIT_AVG_DAYS[unitConfig.unit];
 
+  const phaseOrderMap = useMemo(() => {
+    const m = new Map<string, number>();
+    [...phases]
+      .sort((a, b) => a.display_order - b.display_order)
+      .forEach((p, i) => m.set(p.id, i + 1));
+    return m;
+  }, [phases]);
+
   const orderedTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {
+      const pa = a.phase_id ? phaseOrderMap.get(a.phase_id) ?? 9999 : 0;
+      const pb = b.phase_id ? phaseOrderMap.get(b.phase_id) ?? 9999 : 0;
+      if (pa !== pb) return pa - pb;
       const dateA = a.planned_start_date || a.start_date || "";
       const dateB = b.planned_start_date || b.start_date || "";
       if (dateA && dateB && dateA !== dateB) return dateA.localeCompare(dateB);
@@ -220,7 +232,7 @@ export const GanttChart = ({
       if (!dateA && dateB) return 1;
       return (a.title || "").localeCompare(b.title || "");
     });
-  }, [tasks]);
+  }, [tasks, phaseOrderMap]);
 
   const taskOrder = useMemo(() => orderedTasks.map(t => t.id), [orderedTasks]);
 
@@ -387,6 +399,10 @@ export const GanttChart = ({
   const visibleTasks = useMemo(() => {
     let filtered = tasks;
     if (statusFilter !== "all") filtered = filtered.filter(task => task.status === statusFilter);
+    if (phaseFilter !== "all") {
+      if (phaseFilter === "none") filtered = filtered.filter(t => !t.phase_id);
+      else filtered = filtered.filter(t => t.phase_id === phaseFilter);
+    }
     if (assigneeFilter !== "all") {
       if (assigneeFilter === "unassigned") {
         filtered = filtered.filter(task => {
@@ -424,13 +440,14 @@ export const GanttChart = ({
       return [...ordered, ...remaining];
     }
     return filtered;
-  }, [tasks, periodType, startDate, endDate, taskOrder, statusFilter, assigneeFilter]);
+  }, [tasks, periodType, startDate, endDate, taskOrder, statusFilter, assigneeFilter, phaseFilter]);
 
-  const hasActiveFilters = statusFilter !== "all" || assigneeFilter !== "all" || periodType !== "all";
+  const hasActiveFilters = statusFilter !== "all" || assigneeFilter !== "all" || phaseFilter !== "all" || periodType !== "all";
 
   const clearAllFilters = () => {
     setStatusFilter("all");
     setAssigneeFilter("all");
+    setPhaseFilter("all");
     setPeriodType("all");
     setViewOffset(0);
   };
@@ -672,6 +689,24 @@ export const GanttChart = ({
                 </SelectContent>
               </Select>
             </div>
+
+            <Select value={phaseFilter} onValueChange={setPhaseFilter}>
+              <SelectTrigger className="w-40 h-8">
+                <SelectValue placeholder="Fase" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as fases</SelectItem>
+                <SelectItem value="none">Sem fase</SelectItem>
+                {[...phases].sort((a, b) => a.display_order - b.display_order).map(p => (
+                  <SelectItem key={p.id} value={p.id}>
+                    <span className="inline-flex items-center gap-2">
+                      {p.color && <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: p.color }} />}
+                      {p.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
               <SelectTrigger className="w-40 h-8">
