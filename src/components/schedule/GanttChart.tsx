@@ -912,8 +912,8 @@ export const GanttChart = ({
               const phaseFg = phaseBg ? contrastText(phaseBg) : undefined;
 
               return (
+                <React.Fragment key={task.id}>
                 <div
-                  key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
                   onDragOver={(e) => handleDragOver(e, task.id)}
