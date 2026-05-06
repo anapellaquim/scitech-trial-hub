@@ -2073,6 +2073,44 @@ export type Database = {
         }
         Relationships: []
       }
+      project_phases: {
+        Row: {
+          color: string | null
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_phases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_templates: {
         Row: {
           category: string | null
@@ -3987,6 +4025,7 @@ export type Database = {
           display_order: number | null
           end_date: string | null
           id: string
+          phase_id: string | null
           planned_end_date: string | null
           planned_start_date: string | null
           priority: string | null
@@ -4009,6 +4048,7 @@ export type Database = {
           display_order?: number | null
           end_date?: string | null
           id?: string
+          phase_id?: string | null
           planned_end_date?: string | null
           planned_start_date?: string | null
           priority?: string | null
@@ -4031,6 +4071,7 @@ export type Database = {
           display_order?: number | null
           end_date?: string | null
           id?: string
+          phase_id?: string | null
           planned_end_date?: string | null
           planned_start_date?: string | null
           priority?: string | null
@@ -4061,6 +4102,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_phases"
             referencedColumns: ["id"]
           },
           {
