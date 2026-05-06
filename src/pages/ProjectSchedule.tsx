@@ -258,6 +258,10 @@ const ProjectSchedule = () => {
             <Layers className="h-4 w-4 mr-2" />
             Fases
           </Button>
+          <Button onClick={handleNewTask}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Tarefa
+          </Button>
         </div>
 
         {/* Stats */}
