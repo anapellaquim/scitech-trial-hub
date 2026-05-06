@@ -1,6 +1,25 @@
 import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
-import { useMemo, useState } from "react";
-import { format, differenceInDays, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend, addMonths, subMonths } from "date-fns";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import {
+  format,
+  differenceInDays,
+  addDays,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isWeekend,
+  addMonths,
+  subMonths,
+  startOfWeek,
+  endOfWeek,
+  startOfQuarter,
+  endOfQuarter,
+  addWeeks,
+  addQuarters,
+  startOfYear,
+  endOfYear,
+  isSameDay,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,24 +29,48 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { AlertTriangle, Calendar, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, GripVertical, Filter, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  GripVertical,
+  Filter,
+  X,
+  Maximize2,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { Badge as BadgeUI } from "@/components/ui/badge";
 
 type ZoomLevel = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
+type ScaleUnit = "quarter" | "month" | "week" | "day";
 
-const ZOOM_CONFIG: Record<ZoomLevel, { cellWidth: number; label: string }> = {
-  xxxs: { cellWidth: 4, label: "Anual" },
-  xxs: { cellWidth: 8, label: "Semestral" },
-  xs: { cellWidth: 12, label: "Trimestral" },
-  sm: { cellWidth: 20, label: "Pequeno" },
-  md: { cellWidth: 30, label: "Médio" },
-  lg: { cellWidth: 40, label: "Grande" },
-  xl: { cellWidth: 50, label: "Muito grande" },
+const ZOOM_CONFIG: Record<
+  ZoomLevel,
+  { unitWidth: number; unit: ScaleUnit; label: string }
+> = {
+  xxxs: { unitWidth: 60, unit: "quarter", label: "Anual" },
+  xxs: { unitWidth: 50, unit: "month", label: "Semestral" },
+  xs: { unitWidth: 32, unit: "week", label: "Trimestral" },
+  sm: { unitWidth: 20, unit: "day", label: "Pequeno" },
+  md: { unitWidth: 30, unit: "day", label: "Médio" },
+  lg: { unitWidth: 40, unit: "day", label: "Grande" },
+  xl: { unitWidth: 56, unit: "day", label: "Muito grande" },
 };
 
 const ZOOM_LEVELS: ZoomLevel[] = ["xxxs", "xxs", "xs", "sm", "md", "lg", "xl"];
+
+// Average days-per-unit, used to convert unitWidth -> pxPerDay
+const UNIT_AVG_DAYS: Record<ScaleUnit, number> = {
+  day: 1,
+  week: 7,
+  month: 30.4375,
+  quarter: 91.3125,
+};
 
 interface GanttChartProps {
   tasks: ScheduleTask[];
@@ -56,170 +99,128 @@ const statusLabels: Record<string, string> = {
 // Calculate critical path using forward/backward pass algorithm
 const calculateCriticalPath = (tasks: ScheduleTask[], dependencies: TaskDependency[]): Set<string> => {
   if (tasks.length === 0) return new Set();
-
-  // Build task map and adjacency lists
   const taskMap = new Map<string, ScheduleTask>();
   const successors = new Map<string, string[]>();
   const predecessors = new Map<string, string[]>();
-  
   tasks.forEach(task => {
     taskMap.set(task.id, task);
     successors.set(task.id, []);
     predecessors.set(task.id, []);
   });
-
   dependencies.forEach(dep => {
     if (taskMap.has(dep.task_id) && taskMap.has(dep.depends_on_task_id)) {
       successors.get(dep.depends_on_task_id)?.push(dep.task_id);
       predecessors.get(dep.task_id)?.push(dep.depends_on_task_id);
     }
   });
-
-  // Calculate duration for each task
   const getDuration = (task: ScheduleTask): number => {
     const start = task.planned_start_date || task.start_date;
     const end = task.planned_end_date || task.end_date;
     if (!start || !end) return 1;
     return Math.max(1, differenceInDays(parseLocalDate(end), parseLocalDate(start)) + 1);
   };
-
-  // Forward pass - calculate earliest start (ES) and earliest finish (EF)
   const earlyStart = new Map<string, number>();
   const earlyFinish = new Map<string, number>();
-  
-  // Find tasks with no predecessors (start tasks)
-  const startTasks = tasks.filter(t => (predecessors.get(t.id)?.length || 0) === 0);
-  
-  // Topological sort for forward pass
   const visited = new Set<string>();
   const sortedTasks: string[] = [];
-  
   const topologicalSort = (taskId: string) => {
     if (visited.has(taskId)) return;
     visited.add(taskId);
-    
-    predecessors.get(taskId)?.forEach(predId => {
-      topologicalSort(predId);
-    });
-    
+    predecessors.get(taskId)?.forEach(predId => topologicalSort(predId));
     sortedTasks.push(taskId);
   };
-  
   tasks.forEach(t => topologicalSort(t.id));
-  
-  // Forward pass
   sortedTasks.forEach(taskId => {
     const task = taskMap.get(taskId)!;
     const preds = predecessors.get(taskId) || [];
-    
-    if (preds.length === 0) {
-      earlyStart.set(taskId, 0);
-    } else {
-      const maxPredFinish = Math.max(...preds.map(p => earlyFinish.get(p) || 0));
-      earlyStart.set(taskId, maxPredFinish);
-    }
-    
+    if (preds.length === 0) earlyStart.set(taskId, 0);
+    else earlyStart.set(taskId, Math.max(...preds.map(p => earlyFinish.get(p) || 0)));
     earlyFinish.set(taskId, (earlyStart.get(taskId) || 0) + getDuration(task));
   });
-
-  // Find project end time
   const projectEnd = Math.max(...Array.from(earlyFinish.values()));
-
-  // Backward pass - calculate latest start (LS) and latest finish (LF)
   const lateStart = new Map<string, number>();
   const lateFinish = new Map<string, number>();
-  
-  // Reverse order for backward pass
   const reversedTasks = [...sortedTasks].reverse();
-  
   reversedTasks.forEach(taskId => {
     const task = taskMap.get(taskId)!;
     const succs = successors.get(taskId) || [];
-    
-    if (succs.length === 0) {
-      lateFinish.set(taskId, projectEnd);
-    } else {
-      const minSuccStart = Math.min(...succs.map(s => lateStart.get(s) || projectEnd));
-      lateFinish.set(taskId, minSuccStart);
-    }
-    
+    if (succs.length === 0) lateFinish.set(taskId, projectEnd);
+    else lateFinish.set(taskId, Math.min(...succs.map(s => lateStart.get(s) || projectEnd)));
     lateStart.set(taskId, (lateFinish.get(taskId) || projectEnd) - getDuration(task));
   });
-
-  // Calculate slack and identify critical path
   const criticalTasks = new Set<string>();
-  
   tasks.forEach(task => {
     const slack = (lateStart.get(task.id) || 0) - (earlyStart.get(task.id) || 0);
-    // Critical path tasks have zero slack (or very close to zero due to floating point)
-    if (Math.abs(slack) < 0.001) {
-      criticalTasks.add(task.id);
-    }
+    if (Math.abs(slack) < 0.001) criticalTasks.add(task.id);
   });
-
-  // If no dependencies exist, mark all incomplete tasks as potentially critical
   if (dependencies.length === 0 && tasks.length > 0) {
     const incompleteTasks = tasks.filter(t => t.status !== "completed");
-    // Find the task(s) with the latest end date
     const latestEndDate = Math.max(
       ...incompleteTasks.map(t => {
         const end = t.planned_end_date || t.end_date;
         return end ? parseLocalDate(end).getTime() : 0;
       })
     );
-    
     incompleteTasks.forEach(task => {
       const end = task.planned_end_date || task.end_date;
-      if (end && parseLocalDate(end).getTime() === latestEndDate) {
-        criticalTasks.add(task.id);
-      }
+      if (end && parseLocalDate(end).getTime() === latestEndDate) criticalTasks.add(task.id);
     });
   }
-
   return criticalTasks;
 };
 
 type PeriodType = "all" | "1m" | "3m" | "6m" | "custom";
 
-export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], sites = [], onTaskClick, onOrderChange }: GanttChartProps) => {
+type TimelineUnit = { startDate: Date; days: number; label: string; isWeekend?: boolean };
+type TimelineGroup = { label: string; days: number };
+
+export const GanttChart = ({
+  tasks,
+  dependencies,
+  profiles,
+  stakeholders = [],
+  sites = [],
+  onTaskClick,
+  onOrderChange,
+}: GanttChartProps) => {
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>("md");
-  const cellWidth = ZOOM_CONFIG[zoomLevel].cellWidth;
   const [showCriticalPath, setShowCriticalPath] = useState(true);
   const [periodType, setPeriodType] = useState<PeriodType>("all");
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
-  const [viewOffset, setViewOffset] = useState(0); // For navigation in period modes
-  
-  // Filters
+  const [viewOffset, setViewOffset] = useState(0);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
-  
-  // Drag and drop state
+  const [taskColCollapsed, setTaskColCollapsed] = useState(false);
+
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
-  // Initialize task order based on display_order from database
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement | null>(null);
+  const hasAutoScrolled = useRef(false);
+
+  const taskColWidth = taskColCollapsed ? 44 : 240;
+  const unitConfig = ZOOM_CONFIG[zoomLevel];
+  const pxPerDay = unitConfig.unitWidth / UNIT_AVG_DAYS[unitConfig.unit];
+
   const taskOrder = useMemo(() => {
-    // Sort by display_order, fallback to planned_start_date order
     return [...tasks]
       .sort((a, b) => {
         const orderA = a.display_order ?? Number.MAX_SAFE_INTEGER;
         const orderB = b.display_order ?? Number.MAX_SAFE_INTEGER;
         if (orderA !== orderB) return orderA - orderB;
-        // Fallback to date sorting
-        const dateA = a.planned_start_date || a.start_date || '';
-        const dateB = b.planned_start_date || b.start_date || '';
+        const dateA = a.planned_start_date || a.start_date || "";
+        const dateB = b.planned_start_date || b.start_date || "";
         return dateA.localeCompare(dateB);
       })
       .map(t => t.id);
   }, [tasks]);
 
-  // Calculate critical path
-  const criticalPathTasks = useMemo(() => {
-    return calculateCriticalPath(tasks, dependencies);
-  }, [tasks, dependencies]);
+  const criticalPathTasks = useMemo(() => calculateCriticalPath(tasks, dependencies), [tasks, dependencies]);
 
-  // Calculate date range based on period selection
-  const { startDate, endDate, months } = useMemo(() => {
+  // Date range
+  const { startDate, endDate } = useMemo(() => {
     const today = new Date();
     let start: Date;
     let end: Date;
@@ -240,71 +241,143 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
       start = startOfMonth(baseDate);
       end = endOfMonth(addMonths(baseDate, 5));
     } else {
-      // "all" - show based on tasks
       if (tasks.length === 0) {
-        return {
-          startDate: startOfMonth(today),
-          endDate: endOfMonth(addDays(today, 60)),
-          totalDays: 90,
-          months: []
-        };
+        return { startDate: startOfMonth(today), endDate: endOfMonth(addDays(today, 60)) };
       }
-
-      const dates = tasks.flatMap(t => [
-        t.planned_start_date || t.start_date,
-        t.planned_end_date || t.end_date,
-        t.actual_start_date,
-        t.actual_end_date
-      ]).filter(Boolean).map(d => parseLocalDate(d!));
-
+      const dates = tasks
+        .flatMap(t => [
+          t.planned_start_date || t.start_date,
+          t.planned_end_date || t.end_date,
+          t.actual_start_date,
+          t.actual_end_date,
+        ])
+        .filter(Boolean)
+        .map(d => parseLocalDate(d!));
       if (dates.length === 0) {
-        return {
-          startDate: startOfMonth(today),
-          endDate: endOfMonth(addDays(today, 60)),
-          totalDays: 90,
-          months: []
-        };
+        return { startDate: startOfMonth(today), endDate: endOfMonth(addDays(today, 60)) };
       }
-
       const minDate = parseLocalDate(Math.min(...dates.map(d => d.getTime())));
       const maxDate = parseLocalDate(Math.max(...dates.map(d => d.getTime())));
-      
       start = startOfMonth(addDays(minDate, -7));
       end = endOfMonth(addDays(maxDate, 14));
     }
-
-    // Generate months
-    const monthsList: { name: string; days: number; startCol: number }[] = [];
-    let currentMonth = start;
-    let col = 0;
-    while (currentMonth <= end) {
-      const monthEnd = endOfMonth(currentMonth);
-      const daysInMonth = Math.min(
-        differenceInDays(monthEnd, currentMonth) + 1,
-        differenceInDays(end, currentMonth) + 1
-      );
-      monthsList.push({
-        name: format(currentMonth, "MMMM yyyy", { locale: ptBR }),
-        days: daysInMonth,
-        startCol: col
-      });
-      col += daysInMonth;
-      currentMonth = startOfMonth(addDays(monthEnd, 1));
-    }
-
-    return { startDate: start, endDate: end, totalDays: col, months: monthsList };
+    return { startDate: start, endDate: end };
   }, [tasks, periodType, customStartDate, customEndDate, viewOffset]);
 
-  // Filter and order tasks that are visible in current period
+  // Build timeline (units + groups) based on scale
+  const { units, groups, totalDays, totalWidth } = useMemo(() => {
+    const unit = unitConfig.unit;
+    const totalDays = differenceInDays(endDate, startDate) + 1;
+
+    const units: TimelineUnit[] = [];
+    const groups: TimelineGroup[] = [];
+
+    if (unit === "day") {
+      const days = eachDayOfInterval({ start: startDate, end: endDate });
+      days.forEach(d => {
+        units.push({
+          startDate: d,
+          days: 1,
+          label: format(d, "d"),
+          isWeekend: isWeekend(d),
+        });
+      });
+      // group by month
+      let cursor = startOfMonth(startDate);
+      while (cursor <= endDate) {
+        const monthEnd = endOfMonth(cursor);
+        const segStart = cursor < startDate ? startDate : cursor;
+        const segEnd = monthEnd > endDate ? endDate : monthEnd;
+        const days = differenceInDays(segEnd, segStart) + 1;
+        groups.push({
+          label: format(cursor, "MMMM yyyy", { locale: ptBR }),
+          days,
+        });
+        cursor = startOfMonth(addDays(monthEnd, 1));
+      }
+    } else if (unit === "week") {
+      let cursor = startOfWeek(startDate, { weekStartsOn: 1 });
+      while (cursor <= endDate) {
+        const weekEnd = endOfWeek(cursor, { weekStartsOn: 1 });
+        const segStart = cursor < startDate ? startDate : cursor;
+        const segEnd = weekEnd > endDate ? endDate : weekEnd;
+        const days = differenceInDays(segEnd, segStart) + 1;
+        units.push({
+          startDate: segStart,
+          days,
+          label: format(segStart, "d/MM"),
+        });
+        cursor = addDays(weekEnd, 1);
+      }
+      let mCursor = startOfMonth(startDate);
+      while (mCursor <= endDate) {
+        const mEnd = endOfMonth(mCursor);
+        const segStart = mCursor < startDate ? startDate : mCursor;
+        const segEnd = mEnd > endDate ? endDate : mEnd;
+        const days = differenceInDays(segEnd, segStart) + 1;
+        groups.push({
+          label: format(mCursor, "MMM yyyy", { locale: ptBR }),
+          days,
+        });
+        mCursor = startOfMonth(addDays(mEnd, 1));
+      }
+    } else if (unit === "month") {
+      let cursor = startOfMonth(startDate);
+      while (cursor <= endDate) {
+        const mEnd = endOfMonth(cursor);
+        const segStart = cursor < startDate ? startDate : cursor;
+        const segEnd = mEnd > endDate ? endDate : mEnd;
+        const days = differenceInDays(segEnd, segStart) + 1;
+        units.push({
+          startDate: segStart,
+          days,
+          label: format(cursor, "MMM", { locale: ptBR }),
+        });
+        cursor = startOfMonth(addDays(mEnd, 1));
+      }
+      let yCursor = startOfYear(startDate);
+      while (yCursor <= endDate) {
+        const yEnd = endOfYear(yCursor);
+        const segStart = yCursor < startDate ? startDate : yCursor;
+        const segEnd = yEnd > endDate ? endDate : yEnd;
+        const days = differenceInDays(segEnd, segStart) + 1;
+        groups.push({ label: format(yCursor, "yyyy"), days });
+        yCursor = startOfYear(addDays(yEnd, 1));
+      }
+    } else {
+      // quarter
+      let cursor = startOfQuarter(startDate);
+      while (cursor <= endDate) {
+        const qEnd = endOfQuarter(cursor);
+        const segStart = cursor < startDate ? startDate : cursor;
+        const segEnd = qEnd > endDate ? endDate : qEnd;
+        const days = differenceInDays(segEnd, segStart) + 1;
+        const q = Math.floor(cursor.getMonth() / 3) + 1;
+        units.push({
+          startDate: segStart,
+          days,
+          label: `T${q}`,
+        });
+        cursor = startOfQuarter(addDays(qEnd, 1));
+      }
+      let yCursor = startOfYear(startDate);
+      while (yCursor <= endDate) {
+        const yEnd = endOfYear(yCursor);
+        const segStart = yCursor < startDate ? startDate : yCursor;
+        const segEnd = yEnd > endDate ? endDate : yEnd;
+        const days = differenceInDays(segEnd, segStart) + 1;
+        groups.push({ label: format(yCursor, "yyyy"), days });
+        yCursor = startOfYear(addDays(yEnd, 1));
+      }
+    }
+
+    const totalWidth = totalDays * pxPerDay;
+    return { units, groups, totalDays, totalWidth };
+  }, [startDate, endDate, unitConfig.unit, pxPerDay]);
+
   const visibleTasks = useMemo(() => {
     let filtered = tasks;
-    
-    // Apply status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(task => task.status === statusFilter);
-    }
-    
-    // Apply assignee filter (matches user / stakeholder / site / unassigned)
+    if (statusFilter !== "all") filtered = filtered.filter(task => task.status === statusFilter);
     if (assigneeFilter !== "all") {
       if (assigneeFilter === "unassigned") {
         filtered = filtered.filter(task => {
@@ -322,46 +395,30 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
         });
       }
     }
-    
-    // Apply period filter
     if (periodType !== "all") {
       filtered = filtered.filter(task => {
         const taskStart = task.planned_start_date || task.start_date || task.actual_start_date;
         const taskEnd = task.planned_end_date || task.end_date || task.actual_end_date;
-        
         if (!taskStart && !taskEnd) return false;
-        
         const start = taskStart ? parseLocalDate(taskStart) : null;
         const end = taskEnd ? parseLocalDate(taskEnd) : null;
-        
-        // Check if task overlaps with current period
-        if (start && end) {
-          return start <= endDate && end >= startDate;
-        } else if (start) {
-          return start <= endDate && start >= startDate;
-        } else if (end) {
-          return end >= startDate && end <= endDate;
-        }
+        if (start && end) return start <= endDate && end >= startDate;
+        if (start) return start <= endDate && start >= startDate;
+        if (end) return end >= startDate && end <= endDate;
         return false;
       });
     }
-    
-    // Apply custom order
     if (taskOrder.length > 0) {
       const taskMap = new Map(filtered.map(t => [t.id, t]));
-      const ordered = taskOrder
-        .filter(id => taskMap.has(id))
-        .map(id => taskMap.get(id)!);
+      const ordered = taskOrder.filter(id => taskMap.has(id)).map(id => taskMap.get(id)!);
       const remaining = filtered.filter(t => !taskOrder.includes(t.id));
       return [...ordered, ...remaining];
     }
-    
     return filtered;
   }, [tasks, periodType, startDate, endDate, taskOrder, statusFilter, assigneeFilter]);
-  
-  // Check if any filter is active
+
   const hasActiveFilters = statusFilter !== "all" || assigneeFilter !== "all" || periodType !== "all";
-  
+
   const clearAllFilters = () => {
     setStatusFilter("all");
     setAssigneeFilter("all");
@@ -369,48 +426,33 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
     setViewOffset(0);
   };
 
-  // Generate days array
-  const days = useMemo(() => {
-    return eachDayOfInterval({ start: startDate, end: endDate });
-  }, [startDate, endDate]);
-
-  // Calculate today's position
   const todayPosition = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
     if (today < startDate || today > endDate) return null;
-    
     const dayIndex = differenceInDays(today, startDate);
-    return dayIndex * cellWidth + cellWidth / 2;
-  }, [startDate, endDate, cellWidth]);
+    return dayIndex * pxPerDay + pxPerDay / 2;
+  }, [startDate, endDate, pxPerDay]);
 
-  // Calculate task positions
   const getTaskPosition = (task: ScheduleTask) => {
     const taskStart = task.planned_start_date || task.start_date || task.actual_start_date;
     const taskEnd = task.planned_end_date || task.end_date || task.actual_end_date;
-    
     if (!taskStart || !taskEnd) return null;
-
     const startCol = differenceInDays(parseLocalDate(taskStart), startDate);
     const duration = differenceInDays(parseLocalDate(taskEnd), parseLocalDate(taskStart)) + 1;
-
     return {
-      left: startCol * cellWidth,
-      width: Math.max(duration * cellWidth - 4, cellWidth - 4)
+      left: startCol * pxPerDay,
+      width: Math.max(duration * pxPerDay - 2, 6),
     };
   };
 
-  // Calculate actual task position (for comparison)
   const getActualTaskPosition = (task: ScheduleTask) => {
     if (!task.actual_start_date || !task.actual_end_date) return null;
-
     const startCol = differenceInDays(parseLocalDate(task.actual_start_date), startDate);
     const duration = differenceInDays(parseLocalDate(task.actual_end_date), parseLocalDate(task.actual_start_date)) + 1;
-
     return {
-      left: startCol * cellWidth,
-      width: Math.max(duration * cellWidth - 4, cellWidth - 4)
+      left: startCol * pxPerDay,
+      width: Math.max(duration * pxPerDay - 2, 6),
     };
   };
 
@@ -431,8 +473,8 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
   };
 
   const isOverdue = (task: ScheduleTask) => {
-    const endDate = task.planned_end_date || task.end_date;
-    return endDate && parseLocalDate(endDate) < new Date() && task.status !== "completed";
+    const eDate = task.planned_end_date || task.end_date;
+    return eDate && parseLocalDate(eDate) < new Date() && task.status !== "completed";
   };
 
   const isCritical = (taskId: string) => showCriticalPath && criticalPathTasks.has(taskId);
@@ -443,7 +485,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
   };
 
   const navigatePeriod = (direction: "prev" | "next") => {
-    setViewOffset(prev => direction === "next" ? prev + 1 : prev - 1);
+    setViewOffset(prev => (direction === "next" ? prev + 1 : prev - 1));
   };
 
   const getPeriodLabel = () => {
@@ -453,75 +495,94 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
   };
 
   const zoomIn = () => {
-    const currentIndex = ZOOM_LEVELS.indexOf(zoomLevel);
-    if (currentIndex < ZOOM_LEVELS.length - 1) {
-      setZoomLevel(ZOOM_LEVELS[currentIndex + 1]);
-    }
+    const i = ZOOM_LEVELS.indexOf(zoomLevel);
+    if (i < ZOOM_LEVELS.length - 1) setZoomLevel(ZOOM_LEVELS[i + 1]);
   };
-
   const zoomOut = () => {
-    const currentIndex = ZOOM_LEVELS.indexOf(zoomLevel);
-    if (currentIndex > 0) {
-      setZoomLevel(ZOOM_LEVELS[currentIndex - 1]);
+    const i = ZOOM_LEVELS.indexOf(zoomLevel);
+    if (i > 0) setZoomLevel(ZOOM_LEVELS[i - 1]);
+  };
+
+  // Fit to screen: pick the largest zoom whose timeline fits
+  const fitToScreen = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const available = container.clientWidth - taskColWidth - 16;
+    if (available <= 0 || totalDays <= 0) return;
+    let best: ZoomLevel = "xxxs";
+    for (const level of ZOOM_LEVELS) {
+      const cfg = ZOOM_CONFIG[level];
+      const px = totalDays * (cfg.unitWidth / UNIT_AVG_DAYS[cfg.unit]);
+      if (px <= available) best = level;
     }
+    setZoomLevel(best);
+  }, [taskColWidth, totalDays]);
+
+  // Auto-scroll to today on first render with data
+  useEffect(() => {
+    if (hasAutoScrolled.current) return;
+    if (!scrollViewportRef.current || todayPosition === null) return;
+    const viewport = scrollViewportRef.current;
+    const target = Math.max(0, todayPosition - viewport.clientWidth / 2 + taskColWidth);
+    viewport.scrollTo({ left: target, behavior: "smooth" });
+    hasAutoScrolled.current = true;
+  }, [todayPosition, taskColWidth]);
+
+  // Shift + wheel = horizontal scroll
+  useEffect(() => {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.shiftKey && e.deltaY !== 0) {
+        e.preventDefault();
+        viewport.scrollLeft += e.deltaY;
+      }
+    };
+    viewport.addEventListener("wheel", onWheel, { passive: false });
+    return () => viewport.removeEventListener("wheel", onWheel);
+  }, []);
+
+  // Capture scroll viewport ref
+  const setScrollAreaRef = (el: HTMLDivElement | null) => {
+    if (!el) return;
+    const viewport = el.querySelector("[data-radix-scroll-area-viewport]") as HTMLDivElement | null;
+    scrollViewportRef.current = viewport;
   };
 
-  const resetZoom = () => {
-    setZoomLevel("md");
-  };
-
-  // Drag and drop handlers
+  // DnD
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDraggedTaskId(taskId);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", taskId);
   };
-
   const handleDragOver = (e: React.DragEvent, taskId: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    if (taskId !== draggedTaskId) {
-      setDragOverTaskId(taskId);
-    }
+    if (taskId !== draggedTaskId) setDragOverTaskId(taskId);
   };
-
-  const handleDragLeave = () => {
-    setDragOverTaskId(null);
-  };
-
+  const handleDragLeave = () => setDragOverTaskId(null);
   const handleDrop = (e: React.DragEvent, targetTaskId: string) => {
     e.preventDefault();
-    
     if (!draggedTaskId || draggedTaskId === targetTaskId) {
       setDraggedTaskId(null);
       setDragOverTaskId(null);
       return;
     }
-
-    const currentOrder = taskOrder.length > 0 
-      ? [...taskOrder] 
-      : visibleTasks.map(t => t.id);
-    
+    const currentOrder = taskOrder.length > 0 ? [...taskOrder] : visibleTasks.map(t => t.id);
     const draggedIndex = currentOrder.indexOf(draggedTaskId);
     const targetIndex = currentOrder.indexOf(targetTaskId);
-    
     if (draggedIndex === -1 || targetIndex === -1) {
       setDraggedTaskId(null);
       setDragOverTaskId(null);
       return;
     }
-
     const newOrder = [...currentOrder];
     newOrder.splice(draggedIndex, 1);
     newOrder.splice(targetIndex, 0, draggedTaskId);
-    
-    // Notify parent to persist the order
     onOrderChange?.(newOrder);
-    
     setDraggedTaskId(null);
     setDragOverTaskId(null);
   };
-
   const handleDragEnd = () => {
     setDraggedTaskId(null);
     setDragOverTaskId(null);
@@ -537,8 +598,8 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
 
   return (
     <TooltipProvider>
-      <div className="border rounded-lg overflow-hidden">
-        {/* Period Filter & Critical Path Toggle */}
+      <div ref={containerRef} className="border rounded-lg overflow-hidden">
+        {/* Toolbar */}
         <div className="p-3 border-b bg-muted/30 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2">
@@ -559,23 +620,11 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
 
             {periodType !== "all" && periodType !== "custom" && (
               <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => navigatePeriod("prev")}
-                >
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigatePeriod("prev")}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm text-muted-foreground min-w-32 text-center">
-                  {getPeriodLabel()}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => navigatePeriod("next")}
-                >
+                <span className="text-sm text-muted-foreground min-w-32 text-center">{getPeriodLabel()}</span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigatePeriod("next")}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -599,7 +648,6 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
               </div>
             )}
 
-            {/* Status Filter */}
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -616,7 +664,6 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
               </Select>
             </div>
 
-            {/* Assignee Filter */}
             <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
               <SelectTrigger className="w-40 h-8">
                 <SelectValue placeholder="Responsável" />
@@ -655,18 +702,12 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
               </SelectContent>
             </Select>
 
-            {/* Active filters indicator */}
             {hasActiveFilters && (
               <div className="flex items-center gap-2">
                 <BadgeUI variant="secondary" className="text-xs">
                   {visibleTasks.length} de {tasks.length} tarefas
                 </BadgeUI>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={clearAllFilters}
-                >
+                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={clearAllFilters}>
                   <X className="h-3 w-3 mr-1" />
                   Limpar filtros
                 </Button>
@@ -675,8 +716,23 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Zoom Controls */}
-            <div className="flex items-center gap-1 border-r pr-4">
+            {/* Collapse task column */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setTaskColCollapsed(v => !v)}
+                >
+                  {taskColCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{taskColCollapsed ? "Expandir coluna" : "Recolher coluna"}</TooltipContent>
+            </Tooltip>
+
+            {/* Zoom */}
+            <div className="flex items-center gap-1 border-l pl-4">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -684,28 +740,23 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
                     size="icon"
                     className="h-8 w-8"
                     onClick={zoomOut}
-                    disabled={zoomLevel === "xs"}
+                    disabled={zoomLevel === ZOOM_LEVELS[0]}
                   >
                     <ZoomOut className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Diminuir zoom</TooltipContent>
               </Tooltip>
-              
+
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-xs min-w-16"
-                    onClick={resetZoom}
-                  >
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-xs min-w-20" onClick={fitToScreen}>
                     {ZOOM_CONFIG[zoomLevel].label}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Clique para resetar zoom</TooltipContent>
+                <TooltipContent>Clique para ajustar à tela</TooltipContent>
               </Tooltip>
-              
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -713,78 +764,82 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
                     size="icon"
                     className="h-8 w-8"
                     onClick={zoomIn}
-                    disabled={zoomLevel === "xl"}
+                    disabled={zoomLevel === ZOOM_LEVELS[ZOOM_LEVELS.length - 1]}
                   >
                     <ZoomIn className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Aumentar zoom</TooltipContent>
               </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={fitToScreen}>
+                    <Maximize2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Ajustar à tela</TooltipContent>
+              </Tooltip>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 border-l pl-4">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
               <span className="text-sm">Caminho Crítico</span>
-              <Badge variant="secondary" className="text-xs">
-                {criticalPathTasks.size}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                id="critical-path"
-                checked={showCriticalPath}
-                onCheckedChange={setShowCriticalPath}
-              />
-              <Label htmlFor="critical-path" className="text-sm cursor-pointer">
-                Destacar
-              </Label>
+              <Badge variant="secondary" className="text-xs">{criticalPathTasks.size}</Badge>
+              <Switch id="critical-path" checked={showCriticalPath} onCheckedChange={setShowCriticalPath} />
             </div>
           </div>
         </div>
 
-        <ScrollArea className="w-full">
+        <ScrollArea ref={setScrollAreaRef} className="w-full">
           <div className="min-w-max relative">
-            {/* Header - Months */}
+            {/* Header - Groups */}
             <div className="flex border-b bg-muted/50">
-              <div className="w-64 min-w-64 p-2 font-medium border-r sticky left-0 bg-muted/50 z-10">
-                Tarefa
+              <div
+                className="p-2 font-medium border-r sticky left-0 bg-muted/50 z-10"
+                style={{ width: taskColWidth, minWidth: taskColWidth }}
+              >
+                {taskColCollapsed ? "" : "Tarefa"}
               </div>
               <div className="flex">
-                {months.map((month, idx) => (
+                {groups.map((group, idx) => (
                   <div
                     key={idx}
-                    className="text-center text-sm font-medium py-2 border-r capitalize"
-                    style={{ width: month.days * cellWidth }}
+                    className="text-center text-sm font-medium py-2 border-r capitalize truncate"
+                    style={{ width: group.days * pxPerDay }}
                   >
-                    {month.name}
+                    {group.label}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Header - Days */}
+            {/* Header - Units */}
             <div className="flex border-b bg-muted/30">
-              <div className="w-64 min-w-64 p-2 text-sm text-muted-foreground border-r sticky left-0 bg-muted/30 z-10">
-                Responsável
+              <div
+                className="p-2 text-sm text-muted-foreground border-r sticky left-0 bg-muted/30 z-10"
+                style={{ width: taskColWidth, minWidth: taskColWidth }}
+              >
+                {taskColCollapsed ? "" : "Responsável"}
               </div>
               <div className="flex">
-                {days.map((day, idx) => (
+                {units.map((u, idx) => (
                   <div
                     key={idx}
-                    className={`text-center text-xs py-1 border-r ${
-                      isWeekend(day) ? "bg-muted/50" : ""
-                    }`}
-                    style={{ width: cellWidth }}
+                    className={`text-center text-xs py-1 border-r ${u.isWeekend ? "bg-muted/50" : ""}`}
+                    style={{ width: u.days * pxPerDay }}
                   >
-                    <div className="font-medium">{format(day, "d")}</div>
-                    <div className="text-muted-foreground">{format(day, "EEE", { locale: ptBR })}</div>
+                    <div className="font-medium truncate px-1">{u.label}</div>
+                    {unitConfig.unit === "day" && (
+                      <div className="text-muted-foreground">{format(u.startDate, "EEE", { locale: ptBR })}</div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Tasks */}
-            {visibleTasks.map((task, index) => {
+            {visibleTasks.map((task) => {
               const position = getTaskPosition(task);
               const actualPosition = getActualTaskPosition(task);
               const overdue = isOverdue(task);
@@ -793,7 +848,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
               const isDragOver = dragOverTaskId === task.id;
 
               return (
-                <div 
+                <div
                   key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
@@ -802,68 +857,74 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
                   onDrop={(e) => handleDrop(e, task.id)}
                   onDragEnd={handleDragEnd}
                   className={`flex border-b transition-all ${
-                    critical 
-                      ? "bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-950/50" 
-                      : "hover:bg-muted/20"
-                  } ${isDragging ? "opacity-50" : ""} ${
-                    isDragOver ? "border-t-2 border-t-primary" : ""
-                  }`}
+                    critical ? "bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-950/50" : "hover:bg-muted/20"
+                  } ${isDragging ? "opacity-50" : ""} ${isDragOver ? "border-t-2 border-t-primary" : ""}`}
                 >
-                  <div 
-                    className={`w-64 min-w-64 p-2 border-r sticky left-0 z-10 ${
-                      critical 
-                        ? "bg-amber-50 dark:bg-amber-950/30" 
-                        : "bg-background"
-                    }`}
+                  <div
+                    className={`p-2 border-r sticky left-0 z-10 ${critical ? "bg-amber-50 dark:bg-amber-950/30" : "bg-background"}`}
+                    style={{ width: taskColWidth, minWidth: taskColWidth }}
                   >
-                    <div className="flex items-center gap-2">
-                      <div className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 hover:bg-muted rounded">
-                        <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      {critical && (
-                        <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />
-                      )}
-                      <span 
-                        className={`font-medium text-sm truncate flex-1 cursor-pointer hover:underline ${critical ? "text-amber-700 dark:text-amber-400" : ""}`}
-                        onClick={() => onTaskClick(task)}
-                      >
-                        {task.title}
-                      </span>
-                      {overdue && (
-                        <Badge variant="destructive" className="text-xs">Atrasado</Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate ml-6">
-                      {getResponsibleName(task)}
-                    </div>
+                    {taskColCollapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className="flex items-center justify-center cursor-pointer h-full"
+                            onClick={() => onTaskClick(task)}
+                          >
+                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <div className="font-medium">{task.title}</div>
+                          <div className="text-xs text-muted-foreground">{getResponsibleName(task)}</div>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <div className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 hover:bg-muted rounded">
+                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          {critical && <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />}
+                          <span
+                            className={`font-medium text-sm truncate flex-1 cursor-pointer hover:underline ${critical ? "text-amber-700 dark:text-amber-400" : ""}`}
+                            onClick={() => onTaskClick(task)}
+                          >
+                            {task.title}
+                          </span>
+                          {overdue && <Badge variant="destructive" className="text-xs">Atrasado</Badge>}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate ml-6">
+                          {getResponsibleName(task)}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="flex-1 relative" style={{ height: 56 }}>
-                    {/* Day grid */}
+                    {/* Unit grid */}
                     <div className="absolute inset-0 flex">
-                      {days.map((day, idx) => (
+                      {units.map((u, idx) => (
                         <div
                           key={idx}
-                          className={`border-r ${isWeekend(day) ? "bg-muted/30" : ""}`}
-                          style={{ width: cellWidth }}
+                          className={`border-r ${u.isWeekend ? "bg-muted/30" : ""}`}
+                          style={{ width: u.days * pxPerDay }}
                         />
                       ))}
                     </div>
 
-                    {/* Planned bar */}
                     {position && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div
                             className={`absolute top-2 h-5 rounded cursor-pointer transition-all hover:opacity-80 ${
-                              critical 
-                                ? "bg-amber-500 ring-2 ring-amber-600 shadow-lg shadow-amber-500/30" 
+                              critical
+                                ? "bg-amber-500 ring-2 ring-amber-600 shadow-lg shadow-amber-500/30"
                                 : statusColors[task.status] || "bg-muted"
                             } ${overdue && !critical ? "ring-2 ring-red-500" : ""}`}
-                            style={{ left: position.left + 2, width: position.width }}
+                            style={{ left: position.left + 1, width: position.width }}
                             onClick={() => onTaskClick(task)}
                           >
-                            {/* Progress bar inside */}
-                            <div 
+                            <div
                               className="h-full bg-black/20 rounded-l"
                               style={{ width: `${task.progress_percentage}%` }}
                             />
@@ -884,7 +945,9 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
                             <div className="text-xs">Progresso: {task.progress_percentage}%</div>
                             {task.planned_start_date && (
                               <div className="text-xs">
-                                Planejado: {format(parseLocalDate(task.planned_start_date), "dd/MM")} - {task.planned_end_date ? format(parseLocalDate(task.planned_end_date), "dd/MM") : "?"}
+                                Planejado: {format(parseLocalDate(task.planned_start_date), "dd/MM/yyyy")}
+                                {" - "}
+                                {task.planned_end_date ? format(parseLocalDate(task.planned_end_date), "dd/MM/yyyy") : "?"}
                               </div>
                             )}
                           </div>
@@ -892,21 +955,20 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
                       </Tooltip>
                     )}
 
-                    {/* Actual bar (if different from planned) */}
-                    {actualPosition && position && (
-                      actualPosition.left !== position.left || actualPosition.width !== position.width
-                    ) && (
+                    {actualPosition && position && (actualPosition.left !== position.left || actualPosition.width !== position.width) && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div
                             className="absolute top-8 h-3 rounded bg-orange-400/70 cursor-pointer border border-orange-500"
-                            style={{ left: actualPosition.left + 2, width: actualPosition.width }}
+                            style={{ left: actualPosition.left + 1, width: actualPosition.width }}
                             onClick={() => onTaskClick(task)}
                           />
                         </TooltipTrigger>
                         <TooltipContent>
                           <div className="text-xs">
-                            Real: {format(parseLocalDate(task.actual_start_date!), "dd/MM")} - {format(parseLocalDate(task.actual_end_date!), "dd/MM")}
+                            Real: {format(parseLocalDate(task.actual_start_date!), "dd/MM/yyyy")}
+                            {" - "}
+                            {format(parseLocalDate(task.actual_end_date!), "dd/MM/yyyy")}
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -922,9 +984,9 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
                 <TooltipTrigger asChild>
                   <div
                     className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-auto cursor-pointer"
-                    style={{ left: 256 + todayPosition }}
+                    style={{ left: taskColWidth + todayPosition }}
                   >
-                    <div className="absolute -top-0 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-b font-medium whitespace-nowrap">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-b font-medium whitespace-nowrap">
                       Hoje
                     </div>
                   </div>
@@ -935,7 +997,7 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
               </Tooltip>
             )}
           </div>
-          <ScrollBar orientation="horizontal" />
+          <ScrollBar orientation="horizontal" className="!opacity-100" />
         </ScrollArea>
 
         {/* Legend */}
@@ -967,6 +1029,9 @@ export const GanttChart = ({ tasks, dependencies, profiles, stakeholders = [], s
           <div className="flex items-center gap-2">
             <div className="w-0.5 h-4 bg-red-500" />
             <span>Hoje</span>
+          </div>
+          <div className="ml-auto text-muted-foreground">
+            Dica: Shift + roda do mouse para rolar horizontalmente
           </div>
         </div>
       </div>
