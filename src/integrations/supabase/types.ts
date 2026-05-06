@@ -3789,6 +3789,38 @@ export type Database = {
         }
         Relationships: []
       }
+      task_assignees: {
+        Row: {
+          assignee_id: string
+          assignee_type: string
+          created_at: string
+          id: string
+          task_id: string
+        }
+        Insert: {
+          assignee_id: string
+          assignee_type: string
+          created_at?: string
+          id?: string
+          task_id: string
+        }
+        Update: {
+          assignee_id?: string
+          assignee_type?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignees_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_comments: {
         Row: {
           content: string
@@ -3928,6 +3960,38 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_subtask_assignees: {
+        Row: {
+          assignee_id: string
+          assignee_type: string
+          created_at: string
+          id: string
+          subtask_id: string
+        }
+        Insert: {
+          assignee_id: string
+          assignee_type: string
+          created_at?: string
+          id?: string
+          subtask_id: string
+        }
+        Update: {
+          assignee_id?: string
+          assignee_type?: string
+          created_at?: string
+          id?: string
+          subtask_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_subtask_assignees_subtask_id_fkey"
+            columns: ["subtask_id"]
+            isOneToOne: false
+            referencedRelation: "task_subtasks"
             referencedColumns: ["id"]
           },
         ]
