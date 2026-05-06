@@ -97,6 +97,9 @@ export default function VisitAgenda() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+
       const [visitsRes, projectsRes, tasksRes] = await Promise.all([
         supabase
           .from("study_visits")
@@ -106,6 +109,7 @@ export default function VisitAgenda() {
         supabase
           .from("tasks")
           .select("id, title, end_date, status, priority, project:projects(title)")
+          .eq("assigned_to", authUser.id)
           .not("end_date", "is", null)
           .not("status", "eq", "cancelled")
           .order("end_date", { ascending: true }),

@@ -150,6 +150,9 @@ export default function Tasks() {
   const fetchTasks = async () => {
     setLoading(true);
     try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+
       const { data, error } = await supabase
         .from("tasks")
         .select(`
@@ -157,6 +160,8 @@ export default function Tasks() {
           assignee:profiles!tasks_assigned_to_fkey(full_name),
           project:projects(title)
         `)
+        .neq("status", "completed")
+        .or(`project_id.not.is.null,assigned_to.eq.${authUser.id}`)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
