@@ -137,7 +137,21 @@ export const ScheduleTaskDialog = ({
       .select("id, title, completed, due_date, item_order")
       .eq("task_id", taskId)
       .order("item_order");
-    setSubtasks((data as Subtask[]) || []);
+    const list = (data as Subtask[]) || [];
+    if (list.length > 0) {
+      const { data: links } = await supabase
+        .from("task_subtask_assignees")
+        .select("subtask_id, assignee_type, assignee_id")
+        .in("subtask_id", list.map(s => s.id));
+      const map = new Map<string, string[]>();
+      (links || []).forEach((l: any) => {
+        const arr = map.get(l.subtask_id) || [];
+        arr.push(`${l.assignee_type}:${l.assignee_id}`);
+        map.set(l.subtask_id, arr);
+      });
+      list.forEach(s => { s.assignees = map.get(s.id) || []; });
+    }
+    setSubtasks(list);
   };
 
   useEffect(() => {
@@ -145,18 +159,37 @@ export const ScheduleTaskDialog = ({
     else setSubtasks([]);
   }, [task?.id, open]);
 
+  const saveSubtaskAssignees = async (subtaskId: string, values: string[]) => {
+    await supabase.from("task_subtask_assignees").delete().eq("subtask_id", subtaskId);
+    if (values.length > 0) {
+      await supabase.from("task_subtask_assignees").insert(values.map(v => {
+        const [t, id] = v.split(":");
+        return { subtask_id: subtaskId, assignee_type: t, assignee_id: id };
+      }));
+    }
+  };
+
   const addSubtask = async () => {
     if (!task?.id || !newSubtask.trim()) return;
-    const { error } = await supabase.from("task_subtasks").insert({
+    const { data, error } = await supabase.from("task_subtasks").insert({
       task_id: task.id,
       title: newSubtask.trim(),
       due_date: newSubtaskDueDate || null,
       item_order: subtasks.length,
-    });
+    }).select().single();
     if (error) { toast.error("Erro: " + error.message); return; }
+    if (data && newSubtaskAssignees.length > 0) {
+      await saveSubtaskAssignees(data.id, newSubtaskAssignees);
+    }
     setNewSubtask("");
     setNewSubtaskDueDate("");
+    setNewSubtaskAssignees([]);
     fetchSubtasks(task.id);
+  };
+
+  const updateSubtaskAssignees = async (s: Subtask, values: string[]) => {
+    await saveSubtaskAssignees(s.id, values);
+    if (task?.id) fetchSubtasks(task.id);
   };
 
   const toggleSubtask = async (s: Subtask) => {
