@@ -18,6 +18,7 @@ import ManageProjectTemplatesDialog from "@/components/ManageProjectTemplatesDia
 import { ManagePhasesDialog } from "@/components/schedule/ManagePhasesDialog";
 import { ScheduleTask, TaskDependency, Profile, Project, Stakeholder, StudySite } from "@/types/schedule";
 import { useScheduleExport } from "@/hooks/useScheduleExport";
+import { usePhases } from "@/hooks/usePhases";
 const ProjectSchedule = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const ProjectSchedule = () => {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isManageTemplatesOpen, setIsManageTemplatesOpen] = useState(false);
   const [isManagePhasesOpen, setIsManagePhasesOpen] = useState(false);
+  const { phases, refresh: refreshPhases } = usePhases(projectId);
 
   useEffect(() => {
     if (projectId) {
@@ -326,6 +328,7 @@ const ProjectSchedule = () => {
                   profiles={profiles}
                   stakeholders={stakeholders}
                   sites={sites}
+                  phases={phases}
                   onTaskClick={handleTaskClick}
                   onOrderChange={handleOrderChange}
                 />
@@ -348,6 +351,7 @@ const ProjectSchedule = () => {
                   profiles={profiles}
                   stakeholders={stakeholders}
                   sites={sites}
+                  phases={phases}
                   onTaskClick={handleTaskClick}
                   onRefresh={fetchData}
                 />
