@@ -224,18 +224,28 @@ export const ScheduleTaskDialog = ({
   }, [projectId]);
 
   useEffect(() => {
+    const loadTaskAssignees = async (taskId: string) => {
+      const { data } = await supabase
+        .from("task_assignees")
+        .select("assignee_type, assignee_id")
+        .eq("task_id", taskId);
+      const list = (data || []).map((r: any) => `${r.assignee_type}:${r.assignee_id}`);
+      // Fallback to legacy single-assignee fields if no rows
+      if (list.length === 0 && task) {
+        const t = task as any;
+        if (t.assigned_stakeholder_id) list.push(`stakeholder:${t.assigned_stakeholder_id}`);
+        else if (t.assigned_site_id) list.push(`site:${t.assigned_site_id}`);
+        else if (t.assigned_to) list.push(`user:${t.assigned_to}`);
+      }
+      setTaskAssignees(list);
+    };
+
     if (task) {
-      const t = task as any;
-      let assignee = "none";
-      if (t.assigned_stakeholder_id) assignee = `stakeholder:${t.assigned_stakeholder_id}`;
-      else if (t.assigned_site_id) assignee = `site:${t.assigned_site_id}`;
-      else if (t.assigned_to) assignee = `user:${t.assigned_to}`;
       setFormData({
         title: task.title,
         description: task.description || "",
         status: task.status,
         priority: task.priority || "medium",
-        assignee,
         phase_id: (task as any).phase_id || "none",
         planned_start_date: task.planned_start_date || "",
         planned_end_date: task.planned_end_date || "",
@@ -244,13 +254,13 @@ export const ScheduleTaskDialog = ({
         progress_percentage: task.progress_percentage || 0,
       });
       setSelectedDependencies(dependencies.map(d => d.depends_on_task_id));
+      loadTaskAssignees(task.id);
     } else {
       setFormData({
         title: "",
         description: "",
         status: "pending",
         priority: "medium",
-        assignee: "none",
         phase_id: "none",
         planned_start_date: "",
         planned_end_date: "",
@@ -259,6 +269,7 @@ export const ScheduleTaskDialog = ({
         progress_percentage: 0,
       });
       setSelectedDependencies([]);
+      setTaskAssignees([]);
     }
   }, [task, dependencies]);
 
