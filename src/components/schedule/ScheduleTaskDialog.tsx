@@ -10,9 +10,18 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
-import { X, Plus, Settings } from "lucide-react";
+import { X, Plus, Settings, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { usePhases } from "@/hooks/usePhases";
 import { ManagePhasesDialog } from "./ManagePhasesDialog";
+
+interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+  due_date: string | null;
+  item_order: number;
+}
 
 interface ScheduleTaskDialogProps {
   open: boolean;
@@ -55,6 +64,52 @@ export const ScheduleTaskDialog = ({
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const { phases, refresh: refreshPhases } = usePhases(projectId);
   const [managePhasesOpen, setManagePhasesOpen] = useState(false);
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [newSubtask, setNewSubtask] = useState("");
+  const [newSubtaskDueDate, setNewSubtaskDueDate] = useState("");
+
+  const fetchSubtasks = async (taskId: string) => {
+    const { data } = await supabase
+      .from("task_subtasks")
+      .select("id, title, completed, due_date, item_order")
+      .eq("task_id", taskId)
+      .order("item_order");
+    setSubtasks((data as Subtask[]) || []);
+  };
+
+  useEffect(() => {
+    if (task?.id && open) fetchSubtasks(task.id);
+    else setSubtasks([]);
+  }, [task?.id, open]);
+
+  const addSubtask = async () => {
+    if (!task?.id || !newSubtask.trim()) return;
+    const { error } = await supabase.from("task_subtasks").insert({
+      task_id: task.id,
+      title: newSubtask.trim(),
+      due_date: newSubtaskDueDate || null,
+      item_order: subtasks.length,
+    });
+    if (error) { toast.error("Erro: " + error.message); return; }
+    setNewSubtask("");
+    setNewSubtaskDueDate("");
+    fetchSubtasks(task.id);
+  };
+
+  const toggleSubtask = async (s: Subtask) => {
+    const { error } = await supabase
+      .from("task_subtasks")
+      .update({ completed: !s.completed, completed_at: !s.completed ? new Date().toISOString() : null })
+      .eq("id", s.id);
+    if (error) { toast.error("Erro: " + error.message); return; }
+    if (task?.id) fetchSubtasks(task.id);
+  };
+
+  const deleteSubtask = async (id: string) => {
+    const { error } = await supabase.from("task_subtasks").delete().eq("id", id);
+    if (error) { toast.error("Erro: " + error.message); return; }
+    if (task?.id) fetchSubtasks(task.id);
+  };
 
   useEffect(() => {
     if (!projectId) { setStakeholders([]); setSites([]); return; }
@@ -488,6 +543,52 @@ export const ScheduleTaskDialog = ({
               </Select>
             )}
           </div>
+
+          {/* Subtasks */}
+          {task && (
+            <div className="space-y-2">
+              <Label>Subtarefas</Label>
+              <div className="space-y-1">
+                {subtasks.map((s) => (
+                  <div key={s.id} className="flex items-center gap-2 rounded border px-2 py-1">
+                    <Checkbox checked={s.completed} onCheckedChange={() => toggleSubtask(s)} />
+                    <span className={`flex-1 text-sm ${s.completed ? "line-through text-muted-foreground" : ""}`}>
+                      {s.title}
+                    </span>
+                    {s.due_date && (
+                      <span className="text-xs text-muted-foreground">{s.due_date}</span>
+                    )}
+                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteSubtask(s.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {subtasks.length === 0 && (
+                  <p className="text-xs text-muted-foreground">Nenhuma subtarefa.</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nova subtarefa"
+                  value={newSubtask}
+                  onChange={(e) => setNewSubtask(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubtask(); } }}
+                />
+                <Input
+                  type="date"
+                  className="w-40"
+                  value={newSubtaskDueDate}
+                  onChange={(e) => setNewSubtaskDueDate(e.target.value)}
+                />
+                <Button type="button" onClick={addSubtask} disabled={!newSubtask.trim()}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+          {!task && (
+            <p className="text-xs text-muted-foreground">Salve a tarefa para adicionar subtarefas.</p>
+          )}
 
           <DialogFooter className="gap-2">
             {task && (
