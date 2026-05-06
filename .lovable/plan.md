@@ -1,48 +1,43 @@
-## Melhorar a visualização do Gantt
+## Plano: Vincular Fase às tarefas (individual + via modelo)
 
-Hoje o Gantt sempre renderiza **todos os dias** entre o início e o fim do projeto, com cabeçalho fixo de "mês + dia". Em projetos longos isso gera milhares de células estreitas (4–8 px no zoom Anual/Semestral) — os dias somem, os meses ficam ilegíveis e a barra horizontal não cabe na tela.
+Complementa o plano anterior (criação de `project_phases`, `tasks.phase_id`, numeração hierárquica e ordenação por `planned_start_date`).
 
-### O que vamos mudar (`src/components/schedule/GanttChart.tsx`)
+### 1. Editor individual de Fase na tarefa
+- Em `ScheduleTaskDialog.tsx`, adicionar campo **Fase** (Select) logo abaixo do título.
+  - Opções: fases do projeto atual (consulta a `project_phases` por `project_id`, ordenadas por `display_order`), com indicador de cor.
+  - Opção “Sem fase” (limpa `phase_id`).
+  - Botão “+ Gerenciar fases” abre o `ManagePhasesDialog` para criar/editar/reordenar fases sem sair do diálogo.
+- Salvar `phase_id` no `tasks` ao criar/atualizar.
 
-1. **Escala de tempo adaptativa por zoom**
-   Em vez de sempre mostrar dias, a unidade do cabeçalho/grade muda conforme o zoom:
-   - `xxxs` (Anual) → unidade = **trimestre**, agrupador = **ano**
-   - `xxs` (Semestral) → unidade = **mês**, agrupador = **ano**
-   - `xs` (Trimestral) → unidade = **semana**, agrupador = **mês**
-   - `sm` / `md` / `lg` / `xl` → unidade = **dia**, agrupador = **mês** (comportamento atual)
+### 2. Gerenciar fases do projeto
+- Novo `ManagePhasesDialog.tsx` (acessível pelo botão acima e por um botão “Fases” no header de `ProjectSchedule.tsx`):
+  - Listar, criar, renomear, escolher cor, reordenar (drag) e remover fases.
+  - Ao remover uma fase usada, perguntar: mover tarefas para “Sem fase” ou cancelar.
 
-   Isso elimina a renderização de milhares de células finas e mantém o cabeçalho sempre legível, qualquer que seja a duração do projeto.
+### 3. Modelos de projeto definem fases
+- Migração adicional:
+  - `project_template_phases` (id, template_id, name, display_order, color)
+  - `project_template_tasks.phase_id` (FK opcional para `project_template_phases`)
+- `ManageProjectTemplatesDialog.tsx`:
+  - Seção “Fases do modelo” (CRUD análogo ao do projeto).
+  - No editor de tarefa do modelo, dropdown de Fase com as fases do próprio modelo.
+- `ApplyProjectTemplateDialog.tsx` / lógica de aplicação:
+  - Ao aplicar um modelo: criar as fases do modelo em `project_phases` (preservando ordem/cor) e mapear `template_phase_id → project_phase_id` para preencher `tasks.phase_id` ao inserir as tarefas.
+  - Se o projeto já tiver fases com mesmo nome, reutilizar (match case-insensitive) em vez de duplicar.
 
-2. **Botão "Ajustar à tela" (Fit)**
-   Novo botão ao lado do zoom que calcula automaticamente o melhor `ZoomLevel` para que todo o período (ou a janela filtrada) caiba na largura disponível do container, sem rolagem horizontal.
-
-3. **Coluna esquerda "Tarefa" colapsável + redimensionável**
-   - Botão para colapsar a coluna fixa de 256 px para ~40 px (só ícone), liberando espaço para a timeline.
-   - Largura padrão reduzida de `w-64` para `w-56` e respeita um state `taskColWidth`.
-
-4. **Indicador de "hoje" sempre visível + auto-scroll**
-   - Ao montar (e ao trocar período), rolar a timeline até a posição de hoje (ou até o início da primeira tarefa visível, se hoje estiver fora).
-   - Linha vertical de "hoje" reforçada em todas as escalas.
-
-5. **Marcadores de tarefa com largura mínima legível**
-   - Garantir `width >= 6px` para a barra mesmo em escalas comprimidas, para tarefas curtas não desaparecerem em zoom Anual/Semestral.
-   - Tooltip continua mostrando datas exatas.
-
-6. **Rolagem horizontal melhorada**
-   - Manter `ScrollArea` mas exibir a `ScrollBar` horizontal sempre visível (não só ao hover) e adicionar atalho **Shift + roda do mouse** para rolar a timeline.
-
-7. **Pequenos ajustes de UX**
-   - "Resetar zoom" passa a chamar "Ajustar à tela" (em vez de fixar em `md`).
-   - Preset de período "Todo o projeto" passa a usar as datas de `project.start_date`/`end_date` quando existirem (fallback atual continua válido).
+### 4. UI Gantt/Lista
+- Coluna **Fase** (já planejada) passa a refletir o vínculo. Tarefas sem fase aparecem agrupadas como “Sem fase” na numeração `0.x`.
 
 ### Detalhes técnicos
+- Tipos: adicionar `phase_id?: string | null` em `ScheduleTask` e `Phase { id, project_id, name, display_order, color }` em `src/types/schedule.ts`.
+- Hook `usePhases(projectId)` para buscar/cachear fases do projeto (reutilizado pelo dialog de tarefa, dialog de gerenciamento e Gantt/Lista).
+- RLS de `project_phases` e `project_template_phases`: mesmas regras já aplicadas a `tasks` / `project_templates`.
 
-- Refatorar o `useMemo` que gera `months`/`days` para retornar uma estrutura única `timeline = { groups: [...], units: [...] }` parametrizada pela escala atual; o restante do componente usa `units` para a grade e `groups` para o cabeçalho superior.
-- `getTaskPosition` passa a calcular `left/width` em função de `unitWidth` e `unitDurationDays` (1, 7, 30 ou ~91), em vez de assumir 1 dia por célula.
-- Novo hook interno `useFitZoom(containerRef, totalUnits)` que escolhe o maior `ZoomLevel` cujo `unitWidth * totalUnits` ≤ largura do container.
-- Estado adicional: `taskColCollapsed: boolean`, `taskColWidth: number`.
-
-### Fora do escopo
-
-- Não altera lógica de dados, filtros de responsável, caminho crítico ou exportação.
-- Não muda o schema do banco.
+### Arquivos impactados (além do plano anterior)
+- `src/components/schedule/ScheduleTaskDialog.tsx` (novo campo Fase)
+- `src/components/schedule/ManagePhasesDialog.tsx` (novo)
+- `src/components/ManageProjectTemplatesDialog.tsx` (CRUD de fases + select nas tarefas do modelo)
+- `src/components/ApplyProjectTemplateDialog.tsx` (mapear/criar fases ao aplicar)
+- `src/pages/ProjectSchedule.tsx` (botão “Fases” no header)
+- `src/hooks/usePhases.ts` (novo)
+- Migração: `project_template_phases` + `project_template_tasks.phase_id`
