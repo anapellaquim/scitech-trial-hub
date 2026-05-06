@@ -64,6 +64,52 @@ export const ScheduleTaskDialog = ({
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const { phases, refresh: refreshPhases } = usePhases(projectId);
   const [managePhasesOpen, setManagePhasesOpen] = useState(false);
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [newSubtask, setNewSubtask] = useState("");
+  const [newSubtaskDueDate, setNewSubtaskDueDate] = useState("");
+
+  const fetchSubtasks = async (taskId: string) => {
+    const { data } = await supabase
+      .from("task_subtasks")
+      .select("id, title, completed, due_date, item_order")
+      .eq("task_id", taskId)
+      .order("item_order");
+    setSubtasks((data as Subtask[]) || []);
+  };
+
+  useEffect(() => {
+    if (task?.id && open) fetchSubtasks(task.id);
+    else setSubtasks([]);
+  }, [task?.id, open]);
+
+  const addSubtask = async () => {
+    if (!task?.id || !newSubtask.trim()) return;
+    const { error } = await supabase.from("task_subtasks").insert({
+      task_id: task.id,
+      title: newSubtask.trim(),
+      due_date: newSubtaskDueDate || null,
+      item_order: subtasks.length,
+    });
+    if (error) { toast.error("Erro: " + error.message); return; }
+    setNewSubtask("");
+    setNewSubtaskDueDate("");
+    fetchSubtasks(task.id);
+  };
+
+  const toggleSubtask = async (s: Subtask) => {
+    const { error } = await supabase
+      .from("task_subtasks")
+      .update({ completed: !s.completed, completed_at: !s.completed ? new Date().toISOString() : null })
+      .eq("id", s.id);
+    if (error) { toast.error("Erro: " + error.message); return; }
+    if (task?.id) fetchSubtasks(task.id);
+  };
+
+  const deleteSubtask = async (id: string) => {
+    const { error } = await supabase.from("task_subtasks").delete().eq("id", id);
+    if (error) { toast.error("Erro: " + error.message); return; }
+    if (task?.id) fetchSubtasks(task.id);
+  };
 
   useEffect(() => {
     if (!projectId) { setStakeholders([]); setSites([]); return; }
