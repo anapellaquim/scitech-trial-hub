@@ -871,6 +871,9 @@ export const GanttChart = ({
               const critical = isCritical(task.id);
               const isDragging = draggedTaskId === task.id;
               const isDragOver = dragOverTaskId === task.id;
+              const info = numbering.get(task.id);
+              const phaseBg = info?.phase?.color ?? null;
+              const phaseFg = phaseBg ? contrastText(phaseBg) : undefined;
 
               return (
                 <div
@@ -886,41 +889,71 @@ export const GanttChart = ({
                   } ${isDragging ? "opacity-50" : ""} ${isDragOver ? "border-t-2 border-t-primary" : ""}`}
                 >
                   <div
-                    className={`p-2 border-r sticky left-0 z-10 ${critical ? "bg-amber-50 dark:bg-amber-950/30" : "bg-background"}`}
+                    className={`border-r sticky left-0 z-10 flex ${critical ? "bg-amber-50 dark:bg-amber-950/30" : "bg-background"}`}
                     style={{ width: taskColWidth, minWidth: taskColWidth }}
                   >
                     {taskColCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div
-                            className="flex items-center justify-center cursor-pointer h-full"
+                            className="flex items-center justify-center cursor-pointer h-full w-full"
                             onClick={() => onTaskClick(task)}
                           >
                             <GripVertical className="h-4 w-4 text-muted-foreground" />
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <div className="font-medium">{task.title}</div>
+                          <div className="font-medium">
+                            {info?.code ? <span className="font-mono mr-2 text-muted-foreground">{info.code}</span> : null}
+                            {task.title}
+                          </div>
                           <div className="text-xs text-muted-foreground">{getResponsibleName(task)}</div>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
                       <>
-                        <div className="flex items-center gap-2">
-                          <div className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 hover:bg-muted rounded">
-                            <GripVertical className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                          {critical && <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />}
-                          <span
-                            className={`font-medium text-sm truncate flex-1 cursor-pointer hover:underline ${critical ? "text-amber-700 dark:text-amber-400" : ""}`}
-                            onClick={() => onTaskClick(task)}
-                          >
-                            {task.title}
-                          </span>
-                          {overdue && <Badge variant="destructive" className="text-xs">Atrasado</Badge>}
+                        <div
+                          className="border-r flex items-center justify-center font-mono text-xs text-muted-foreground cursor-pointer"
+                          style={{ width: numCol }}
+                          onClick={() => onTaskClick(task)}
+                          title={info?.code}
+                        >
+                          {info?.code ?? "-"}
                         </div>
-                        <div className="text-xs text-muted-foreground truncate ml-6">
-                          {getResponsibleName(task)}
+                        <div
+                          className="border-r p-2 flex items-center cursor-pointer"
+                          style={{ width: phaseCol }}
+                          onClick={() => onTaskClick(task)}
+                        >
+                          {info?.phase ? (
+                            <span
+                              className="inline-block px-2 py-0.5 rounded text-xs font-medium truncate max-w-full"
+                              style={{ backgroundColor: phaseBg!, color: phaseFg }}
+                              title={info.phase.name}
+                            >
+                              {info.phase.name}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Sem fase</span>
+                          )}
+                        </div>
+                        <div className="p-2 flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 hover:bg-muted rounded">
+                              <GripVertical className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            {critical && <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />}
+                            <span
+                              className={`font-medium text-sm truncate flex-1 cursor-pointer hover:underline ${critical ? "text-amber-700 dark:text-amber-400" : ""}`}
+                              onClick={() => onTaskClick(task)}
+                            >
+                              {task.title}
+                            </span>
+                            {overdue && <Badge variant="destructive" className="text-xs">Atrasado</Badge>}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate ml-6">
+                            {getResponsibleName(task)}
+                          </div>
                         </div>
                       </>
                     )}
