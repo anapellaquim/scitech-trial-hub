@@ -143,8 +143,9 @@ export default function ApplyProjectTemplateDialog({
         await supabase.from("phases").delete().eq("project_id", projectId);
       }
 
-      // Delete existing tasks for this project
+      // Delete existing tasks and project_phases for this project
       await supabase.from("tasks").delete().eq("project_id", projectId);
+      await supabase.from("project_phases").delete().eq("project_id", projectId);
 
       // Create phases from template and collect all tasks to create
       const tasksToCreate: Array<{
@@ -157,6 +158,7 @@ export default function ApplyProjectTemplateDialog({
         created_by: string | undefined;
         planned_start_date: string | null;
         planned_end_date: string | null;
+        phase_id: string | null;
         subtasks?: TemplateSubtask[];
       }> = [];
 
@@ -165,6 +167,8 @@ export default function ApplyProjectTemplateDialog({
 
       // Sort phases by order
       const sortedPhases = [...selectedTemplate.phases].sort((a, b) => a.order - b.order);
+
+      const PHASE_COLORS = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#ec4899","#06b6d4","#84cc16"];
 
       for (let phaseIndex = 0; phaseIndex < sortedPhases.length; phaseIndex++) {
         const phase = sortedPhases[phaseIndex];
@@ -193,6 +197,22 @@ export default function ApplyProjectTemplateDialog({
           continue;
         }
 
+        // Create matching project_phase (used by Gantt/Schedule for hierarchical numbering)
+        const { data: newProjectPhase, error: projectPhaseError } = await supabase
+          .from("project_phases")
+          .insert({
+            project_id: projectId,
+            name: phase.name,
+            display_order: phaseIndex,
+            color: PHASE_COLORS[phaseIndex % PHASE_COLORS.length],
+          })
+          .select()
+          .single();
+
+        if (projectPhaseError) {
+          console.error("Error creating project_phase:", projectPhaseError);
+        }
+
         // Create activities for this phase
         if (phase.activities && phase.activities.length > 0) {
           const activitiesData = phase.activities.map((activity) => ({
@@ -219,7 +239,7 @@ export default function ApplyProjectTemplateDialog({
             
             tasksToCreate.push({
               project_id: projectId,
-              title: `[${phase.name}] ${activity.title}`,
+              title: activity.title,
               description: `Fase: ${phase.name}`,
               priority: activity.priority || "medium",
               status: "pending",
@@ -227,6 +247,7 @@ export default function ApplyProjectTemplateDialog({
               created_by: user?.id,
               planned_start_date: format(activityStartDate, "yyyy-MM-dd"),
               planned_end_date: format(activityEndDate, "yyyy-MM-dd"),
+              phase_id: newProjectPhase?.id ?? null,
               subtasks: activity.subtasks,
             });
             

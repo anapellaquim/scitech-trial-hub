@@ -10,7 +10,9 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Settings } from "lucide-react";
+import { usePhases } from "@/hooks/usePhases";
+import { ManagePhasesDialog } from "./ManagePhasesDialog";
 
 interface ScheduleTaskDialogProps {
   open: boolean;
@@ -43,6 +45,7 @@ export const ScheduleTaskDialog = ({
     priority: "medium",
     // Unified assignee value: "none" | `user:<id>` | `stakeholder:<id>` | `site:<id>`
     assignee: "none",
+    phase_id: "none",
     planned_start_date: "",
     planned_end_date: "",
     actual_start_date: "",
@@ -50,6 +53,8 @@ export const ScheduleTaskDialog = ({
     progress_percentage: 0,
   });
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
+  const { phases, refresh: refreshPhases } = usePhases(projectId);
+  const [managePhasesOpen, setManagePhasesOpen] = useState(false);
 
   useEffect(() => {
     if (!projectId) { setStakeholders([]); setSites([]); return; }
@@ -80,6 +85,7 @@ export const ScheduleTaskDialog = ({
         status: task.status,
         priority: task.priority || "medium",
         assignee,
+        phase_id: (task as any).phase_id || "none",
         planned_start_date: task.planned_start_date || "",
         planned_end_date: task.planned_end_date || "",
         actual_start_date: task.actual_start_date || "",
@@ -94,6 +100,7 @@ export const ScheduleTaskDialog = ({
         status: "pending",
         priority: "medium",
         assignee: "none",
+        phase_id: "none",
         planned_start_date: "",
         planned_end_date: "",
         actual_start_date: "",
@@ -124,6 +131,7 @@ export const ScheduleTaskDialog = ({
         assigned_to: aType === "user" ? aId : null,
         assigned_stakeholder_id: aType === "stakeholder" ? aId : null,
         assigned_site_id: aType === "site" ? aId : null,
+        phase_id: formData.phase_id !== "none" ? formData.phase_id : null,
         planned_start_date: formData.planned_start_date || null,
         planned_end_date: formData.planned_end_date || null,
         actual_start_date: formData.actual_start_date || null,
@@ -286,6 +294,46 @@ export const ScheduleTaskDialog = ({
                   <SelectItem value="critical">Crítica</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="phase">Fase</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setManagePhasesOpen(true)}
+                >
+                  <Settings className="h-3 w-3 mr-1" />
+                  Gerenciar fases
+                </Button>
+              </div>
+              <Select
+                value={formData.phase_id}
+                onValueChange={(value) => setFormData({ ...formData, phase_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma fase" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem fase</SelectItem>
+                  {phases.map(p => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="inline-flex items-center gap-2">
+                        {p.color && <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: p.color }} />}
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {phases.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Nenhuma fase cadastrada. Use "Gerenciar fases" para criar.
+                </p>
+              )}
             </div>
 
             <div className="col-span-2">
@@ -466,6 +514,12 @@ export const ScheduleTaskDialog = ({
           </DialogFooter>
         </form>
       </DialogContent>
+      <ManagePhasesDialog
+        open={managePhasesOpen}
+        onOpenChange={setManagePhasesOpen}
+        projectId={projectId}
+        onChanged={refreshPhases}
+      />
     </Dialog>
   );
 };
