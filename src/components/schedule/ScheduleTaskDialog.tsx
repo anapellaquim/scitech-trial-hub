@@ -297,6 +297,46 @@ export const ScheduleTaskDialog = ({
             </div>
 
             <div className="col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="phase">Fase</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setManagePhasesOpen(true)}
+                >
+                  <Settings className="h-3 w-3 mr-1" />
+                  Gerenciar fases
+                </Button>
+              </div>
+              <Select
+                value={formData.phase_id}
+                onValueChange={(value) => setFormData({ ...formData, phase_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma fase" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem fase</SelectItem>
+                  {phases.map(p => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="inline-flex items-center gap-2">
+                        {p.color && <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: p.color }} />}
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {phases.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Nenhuma fase cadastrada. Use "Gerenciar fases" para criar.
+                </p>
+              )}
+            </div>
+
+            <div className="col-span-2">
               <Label htmlFor="assignee">Responsável</Label>
               <Select
                 value={formData.assignee}
