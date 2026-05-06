@@ -1080,6 +1080,73 @@ export const GanttChart = ({
                     )}
                   </div>
                 </div>
+                {subtasksApi.expanded.has(task.id) && (
+                  <div className="flex border-b bg-muted/10">
+                    <div
+                      className="border-r sticky left-0 z-10 bg-muted/10"
+                      style={{ width: taskColWidth, minWidth: taskColWidth }}
+                    >
+                      <div className="pl-12 pr-2 py-2">
+                        {(subtasksApi.byTask[task.id] ?? []).length === 0 ? (
+                          <div className="text-xs text-muted-foreground">
+                            Nenhuma subtarefa.
+                          </div>
+                        ) : (
+                          <ul className="space-y-1">
+                            {(subtasksApi.byTask[task.id] ?? []).map(s => (
+                              <li key={s.id} className="flex items-center gap-2 text-xs">
+                                <Checkbox
+                                  checked={s.completed}
+                                  onCheckedChange={() => subtasksApi.toggleCompleted(s)}
+                                />
+                                <span className={`truncate ${s.completed ? "line-through text-muted-foreground" : ""}`}>
+                                  {s.title}
+                                </span>
+                                {s.due_date && (
+                                  <span className="text-[10px] text-muted-foreground ml-auto whitespace-nowrap">
+                                    {format(parseLocalDate(s.due_date), "dd/MM")}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1 relative" style={{ minHeight: 32 }}>
+                      <div className="absolute inset-0 flex">
+                        {units.map((u, idx) => (
+                          <div
+                            key={idx}
+                            className={`border-r ${u.isWeekend ? "bg-muted/20" : ""}`}
+                            style={{ width: u.days * pxPerDay }}
+                          />
+                        ))}
+                      </div>
+                      {(subtasksApi.byTask[task.id] ?? []).map(s => {
+                        if (!s.due_date) return null;
+                        const dayIndex = differenceInDays(parseLocalDate(s.due_date), startDate);
+                        if (dayIndex < 0 || dayIndex > totalDays) return null;
+                        const left = dayIndex * pxPerDay + pxPerDay / 2;
+                        return (
+                          <Tooltip key={s.id}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className={`absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 ${s.completed ? "bg-green-500" : "bg-blue-500"}`}
+                                style={{ left: left - 5 }}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="text-xs font-medium">{s.title}</div>
+                              <div className="text-xs">{format(parseLocalDate(s.due_date), "dd/MM/yyyy")}</div>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                </React.Fragment>
               );
             })}
 
