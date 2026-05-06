@@ -143,8 +143,9 @@ export default function ApplyProjectTemplateDialog({
         await supabase.from("phases").delete().eq("project_id", projectId);
       }
 
-      // Delete existing tasks for this project
+      // Delete existing tasks and project_phases for this project
       await supabase.from("tasks").delete().eq("project_id", projectId);
+      await supabase.from("project_phases").delete().eq("project_id", projectId);
 
       // Create phases from template and collect all tasks to create
       const tasksToCreate: Array<{
@@ -157,6 +158,7 @@ export default function ApplyProjectTemplateDialog({
         created_by: string | undefined;
         planned_start_date: string | null;
         planned_end_date: string | null;
+        phase_id: string | null;
         subtasks?: TemplateSubtask[];
       }> = [];
 
