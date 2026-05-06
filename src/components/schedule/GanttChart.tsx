@@ -45,6 +45,8 @@ import {
 } from "lucide-react";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { Badge as BadgeUI } from "@/components/ui/badge";
+import { ProjectPhase } from "@/hooks/usePhases";
+import { buildPhaseNumbering, contrastText } from "@/lib/phaseNumbering";
 
 type ZoomLevel = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
 type ScaleUnit = "quarter" | "month" | "week" | "day";
@@ -78,6 +80,7 @@ interface GanttChartProps {
   profiles: Profile[];
   stakeholders?: Stakeholder[];
   sites?: StudySite[];
+  phases?: ProjectPhase[];
   onTaskClick: (task: ScheduleTask) => void;
   onOrderChange?: (taskIds: string[]) => void;
 }
@@ -180,6 +183,7 @@ export const GanttChart = ({
   profiles,
   stakeholders = [],
   sites = [],
+  phases = [],
   onTaskClick,
   onOrderChange,
 }: GanttChartProps) => {
