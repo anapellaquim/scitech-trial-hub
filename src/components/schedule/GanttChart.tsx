@@ -204,22 +204,27 @@ export const GanttChart = ({
   const scrollViewportRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolled = useRef(false);
 
-  const taskColWidth = taskColCollapsed ? 44 : 240;
+  const numCol = 56;
+  const phaseCol = 140;
+  const taskNameCol = 240;
+  const taskColWidth = taskColCollapsed ? 44 : numCol + phaseCol + taskNameCol;
   const unitConfig = ZOOM_CONFIG[zoomLevel];
   const pxPerDay = unitConfig.unitWidth / UNIT_AVG_DAYS[unitConfig.unit];
 
-  const taskOrder = useMemo(() => {
-    return [...tasks]
-      .sort((a, b) => {
-        const orderA = a.display_order ?? Number.MAX_SAFE_INTEGER;
-        const orderB = b.display_order ?? Number.MAX_SAFE_INTEGER;
-        if (orderA !== orderB) return orderA - orderB;
-        const dateA = a.planned_start_date || a.start_date || "";
-        const dateB = b.planned_start_date || b.start_date || "";
-        return dateA.localeCompare(dateB);
-      })
-      .map(t => t.id);
+  const orderedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      const dateA = a.planned_start_date || a.start_date || "";
+      const dateB = b.planned_start_date || b.start_date || "";
+      if (dateA && dateB && dateA !== dateB) return dateA.localeCompare(dateB);
+      if (dateA && !dateB) return -1;
+      if (!dateA && dateB) return 1;
+      return (a.title || "").localeCompare(b.title || "");
+    });
   }, [tasks]);
+
+  const taskOrder = useMemo(() => orderedTasks.map(t => t.id), [orderedTasks]);
+
+  const numbering = useMemo(() => buildPhaseNumbering(orderedTasks, phases), [orderedTasks, phases]);
 
   const criticalPathTasks = useMemo(() => calculateCriticalPath(tasks, dependencies), [tasks, dependencies]);
 
