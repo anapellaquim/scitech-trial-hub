@@ -10,9 +10,18 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
-import { X, Plus, Settings } from "lucide-react";
+import { X, Plus, Settings, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { usePhases } from "@/hooks/usePhases";
 import { ManagePhasesDialog } from "./ManagePhasesDialog";
+
+interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+  due_date: string | null;
+  item_order: number;
+}
 
 interface ScheduleTaskDialogProps {
   open: boolean;
