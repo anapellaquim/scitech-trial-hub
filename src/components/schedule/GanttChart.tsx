@@ -805,10 +805,18 @@ export const GanttChart = ({
             {/* Header - Groups */}
             <div className="flex border-b bg-muted/50">
               <div
-                className="p-2 font-medium border-r sticky left-0 bg-muted/50 z-10"
+                className="font-medium border-r sticky left-0 bg-muted/50 z-10 flex"
                 style={{ width: taskColWidth, minWidth: taskColWidth }}
               >
-                {taskColCollapsed ? "" : "Tarefa"}
+                {taskColCollapsed ? (
+                  <div className="p-2" />
+                ) : (
+                  <>
+                    <div className="p-2 border-r text-center" style={{ width: numCol }}>#</div>
+                    <div className="p-2 border-r" style={{ width: phaseCol }}>Fase</div>
+                    <div className="p-2 flex-1">Tarefa</div>
+                  </>
+                )}
               </div>
               <div className="flex">
                 {groups.map((group, idx) => (
