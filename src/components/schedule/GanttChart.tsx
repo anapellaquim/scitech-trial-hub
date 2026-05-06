@@ -42,11 +42,14 @@ import {
   Maximize2,
   PanelLeftClose,
   PanelLeftOpen,
+  ChevronDown,
 } from "lucide-react";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { Badge as BadgeUI } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectPhase } from "@/hooks/usePhases";
 import { buildPhaseNumbering, contrastText } from "@/lib/phaseNumbering";
+import { useTaskSubtasks } from "@/hooks/useTaskSubtasks";
 
 type ZoomLevel = "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
 type ScaleUnit = "quarter" | "month" | "week" | "day";
