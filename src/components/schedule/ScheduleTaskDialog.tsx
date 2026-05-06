@@ -107,8 +107,6 @@ export const ScheduleTaskDialog = ({
     description: "",
     status: "pending",
     priority: "medium",
-    // Unified assignee value: "none" | `user:<id>` | `stakeholder:<id>` | `site:<id>`
-    assignee: "none",
     phase_id: "none",
     planned_start_date: "",
     planned_end_date: "",
@@ -116,12 +114,22 @@ export const ScheduleTaskDialog = ({
     actual_end_date: "",
     progress_percentage: 0,
   });
+  // Multiple assignees as array of "user:id" | "stakeholder:id" | "site:id"
+  const [taskAssignees, setTaskAssignees] = useState<string[]>([]);
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const { phases, refresh: refreshPhases } = usePhases(projectId);
   const [managePhasesOpen, setManagePhasesOpen] = useState(false);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [newSubtask, setNewSubtask] = useState("");
   const [newSubtaskDueDate, setNewSubtaskDueDate] = useState("");
+  const [newSubtaskAssignees, setNewSubtaskAssignees] = useState<string[]>([]);
+
+  const assigneeOptions: AssigneeOption[] = [
+    ...profiles.map(p => ({ value: `user:${p.id}`, label: p.full_name, group: "Usuários do Sistema" })),
+    ...sites.map(s => ({ value: `site:${s.id}`, label: `${s.site_code ? `[${s.site_code}] ` : ""}${s.name}`, group: "Centros do Estudo" })),
+    ...stakeholders.map(s => ({ value: `stakeholder:${s.id}`, label: `${s.name}${s.organization ? ` — ${s.organization}` : ""}`, group: "Stakeholders" })),
+  ];
+  const assigneeLabel = (v: string) => assigneeOptions.find(o => o.value === v)?.label || v;
 
   const fetchSubtasks = async (taskId: string) => {
     const { data } = await supabase
