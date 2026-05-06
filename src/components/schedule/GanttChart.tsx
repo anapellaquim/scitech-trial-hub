@@ -690,6 +690,24 @@ export const GanttChart = ({
               </Select>
             </div>
 
+            <Select value={phaseFilter} onValueChange={setPhaseFilter}>
+              <SelectTrigger className="w-40 h-8">
+                <SelectValue placeholder="Fase" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as fases</SelectItem>
+                <SelectItem value="none">Sem fase</SelectItem>
+                {[...phases].sort((a, b) => a.display_order - b.display_order).map(p => (
+                  <SelectItem key={p.id} value={p.id}>
+                    <span className="inline-flex items-center gap-2">
+                      {p.color && <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: p.color }} />}
+                      {p.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
               <SelectTrigger className="w-40 h-8">
                 <SelectValue placeholder="Responsável" />
