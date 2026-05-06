@@ -35,6 +35,7 @@ const ProjectSchedule = () => {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isManageTemplatesOpen, setIsManageTemplatesOpen] = useState(false);
   const [isManagePhasesOpen, setIsManagePhasesOpen] = useState(false);
+  const { phases, refresh: refreshPhases } = usePhases(projectId);
 
   useEffect(() => {
     if (projectId) {
