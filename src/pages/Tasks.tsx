@@ -153,16 +153,25 @@ export default function Tasks() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return;
 
-      const { data, error } = await supabase
+      const { data: isAdminData } = await supabase.rpc('has_role', {
+        _user_id: authUser.id,
+        _role: 'admin' as any,
+      });
+
+      let query = supabase
         .from("tasks")
         .select(`
           *,
           assignee:profiles!tasks_assigned_to_fkey(full_name),
           project:projects(title)
         `)
-        .neq("status", "completed")
-        .or(`project_id.not.is.null,assigned_to.eq.${authUser.id}`)
-        .order("created_at", { ascending: false });
+        .neq("status", "completed");
+
+      if (!isAdminData) {
+        query = query.or(`project_id.not.is.null,assigned_to.eq.${authUser.id}`);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
 
