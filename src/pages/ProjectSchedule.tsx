@@ -328,6 +328,7 @@ const ProjectSchedule = () => {
                   profiles={profiles}
                   stakeholders={stakeholders}
                   sites={sites}
+                  phases={phases}
                   onTaskClick={handleTaskClick}
                   onOrderChange={handleOrderChange}
                 />
