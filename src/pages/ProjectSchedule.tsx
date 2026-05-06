@@ -18,6 +18,7 @@ import ManageProjectTemplatesDialog from "@/components/ManageProjectTemplatesDia
 import { ManagePhasesDialog } from "@/components/schedule/ManagePhasesDialog";
 import { ScheduleTask, TaskDependency, Profile, Project, Stakeholder, StudySite } from "@/types/schedule";
 import { useScheduleExport } from "@/hooks/useScheduleExport";
+import { usePhases } from "@/hooks/usePhases";
 const ProjectSchedule = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
