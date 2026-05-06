@@ -200,6 +200,7 @@ export const GanttChart = ({
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [phaseFilter, setPhaseFilter] = useState<string>("all");
   const [taskColCollapsed, setTaskColCollapsed] = useState(false);
+  const subtasksApi = useTaskSubtasks();
 
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
