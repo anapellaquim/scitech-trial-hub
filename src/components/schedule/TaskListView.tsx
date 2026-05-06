@@ -6,13 +6,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
-import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban, Columns3, Filter, X } from "lucide-react";
+import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban, Columns3, Filter, X, ChevronRight, ChevronDown } from "lucide-react";
 import { ProjectPhase } from "@/hooks/usePhases";
 import { buildPhaseNumbering, contrastText } from "@/lib/phaseNumbering";
+import { useTaskSubtasks } from "@/hooks/useTaskSubtasks";
 
 interface TaskListViewProps {
   tasks: ScheduleTask[];
