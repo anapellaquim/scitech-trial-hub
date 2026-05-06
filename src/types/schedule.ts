@@ -18,6 +18,7 @@ export interface ScheduleTask {
   assigned_site_id?: string | null;
   project_id: string | null;
   display_order: number | null;
+  phase_id?: string | null;
 }
 
 export interface StudySite {
