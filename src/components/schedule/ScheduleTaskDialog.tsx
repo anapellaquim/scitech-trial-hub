@@ -10,8 +10,11 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
-import { X, Plus, Settings, Trash2 } from "lucide-react";
+import { X, Plus, Settings, Trash2, Check, ChevronsUpDown, Users } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { usePhases } from "@/hooks/usePhases";
 import { ManagePhasesDialog } from "./ManagePhasesDialog";
 
