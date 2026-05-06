@@ -8,13 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings } from "lucide-react";
+import { ArrowLeft, Plus, GanttChart as GanttIcon, Table2, Calendar, Download, FileSpreadsheet, FileText, LayoutTemplate, Settings, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { GanttChart } from "@/components/schedule/GanttChart";
 import { TaskListView } from "@/components/schedule/TaskListView";
 import { ScheduleTaskDialog } from "@/components/schedule/ScheduleTaskDialog";
 import ApplyProjectTemplateDialog from "@/components/ApplyProjectTemplateDialog";
 import ManageProjectTemplatesDialog from "@/components/ManageProjectTemplatesDialog";
+import { ManagePhasesDialog } from "@/components/schedule/ManagePhasesDialog";
 import { ScheduleTask, TaskDependency, Profile, Project, Stakeholder, StudySite } from "@/types/schedule";
 import { useScheduleExport } from "@/hooks/useScheduleExport";
 const ProjectSchedule = () => {
@@ -32,6 +33,7 @@ const ProjectSchedule = () => {
   const [selectedTask, setSelectedTask] = useState<ScheduleTask | null>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isManageTemplatesOpen, setIsManageTemplatesOpen] = useState(false);
+  const [isManagePhasesOpen, setIsManagePhasesOpen] = useState(false);
 
   useEffect(() => {
     if (projectId) {
