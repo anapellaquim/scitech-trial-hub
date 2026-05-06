@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
 import { ArrowRight, AlertCircle, CheckCircle2, Clock, Ban } from "lucide-react";
+import { ProjectPhase } from "@/hooks/usePhases";
+import { buildPhaseNumbering, contrastText } from "@/lib/phaseNumbering";
+import { useMemo } from "react";
 
 interface TaskListViewProps {
   tasks: ScheduleTask[];
@@ -17,6 +20,7 @@ interface TaskListViewProps {
   profiles: Profile[];
   stakeholders?: Stakeholder[];
   sites?: StudySite[];
+  phases?: ProjectPhase[];
   onTaskClick: (task: ScheduleTask) => void;
   onRefresh: () => void;
 }
@@ -35,7 +39,8 @@ const priorityConfig: Record<string, { label: string; color: string }> = {
   critical: { label: "Crítica", color: "text-red-600" },
 };
 
-export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [], sites = [], onTaskClick, onRefresh }: TaskListViewProps) => {
+export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [], sites = [], phases = [], onTaskClick, onRefresh }: TaskListViewProps) => {
+  const numbering = useMemo(() => buildPhaseNumbering(tasks, phases), [tasks, phases]);
   const [updatingTask, setUpdatingTask] = useState<string | null>(null);
 
   const getResponsibleName = (task: ScheduleTask) => {
@@ -123,6 +128,8 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-16">#</TableHead>
+            <TableHead className="min-w-[120px]">Fase</TableHead>
             <TableHead className="min-w-[200px]">Tarefa</TableHead>
             <TableHead className="min-w-[120px]">Status</TableHead>
             <TableHead className="min-w-[80px]">Prioridade</TableHead>
