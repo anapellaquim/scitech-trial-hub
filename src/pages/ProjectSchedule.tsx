@@ -254,9 +254,9 @@ const ProjectSchedule = () => {
             <Settings className="h-4 w-4 mr-2" />
             Configurar Modelos
           </Button>
-          <Button onClick={handleNewTask}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Tarefa
+          <Button variant="outline" onClick={() => setIsManagePhasesOpen(true)}>
+            <Layers className="h-4 w-4 mr-2" />
+            Fases
           </Button>
         </div>
 
