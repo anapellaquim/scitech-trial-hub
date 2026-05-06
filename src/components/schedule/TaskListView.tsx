@@ -147,11 +147,31 @@ export const TaskListView = ({ tasks, dependencies, profiles, stakeholders = [],
             const overdue = isOverdue(task);
             const isUpdating = updatingTask === task.id;
 
+            const info = numbering.get(task.id);
+
             return (
               <TableRow 
                 key={task.id} 
                 className={`cursor-pointer hover:bg-muted/50 ${overdue ? "bg-red-50 dark:bg-red-950/20" : ""}`}
               >
+                <TableCell className="font-mono text-xs text-muted-foreground" onClick={() => onTaskClick(task)}>
+                  {info?.code ?? "-"}
+                </TableCell>
+                <TableCell onClick={() => onTaskClick(task)}>
+                  {info?.phase ? (
+                    <span
+                      className="inline-block px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap"
+                      style={{
+                        backgroundColor: info.phase.color ?? "hsl(var(--muted))",
+                        color: contrastText(info.phase.color),
+                      }}
+                    >
+                      {info.phase.name}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Sem fase</span>
+                  )}
+                </TableCell>
                 <TableCell onClick={() => onTaskClick(task)}>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{task.title}</span>
