@@ -1,43 +1,39 @@
-## Plano: Vincular Fase às tarefas (individual + via modelo)
+## Plano: Restaurar codificação hierárquica e coluna "Fase" no Gantt/Lista
 
-Complementa o plano anterior (criação de `project_phases`, `tasks.phase_id`, numeração hierárquica e ordenação por `planned_start_date`).
+As alterações anteriores criaram o vínculo de Fase na tarefa (`phase_id`) mas as colunas visuais ("#" e "Fase") não foram adicionadas ao Gantt nem à Lista. Este plano cobre apenas isso.
 
-### 1. Editor individual de Fase na tarefa
-- Em `ScheduleTaskDialog.tsx`, adicionar campo **Fase** (Select) logo abaixo do título.
-  - Opções: fases do projeto atual (consulta a `project_phases` por `project_id`, ordenadas por `display_order`), com indicador de cor.
-  - Opção “Sem fase” (limpa `phase_id`).
-  - Botão “+ Gerenciar fases” abre o `ManagePhasesDialog` para criar/editar/reordenar fases sem sair do diálogo.
-- Salvar `phase_id` no `tasks` ao criar/atualizar.
+### 1. Carregar fases do projeto
+- Em `ProjectSchedule.tsx`:
+  - Usar `usePhases(projectId)` (já existente) e passar `phases` como prop para `GanttChart` e `TaskListView`.
+  - Garantir ordenação das tarefas por `planned_start_date` ASC (já está, mas remover prioridade do `display_order`, conforme decisão prévia).
 
-### 2. Gerenciar fases do projeto
-- Novo `ManagePhasesDialog.tsx` (acessível pelo botão acima e por um botão “Fases” no header de `ProjectSchedule.tsx`):
-  - Listar, criar, renomear, escolher cor, reordenar (drag) e remover fases.
-  - Ao remover uma fase usada, perguntar: mover tarefas para “Sem fase” ou cancelar.
+### 2. Numeração hierárquica `Fase.Tarefa`
+- Calcular um `Map<taskId, code>` baseado na ordem exibida:
+  - Para cada fase do projeto (ordem = `display_order`), índice `1..N`.
+  - Tarefas sem fase ficam em `0.x`.
+  - Dentro de cada fase, contar pela ordem em que as tarefas aparecem (já ordenadas por `planned_start_date`).
+- Resultado: `1.1`, `1.2`, `2.1`, `0.1`, etc.
 
-### 3. Modelos de projeto definem fases
-- Migração adicional:
-  - `project_template_phases` (id, template_id, name, display_order, color)
-  - `project_template_tasks.phase_id` (FK opcional para `project_template_phases`)
-- `ManageProjectTemplatesDialog.tsx`:
-  - Seção “Fases do modelo” (CRUD análogo ao do projeto).
-  - No editor de tarefa do modelo, dropdown de Fase com as fases do próprio modelo.
-- `ApplyProjectTemplateDialog.tsx` / lógica de aplicação:
-  - Ao aplicar um modelo: criar as fases do modelo em `project_phases` (preservando ordem/cor) e mapear `template_phase_id → project_phase_id` para preencher `tasks.phase_id` ao inserir as tarefas.
-  - Se o projeto já tiver fases com mesmo nome, reutilizar (match case-insensitive) em vez de duplicar.
+### 3. `GanttChart.tsx` — colunas à esquerda
+- Antes da coluna do título, adicionar:
+  - **Coluna "#"** (largura fixa ~56px): exibe o código hierárquico em `font-mono text-xs text-muted-foreground`.
+  - **Coluna "Fase"** (largura fixa ~140px): badge com `backgroundColor: phase.color` (texto contrastante) e nome da fase. "Sem fase" cinza quando `phase_id` nulo.
+- Atualizar o cabeçalho da grade (header sticky) com os mesmos rótulos.
+- Tooltip: mostrar código + fase ao passar o mouse na barra.
+- Em viewport estreito, colunas mantêm largura mínima e o conteúdo do título trunca com ellipsis.
 
-### 4. UI Gantt/Lista
-- Coluna **Fase** (já planejada) passa a refletir o vínculo. Tarefas sem fase aparecem agrupadas como “Sem fase” na numeração `0.x`.
+### 4. `TaskListView.tsx` — colunas equivalentes
+- Adicionar `<TableHead>` "#" e "Fase" antes da coluna de título.
+- Cada `<TableRow>`: célula "#" com código e célula "Fase" com badge colorido.
 
-### Detalhes técnicos
-- Tipos: adicionar `phase_id?: string | null` em `ScheduleTask` e `Phase { id, project_id, name, display_order, color }` em `src/types/schedule.ts`.
-- Hook `usePhases(projectId)` para buscar/cachear fases do projeto (reutilizado pelo dialog de tarefa, dialog de gerenciamento e Gantt/Lista).
-- RLS de `project_phases` e `project_template_phases`: mesmas regras já aplicadas a `tasks` / `project_templates`.
+### 5. Acessibilidade / pequenos ajustes
+- Adicionar `<DialogDescription>` ao `ManagePhasesDialog` e ao `ScheduleTaskDialog` para silenciar o warning de aria atual.
 
-### Arquivos impactados (além do plano anterior)
-- `src/components/schedule/ScheduleTaskDialog.tsx` (novo campo Fase)
-- `src/components/schedule/ManagePhasesDialog.tsx` (novo)
-- `src/components/ManageProjectTemplatesDialog.tsx` (CRUD de fases + select nas tarefas do modelo)
-- `src/components/ApplyProjectTemplateDialog.tsx` (mapear/criar fases ao aplicar)
-- `src/pages/ProjectSchedule.tsx` (botão “Fases” no header)
-- `src/hooks/usePhases.ts` (novo)
-- Migração: `project_template_phases` + `project_template_tasks.phase_id`
+### Arquivos impactados
+- `src/pages/ProjectSchedule.tsx` (carregar e propagar `phases`)
+- `src/components/schedule/GanttChart.tsx` (2 novas colunas + cálculo de código)
+- `src/components/schedule/TaskListView.tsx` (2 novas colunas + cálculo de código)
+- `src/components/schedule/ScheduleTaskDialog.tsx` (DialogDescription)
+- (opcional) pequeno helper `src/lib/phaseNumbering.ts` para reusar o cálculo entre Gantt e Lista.
+
+Sem mudanças no schema; tudo é frontend, usando `phase_id` e `project_phases` que já existem.
