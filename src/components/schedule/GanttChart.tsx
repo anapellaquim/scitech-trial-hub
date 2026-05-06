@@ -834,10 +834,18 @@ export const GanttChart = ({
             {/* Header - Units */}
             <div className="flex border-b bg-muted/30">
               <div
-                className="p-2 text-sm text-muted-foreground border-r sticky left-0 bg-muted/30 z-10"
+                className="text-sm text-muted-foreground border-r sticky left-0 bg-muted/30 z-10 flex"
                 style={{ width: taskColWidth, minWidth: taskColWidth }}
               >
-                {taskColCollapsed ? "" : "Responsável"}
+                {taskColCollapsed ? (
+                  <div className="p-2" />
+                ) : (
+                  <>
+                    <div className="border-r" style={{ width: numCol }} />
+                    <div className="border-r" style={{ width: phaseCol }} />
+                    <div className="p-2 flex-1">Responsável</div>
+                  </>
+                )}
               </div>
               <div className="flex">
                 {units.map((u, idx) => (
