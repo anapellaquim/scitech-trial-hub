@@ -110,7 +110,7 @@ export default function VisitReport() {
       if (visitRes.error) throw visitRes.error;
       if (!visitRes.data) {
         toast.error("Visita não encontrada");
-        navigate("/visit-agenda");
+        navigate("/agenda");
         return;
       }
 
