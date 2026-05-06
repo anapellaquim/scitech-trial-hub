@@ -399,6 +399,10 @@ export const GanttChart = ({
   const visibleTasks = useMemo(() => {
     let filtered = tasks;
     if (statusFilter !== "all") filtered = filtered.filter(task => task.status === statusFilter);
+    if (phaseFilter !== "all") {
+      if (phaseFilter === "none") filtered = filtered.filter(t => !t.phase_id);
+      else filtered = filtered.filter(t => t.phase_id === phaseFilter);
+    }
     if (assigneeFilter !== "all") {
       if (assigneeFilter === "unassigned") {
         filtered = filtered.filter(task => {
@@ -436,13 +440,14 @@ export const GanttChart = ({
       return [...ordered, ...remaining];
     }
     return filtered;
-  }, [tasks, periodType, startDate, endDate, taskOrder, statusFilter, assigneeFilter]);
+  }, [tasks, periodType, startDate, endDate, taskOrder, statusFilter, assigneeFilter, phaseFilter]);
 
-  const hasActiveFilters = statusFilter !== "all" || assigneeFilter !== "all" || periodType !== "all";
+  const hasActiveFilters = statusFilter !== "all" || assigneeFilter !== "all" || phaseFilter !== "all" || periodType !== "all";
 
   const clearAllFilters = () => {
     setStatusFilter("all");
     setAssigneeFilter("all");
+    setPhaseFilter("all");
     setPeriodType("all");
     setViewOffset(0);
   };
