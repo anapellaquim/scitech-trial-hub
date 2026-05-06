@@ -10,8 +10,11 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ScheduleTask, TaskDependency, Profile, Stakeholder, StudySite } from "@/types/schedule";
-import { X, Plus, Settings, Trash2 } from "lucide-react";
+import { X, Plus, Settings, Trash2, Check, ChevronsUpDown, Users } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { usePhases } from "@/hooks/usePhases";
 import { ManagePhasesDialog } from "./ManagePhasesDialog";
 
@@ -21,7 +24,59 @@ interface Subtask {
   completed: boolean;
   due_date: string | null;
   item_order: number;
+  assignees?: string[];
 }
+
+type AssigneeOption = { value: string; label: string; group: string };
+
+const MultiAssigneeSelect = ({
+  options,
+  value,
+  onChange,
+  placeholder = "Selecionar responsáveis",
+}: {
+  options: AssigneeOption[];
+  value: string[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const toggle = (v: string) =>
+    onChange(value.includes(v) ? value.filter(x => x !== v) : [...value, v]);
+  const groups = Array.from(new Set(options.map(o => o.group)));
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" role="combobox" className="w-full justify-between font-normal">
+          <span className="truncate">
+            {value.length === 0
+              ? placeholder
+              : `${value.length} selecionado(s)`}
+          </span>
+          <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar..." />
+          <CommandList className="max-h-72">
+            <CommandEmpty>Nenhum resultado.</CommandEmpty>
+            {groups.map(g => (
+              <CommandGroup key={g} heading={g}>
+                {options.filter(o => o.group === g).map(o => (
+                  <CommandItem key={o.value} value={o.label} onSelect={() => toggle(o.value)}>
+                    <Check className={cn("mr-2 h-4 w-4", value.includes(o.value) ? "opacity-100" : "opacity-0")} />
+                    {o.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ))}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 interface ScheduleTaskDialogProps {
   open: boolean;
@@ -52,8 +107,6 @@ export const ScheduleTaskDialog = ({
     description: "",
     status: "pending",
     priority: "medium",
-    // Unified assignee value: "none" | `user:<id>` | `stakeholder:<id>` | `site:<id>`
-    assignee: "none",
     phase_id: "none",
     planned_start_date: "",
     planned_end_date: "",
@@ -61,12 +114,22 @@ export const ScheduleTaskDialog = ({
     actual_end_date: "",
     progress_percentage: 0,
   });
+  // Multiple assignees as array of "user:id" | "stakeholder:id" | "site:id"
+  const [taskAssignees, setTaskAssignees] = useState<string[]>([]);
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
   const { phases, refresh: refreshPhases } = usePhases(projectId);
   const [managePhasesOpen, setManagePhasesOpen] = useState(false);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [newSubtask, setNewSubtask] = useState("");
   const [newSubtaskDueDate, setNewSubtaskDueDate] = useState("");
+  const [newSubtaskAssignees, setNewSubtaskAssignees] = useState<string[]>([]);
+
+  const assigneeOptions: AssigneeOption[] = [
+    ...profiles.map(p => ({ value: `user:${p.id}`, label: p.full_name, group: "Usuários do Sistema" })),
+    ...sites.map(s => ({ value: `site:${s.id}`, label: `${s.site_code ? `[${s.site_code}] ` : ""}${s.name}`, group: "Centros do Estudo" })),
+    ...stakeholders.map(s => ({ value: `stakeholder:${s.id}`, label: `${s.name}${s.organization ? ` — ${s.organization}` : ""}`, group: "Stakeholders" })),
+  ];
+  const assigneeLabel = (v: string) => assigneeOptions.find(o => o.value === v)?.label || v;
 
   const fetchSubtasks = async (taskId: string) => {
     const { data } = await supabase
@@ -74,7 +137,21 @@ export const ScheduleTaskDialog = ({
       .select("id, title, completed, due_date, item_order")
       .eq("task_id", taskId)
       .order("item_order");
-    setSubtasks((data as Subtask[]) || []);
+    const list = (data as Subtask[]) || [];
+    if (list.length > 0) {
+      const { data: links } = await supabase
+        .from("task_subtask_assignees")
+        .select("subtask_id, assignee_type, assignee_id")
+        .in("subtask_id", list.map(s => s.id));
+      const map = new Map<string, string[]>();
+      (links || []).forEach((l: any) => {
+        const arr = map.get(l.subtask_id) || [];
+        arr.push(`${l.assignee_type}:${l.assignee_id}`);
+        map.set(l.subtask_id, arr);
+      });
+      list.forEach(s => { s.assignees = map.get(s.id) || []; });
+    }
+    setSubtasks(list);
   };
 
   useEffect(() => {
@@ -82,18 +159,37 @@ export const ScheduleTaskDialog = ({
     else setSubtasks([]);
   }, [task?.id, open]);
 
+  const saveSubtaskAssignees = async (subtaskId: string, values: string[]) => {
+    await supabase.from("task_subtask_assignees").delete().eq("subtask_id", subtaskId);
+    if (values.length > 0) {
+      await supabase.from("task_subtask_assignees").insert(values.map(v => {
+        const [t, id] = v.split(":");
+        return { subtask_id: subtaskId, assignee_type: t, assignee_id: id };
+      }));
+    }
+  };
+
   const addSubtask = async () => {
     if (!task?.id || !newSubtask.trim()) return;
-    const { error } = await supabase.from("task_subtasks").insert({
+    const { data, error } = await supabase.from("task_subtasks").insert({
       task_id: task.id,
       title: newSubtask.trim(),
       due_date: newSubtaskDueDate || null,
       item_order: subtasks.length,
-    });
+    }).select().single();
     if (error) { toast.error("Erro: " + error.message); return; }
+    if (data && newSubtaskAssignees.length > 0) {
+      await saveSubtaskAssignees(data.id, newSubtaskAssignees);
+    }
     setNewSubtask("");
     setNewSubtaskDueDate("");
+    setNewSubtaskAssignees([]);
     fetchSubtasks(task.id);
+  };
+
+  const updateSubtaskAssignees = async (s: Subtask, values: string[]) => {
+    await saveSubtaskAssignees(s.id, values);
+    if (task?.id) fetchSubtasks(task.id);
   };
 
   const toggleSubtask = async (s: Subtask) => {
@@ -128,18 +224,28 @@ export const ScheduleTaskDialog = ({
   }, [projectId]);
 
   useEffect(() => {
+    const loadTaskAssignees = async (taskId: string) => {
+      const { data } = await supabase
+        .from("task_assignees")
+        .select("assignee_type, assignee_id")
+        .eq("task_id", taskId);
+      const list = (data || []).map((r: any) => `${r.assignee_type}:${r.assignee_id}`);
+      // Fallback to legacy single-assignee fields if no rows
+      if (list.length === 0 && task) {
+        const t = task as any;
+        if (t.assigned_stakeholder_id) list.push(`stakeholder:${t.assigned_stakeholder_id}`);
+        else if (t.assigned_site_id) list.push(`site:${t.assigned_site_id}`);
+        else if (t.assigned_to) list.push(`user:${t.assigned_to}`);
+      }
+      setTaskAssignees(list);
+    };
+
     if (task) {
-      const t = task as any;
-      let assignee = "none";
-      if (t.assigned_stakeholder_id) assignee = `stakeholder:${t.assigned_stakeholder_id}`;
-      else if (t.assigned_site_id) assignee = `site:${t.assigned_site_id}`;
-      else if (t.assigned_to) assignee = `user:${t.assigned_to}`;
       setFormData({
         title: task.title,
         description: task.description || "",
         status: task.status,
         priority: task.priority || "medium",
-        assignee,
         phase_id: (task as any).phase_id || "none",
         planned_start_date: task.planned_start_date || "",
         planned_end_date: task.planned_end_date || "",
@@ -148,13 +254,13 @@ export const ScheduleTaskDialog = ({
         progress_percentage: task.progress_percentage || 0,
       });
       setSelectedDependencies(dependencies.map(d => d.depends_on_task_id));
+      loadTaskAssignees(task.id);
     } else {
       setFormData({
         title: "",
         description: "",
         status: "pending",
         priority: "medium",
-        assignee: "none",
         phase_id: "none",
         planned_start_date: "",
         planned_end_date: "",
@@ -163,6 +269,7 @@ export const ScheduleTaskDialog = ({
         progress_percentage: 0,
       });
       setSelectedDependencies([]);
+      setTaskAssignees([]);
     }
   }, [task, dependencies]);
 
@@ -175,9 +282,9 @@ export const ScheduleTaskDialog = ({
 
     setLoading(true);
     try {
-      const [aType, aId] = formData.assignee.includes(":")
-        ? formData.assignee.split(":")
-        : ["none", ""];
+      // Use first assignee for legacy single-assignee columns (back-compat)
+      const first = taskAssignees[0];
+      const [aType, aId] = first ? first.split(":") : ["none", ""];
       const taskData = {
         title: formData.title,
         description: formData.description || null,
@@ -238,6 +345,17 @@ export const ScheduleTaskDialog = ({
             .insert(depsToInsert);
 
           if (depError) throw depError;
+        }
+      }
+
+      // Save multiple assignees
+      if (taskId) {
+        await supabase.from("task_assignees").delete().eq("task_id", taskId);
+        if (taskAssignees.length > 0) {
+          await supabase.from("task_assignees").insert(taskAssignees.map(v => {
+            const [t, id] = v.split(":");
+            return { task_id: taskId, assignee_type: t, assignee_id: id };
+          }));
         }
       }
 
@@ -392,52 +510,24 @@ export const ScheduleTaskDialog = ({
             </div>
 
             <div className="col-span-2">
-              <Label htmlFor="assignee">Responsável</Label>
-              <Select
-                value={formData.assignee}
-                onValueChange={(value) => setFormData({ ...formData, assignee: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um responsável" />
-                </SelectTrigger>
-                <SelectContent className="max-h-80">
-                  <SelectItem value="none">Não atribuído</SelectItem>
-
-                  {profiles.length > 0 && (
-                    <>
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Usuários do Sistema</div>
-                      {profiles.map(p => (
-                        <SelectItem key={`user-${p.id}`} value={`user:${p.id}`}>
-                          {p.full_name}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-
-                  {sites.length > 0 && (
-                    <>
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Centros do Estudo</div>
-                      {sites.map(s => (
-                        <SelectItem key={`site-${s.id}`} value={`site:${s.id}`}>
-                          {s.site_code ? `[${s.site_code}] ` : ""}{s.name}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-
-                  {stakeholders.length > 0 && (
-                    <>
-                      <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">Stakeholders do Estudo</div>
-                      {stakeholders.map(s => (
-                        <SelectItem key={`st-${s.id}`} value={`stakeholder:${s.id}`}>
-                          {s.name}{s.organization ? ` — ${s.organization}` : ""}
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-              {profiles.length === 0 && sites.length === 0 && stakeholders.length === 0 && (
+              <Label>Responsáveis</Label>
+              <MultiAssigneeSelect
+                options={assigneeOptions}
+                value={taskAssignees}
+                onChange={setTaskAssignees}
+                placeholder="Selecione um ou mais responsáveis"
+              />
+              {taskAssignees.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {taskAssignees.map(v => (
+                    <Badge key={v} variant="secondary" className="gap-1">
+                      {assigneeLabel(v)}
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => setTaskAssignees(taskAssignees.filter(x => x !== v))} />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {assigneeOptions.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Nenhum responsável disponível. Cadastre usuários, centros ou stakeholders para o estudo.
                 </p>
@@ -548,41 +638,66 @@ export const ScheduleTaskDialog = ({
           {task && (
             <div className="space-y-2">
               <Label>Subtarefas</Label>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {subtasks.map((s) => (
-                  <div key={s.id} className="flex items-center gap-2 rounded border px-2 py-1">
-                    <Checkbox checked={s.completed} onCheckedChange={() => toggleSubtask(s)} />
-                    <span className={`flex-1 text-sm ${s.completed ? "line-through text-muted-foreground" : ""}`}>
-                      {s.title}
-                    </span>
-                    {s.due_date && (
-                      <span className="text-xs text-muted-foreground">{s.due_date}</span>
-                    )}
-                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteSubtask(s.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                  <div key={s.id} className="rounded border px-2 py-1.5 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Checkbox checked={s.completed} onCheckedChange={() => toggleSubtask(s)} />
+                      <span className={`flex-1 text-sm ${s.completed ? "line-through text-muted-foreground" : ""}`}>
+                        {s.title}
+                      </span>
+                      {s.due_date && (
+                        <span className="text-xs text-muted-foreground">{s.due_date}</span>
+                      )}
+                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteSubtask(s.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <div className="pl-6">
+                      <MultiAssigneeSelect
+                        options={assigneeOptions}
+                        value={s.assignees || []}
+                        onChange={(v) => updateSubtaskAssignees(s, v)}
+                        placeholder="Responsáveis da subtarefa"
+                      />
+                      {(s.assignees || []).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {(s.assignees || []).map(v => (
+                            <Badge key={v} variant="outline" className="text-xs">{assigneeLabel(v)}</Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {subtasks.length === 0 && (
                   <p className="text-xs text-muted-foreground">Nenhuma subtarefa.</p>
                 )}
               </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Nova subtarefa"
-                  value={newSubtask}
-                  onChange={(e) => setNewSubtask(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubtask(); } }}
+              <div className="space-y-2 pt-2 border-t">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Nova subtarefa"
+                    value={newSubtask}
+                    onChange={(e) => setNewSubtask(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubtask(); } }}
+                  />
+                  <Input
+                    type="date"
+                    className="w-40"
+                    value={newSubtaskDueDate}
+                    onChange={(e) => setNewSubtaskDueDate(e.target.value)}
+                  />
+                  <Button type="button" onClick={addSubtask} disabled={!newSubtask.trim()}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <MultiAssigneeSelect
+                  options={assigneeOptions}
+                  value={newSubtaskAssignees}
+                  onChange={setNewSubtaskAssignees}
+                  placeholder="Responsáveis (opcional)"
                 />
-                <Input
-                  type="date"
-                  className="w-40"
-                  value={newSubtaskDueDate}
-                  onChange={(e) => setNewSubtaskDueDate(e.target.value)}
-                />
-                <Button type="button" onClick={addSubtask} disabled={!newSubtask.trim()}>
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
             </div>
           )}
