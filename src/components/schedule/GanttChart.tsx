@@ -978,6 +978,17 @@ export const GanttChart = ({
                             <div className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 hover:bg-muted rounded">
                               <GripVertical className="h-4 w-4 text-muted-foreground" />
                             </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 -ml-1 shrink-0"
+                              onClick={(e) => { e.stopPropagation(); subtasksApi.toggleExpanded(task.id); }}
+                              title="Subtarefas"
+                            >
+                              {subtasksApi.expanded.has(task.id)
+                                ? <ChevronDown className="h-3.5 w-3.5" />
+                                : <ChevronRight className="h-3.5 w-3.5" />}
+                            </Button>
                             {critical && <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />}
                             <span
                               className={`font-medium text-sm truncate flex-1 cursor-pointer hover:underline ${critical ? "text-amber-700 dark:text-amber-400" : ""}`}
