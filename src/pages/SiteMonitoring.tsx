@@ -428,7 +428,7 @@ export default function SiteMonitoring() {
   return (
     <ModulePageLayout
       title="Site Monitoring"
-      subtitle="Plan and track monitoring visits per research site"
+      subtitle="Plan visits and supervise pending items, eCRF queries, protocol and AE deviations"
       selectedProject={selectedProject}
       onProjectChange={setSelectedProject}
       exportData={exportData}
