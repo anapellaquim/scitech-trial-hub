@@ -578,8 +578,8 @@ export default function SiteMonitoring() {
                   </TabsContent>
 
                   <TabsContent value="notes">
-                    {notes.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-8">No monitor notes recorded yet.</p>
+                    {filteredNotes.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No monitor notes match the current filters.</p>
                     ) : (
                       <Table>
                         <TableHeader>
@@ -594,7 +594,7 @@ export default function SiteMonitoring() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {notes.map(n => {
+                          {filteredNotes.map(n => {
                             const v = visits.find(x => x.id === n.monitoring_visit_id);
                             return (
                               <TableRow key={n.id}>
