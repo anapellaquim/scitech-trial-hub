@@ -370,7 +370,7 @@ Deno.serve(async (req) => {
 
     // 16. SITE MONITORING FINDINGS
     const { data: smFindings } = await supabase
-      .from('site_monitoring_findings')
+      .from('site_monitoring_oversight')
       .select('id, severity, status, due_date, description, monitoring_visit_id, site_monitoring_visits(project_id)');
     smFindings?.forEach((f: any) => {
       if (f.status === 'resolved' || f.status === 'closed') return;

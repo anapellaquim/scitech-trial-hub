@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, StickyNote } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, StickyNote, ShieldCheck, FileQuestion, AlertTriangle, HeartPulse, Hourglass } from "lucide-react";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface Site { id: string; project_id: string | null; site_code: string; name: string; }
@@ -24,7 +24,7 @@ interface MonitoringVisit {
   monitor_name: string | null; purpose: string | null; summary: string | null;
   follow_up_actions: string | null; report_link: string | null; report_date: string | null;
 }
-interface Finding {
+interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
   description: string; action_required: string | null; due_date: string | null;
   status: string; resolved_date: string | null; resolution_notes: string | null;
@@ -40,6 +40,22 @@ const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
 const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
+const OVERSIGHT_CATEGORIES = [
+  { value: "pending", label: "Pending Item" },
+  { value: "ecrf_query", label: "eCRF Query" },
+  { value: "protocol_deviation", label: "Protocol Deviation" },
+  { value: "ae_deviation", label: "AE Deviation" },
+  { value: "other", label: "Other" },
+];
+const categoryLabel = (c: string | null) =>
+  OVERSIGHT_CATEGORIES.find(o => o.value === c)?.label || (c || "—");
+const categoryColors: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  ecrf_query: "bg-purple-100 text-purple-800",
+  protocol_deviation: "bg-red-100 text-red-800",
+  ae_deviation: "bg-pink-100 text-pink-800",
+  other: "bg-gray-100 text-gray-800",
+};
 const NOTE_CATEGORIES = ["General", "Site staff", "Subjects", "Documents", "Drug accountability", "Protocol deviation", "Action item", "Other"];
 const NOTE_IMPORTANCE = ["low", "medium", "high"];
 
@@ -73,7 +89,7 @@ const emptyForm = {
 };
 
 const emptyFinding = {
-  category: "", severity: "medium", description: "", action_required: "",
+  category: "pending", severity: "medium", description: "", action_required: "",
   due_date: "", status: "open", resolved_date: "", resolution_notes: "",
 };
 
@@ -93,7 +109,7 @@ export default function SiteMonitoring() {
   const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
   const [sites, setSites] = useState<Site[]>([]);
   const [visits, setVisits] = useState<MonitoringVisit[]>([]);
-  const [findings, setFindings] = useState<Finding[]>([]);
+  const [findings, setFindings] = useState<OversightItem[]>([]);
   const [notes, setNotes] = useState<MonitorNote[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -108,7 +124,7 @@ export default function SiteMonitoring() {
 
   const [findingDialogOpen, setFindingDialogOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<MonitoringVisit | null>(null);
-  const [editingFinding, setEditingFinding] = useState<Finding | null>(null);
+  const [editingFinding, setEditingFinding] = useState<OversightItem | null>(null);
   const [findingForm, setFindingForm] = useState(emptyFinding);
 
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
@@ -171,7 +187,7 @@ export default function SiteMonitoring() {
     if (visitsList.length > 0) {
       const ids = visitsList.map((x: any) => x.id);
       const [{ data: f }, { data: n }] = await Promise.all([
-        supabase.from("site_monitoring_findings" as any).select("*").in("monitoring_visit_id", ids),
+        supabase.from("site_monitoring_oversight" as any).select("*").in("monitoring_visit_id", ids),
         supabase.from("monitor_notes" as any).select("*").in("monitoring_visit_id", ids).order("created_at", { ascending: false }),
       ]);
       setFindings((f as any) || []);
@@ -232,14 +248,14 @@ export default function SiteMonitoring() {
   };
 
   const deleteVisit = async (id: string) => {
-    if (!confirm("Delete this monitoring visit and all its findings?")) return;
+    if (!confirm("Delete this monitoring visit and all its oversight items?")) return;
     await supabase.from("site_monitoring_visits" as any).delete().eq("id", id);
     toast.success("Deleted"); loadData();
   };
 
   // Findings
   const openFindings = (v: MonitoringVisit) => { setSelectedVisit(v); setEditingFinding(null); setFindingForm(emptyFinding); setFindingDialogOpen(true); };
-  const editFinding = (f: Finding) => {
+  const editFinding = (f: OversightItem) => {
     setEditingFinding(f);
     setFindingForm({
       category: f.category || "", severity: f.severity, description: f.description,
@@ -263,17 +279,17 @@ export default function SiteMonitoring() {
       resolution_notes: findingForm.resolution_notes.trim() || null,
     };
     if (editingFinding) {
-      await supabase.from("site_monitoring_findings" as any).update(payload).eq("id", editingFinding.id);
-      toast.success("Finding updated");
+      await supabase.from("site_monitoring_oversight" as any).update(payload).eq("id", editingFinding.id);
+      toast.success("Oversight item updated");
     } else {
-      await supabase.from("site_monitoring_findings" as any).insert(payload);
-      toast.success("Finding added");
+      await supabase.from("site_monitoring_oversight" as any).insert(payload);
+      toast.success("Oversight item added");
     }
     cancelFindingEdit(); loadData();
   };
   const deleteFinding = async (id: string) => {
-    await supabase.from("site_monitoring_findings" as any).delete().eq("id", id);
-    toast.success("Finding deleted"); loadData();
+    await supabase.from("site_monitoring_oversight" as any).delete().eq("id", id);
+    toast.success("Oversight item deleted"); loadData();
   };
 
   const visitFindings = (vid: string) => findings.filter(f => f.monitoring_visit_id === vid);
@@ -353,7 +369,7 @@ export default function SiteMonitoring() {
     Status: v.status, "Planned Date": v.planned_date || "", "Actual Date": v.actual_date || "",
     Monitor: v.monitor_name || "", Purpose: v.purpose || "", Summary: v.summary || "",
     "Follow-up Actions": v.follow_up_actions || "", "Report Date": v.report_date || "",
-    "Report Link": v.report_link || "", Findings: visitFindings(v.id).length,
+    "Report Link": v.report_link || "", Oversight: visitFindings(v.id).length,
   }));
 
   const renderTable = (rows: MonitoringVisit[]) => (
@@ -362,7 +378,7 @@ export default function SiteMonitoring() {
         <TableHeader><TableRow>
           <TableHead>Site</TableHead><TableHead>Code</TableHead><TableHead>Type</TableHead>
           <TableHead>Status</TableHead><TableHead>Planned</TableHead><TableHead>Actual</TableHead>
-          <TableHead>Monitor</TableHead><TableHead>Findings</TableHead><TableHead>Report</TableHead>
+          <TableHead>Monitor</TableHead><TableHead>Oversight</TableHead><TableHead>Report</TableHead>
           <TableHead className="w-[140px]">Actions</TableHead>
         </TableRow></TableHeader>
         <TableBody>
@@ -386,7 +402,7 @@ export default function SiteMonitoring() {
                 <TableCell>{v.report_link ? <a href={v.report_link} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline"><ExternalLink className="h-3.5 w-3.5" />Open</a> : "—"}</TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" title="Findings" onClick={() => openFindings(v)}><ClipboardList className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" title="Oversight" onClick={() => openFindings(v)}><ShieldCheck className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" title="Monitor Notes" onClick={() => openNotes(v)}>
                       <span className="relative inline-flex">
                         <StickyNote className="h-4 w-4" />
@@ -412,7 +428,7 @@ export default function SiteMonitoring() {
   return (
     <ModulePageLayout
       title="Site Monitoring"
-      subtitle="Plan and track monitoring visits per research site"
+      subtitle="Plan visits and supervise pending items, eCRF queries, protocol and AE deviations"
       selectedProject={selectedProject}
       onProjectChange={setSelectedProject}
       exportData={exportData}
@@ -423,13 +439,33 @@ export default function SiteMonitoring() {
         <Card><CardContent className="py-10 text-center text-muted-foreground">Select a study to view monitoring visits.</CardContent></Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CalendarClock className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Planned</p><p className="text-2xl font-semibold">{planned.length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-green-600" /><div><p className="text-xs text-muted-foreground">Completed</p><p className="text-2xl font-semibold">{completed.length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">Total Visits</p><p className="text-2xl font-semibold">{filtered.length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-600" /><div><p className="text-xs text-muted-foreground">Open Findings</p><p className="text-2xl font-semibold">{findings.filter(f => f.status === "open" || f.status === "in_progress").length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-700" /><div><p className="text-xs text-muted-foreground">Critical Findings</p><p className="text-2xl font-semibold">{findings.filter(f => f.severity === "critical" && f.status !== "closed" && f.status !== "resolved").length}</p></div></div></CardContent></Card>
-          </div>
+          {(() => {
+            const openItems = findings.filter(f => f.status === "open" || f.status === "in_progress");
+            const byCat = (cat: string) => openItems.filter(f => f.category === cat).length;
+            const todayMs = Date.now();
+            const dueDays = openItems
+              .filter(f => f.due_date)
+              .map(f => Math.round((new Date(f.due_date as string).getTime() - todayMs) / 86400000));
+            const avgDays = dueDays.length ? Math.round(dueDays.reduce((a, b) => a + b, 0) / dueDays.length) : null;
+            const criticalOpen = openItems.filter(f => f.severity === "critical").length;
+            return (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CalendarClock className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Planned Visits</p><p className="text-2xl font-semibold">{planned.length}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-green-600" /><div><p className="text-xs text-muted-foreground">Completed Visits</p><p className="text-2xl font-semibold">{completed.length}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">Total Visits</p><p className="text-2xl font-semibold">{filtered.length}</p></div></div></CardContent></Card>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-amber-600" /><div><p className="text-xs text-muted-foreground">Pending Items</p><p className="text-2xl font-semibold">{byCat("pending")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><FileQuestion className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">eCRF Queries</p><p className="text-2xl font-semibold">{byCat("ecrf_query")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-red-600" /><div><p className="text-xs text-muted-foreground">Protocol Deviations</p><p className="text-2xl font-semibold">{byCat("protocol_deviation")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><HeartPulse className="h-5 w-5 text-pink-600" /><div><p className="text-xs text-muted-foreground">AE Deviations</p><p className="text-2xl font-semibold">{byCat("ae_deviation")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-700" /><div><p className="text-xs text-muted-foreground">Critical Open</p><p className="text-2xl font-semibold">{criticalOpen}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><Hourglass className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Avg Days to Due</p><p className="text-2xl font-semibold">{avgDays === null ? "—" : avgDays}</p></div></div></CardContent></Card>
+                </div>
+              </>
+            );
+          })()}
 
           <Card>
             <CardHeader>
@@ -468,7 +504,7 @@ export default function SiteMonitoring() {
                     <TabsTrigger value="all">All ({filtered.length})</TabsTrigger>
                     <TabsTrigger value="planned">Planned ({planned.length})</TabsTrigger>
                     <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
-                    <TabsTrigger value="findings">Findings ({findings.length})</TabsTrigger>
+                    <TabsTrigger value="findings">Oversight ({findings.length})</TabsTrigger>
                     <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
                   </TabsList>
                   <TabsContent value="all">{renderTable(filtered)}</TabsContent>
@@ -477,7 +513,7 @@ export default function SiteMonitoring() {
 
                   <TabsContent value="findings">
                     {findings.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-8">No findings recorded yet.</p>
+                      <p className="text-muted-foreground text-center py-8">No oversight items recorded yet.</p>
                     ) : (
                       <Table>
                         <TableHeader>
@@ -489,6 +525,7 @@ export default function SiteMonitoring() {
                             <TableHead>Description</TableHead>
                             <TableHead>Action Required</TableHead>
                             <TableHead>Due Date</TableHead>
+                            <TableHead>Days Left</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Resolved</TableHead>
                           </TableRow>
@@ -503,15 +540,22 @@ export default function SiteMonitoring() {
                             })
                             .map(f => {
                               const v = visits.find(x => x.id === f.monitoring_visit_id);
+                              const daysLeft = f.due_date
+                                ? Math.round((new Date(f.due_date).getTime() - Date.now()) / 86400000)
+                                : null;
+                              const isOpen = f.status === "open" || f.status === "in_progress";
                               return (
                                 <TableRow key={f.id}>
                                   <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
                                   <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
-                                  <TableCell>{f.category || "—"}</TableCell>
+                                  <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
                                   <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
                                   <TableCell className="max-w-[260px] text-sm whitespace-pre-wrap">{f.description}</TableCell>
                                   <TableCell className="max-w-[200px] text-sm whitespace-pre-wrap">{f.action_required || "—"}</TableCell>
                                   <TableCell>{f.due_date || "—"}</TableCell>
+                                  <TableCell className={isOpen && daysLeft !== null && daysLeft < 0 ? "text-destructive font-semibold" : ""}>
+                                    {daysLeft === null ? "—" : `${daysLeft}d`}
+                                  </TableCell>
                                   <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
                                   <TableCell>{f.resolved_date || "—"}</TableCell>
                                 </TableRow>
@@ -611,19 +655,24 @@ export default function SiteMonitoring() {
         </DialogContent>
       </Dialog>
 
-      {/* Findings Dialog */}
+      {/* Oversight Dialog */}
       <Dialog open={findingDialogOpen} onOpenChange={setFindingDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Findings — {selectedVisit?.visit_type} {selectedVisit && `(${siteName(selectedVisit.site_id)})`}</DialogTitle>
+            <DialogTitle>Oversight — {selectedVisit?.visit_type} {selectedVisit && `(${siteName(selectedVisit.site_id)})`}</DialogTitle>
           </DialogHeader>
           {selectedVisit && (
             <div className="grid gap-4">
               <Card className="p-4">
-                <h4 className="font-semibold mb-3">{editingFinding ? "Edit Finding" : "Add Finding"}</h4>
+                <h4 className="font-semibold mb-3">{editingFinding ? "Edit Oversight Item" : "Add Oversight Item"}</h4>
                 <div className="grid gap-3">
                   <div className="grid grid-cols-3 gap-3">
-                    <div><Label>Category</Label><Input value={findingForm.category} onChange={e => setFindingForm({...findingForm, category: e.target.value})} placeholder="e.g. Documentation" /></div>
+                    <div><Label>Category</Label>
+                      <Select value={findingForm.category || "other"} onValueChange={v => setFindingForm({...findingForm, category: v})}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{OVERSIGHT_CATEGORIES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
                     <div><Label>Severity</Label>
                       <Select value={findingForm.severity} onValueChange={v => setFindingForm({...findingForm, severity: v})}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
@@ -640,21 +689,21 @@ export default function SiteMonitoring() {
                   <div><Label>Description *</Label><Textarea rows={2} value={findingForm.description} onChange={e => setFindingForm({...findingForm, description: e.target.value})} /></div>
                   <div><Label>Action Required</Label><Textarea rows={2} value={findingForm.action_required} onChange={e => setFindingForm({...findingForm, action_required: e.target.value})} /></div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>Due Date</Label><Input type="date" value={findingForm.due_date} onChange={e => setFindingForm({...findingForm, due_date: e.target.value})} /></div>
+                    <div><Label>Resolution Deadline</Label><Input type="date" value={findingForm.due_date} onChange={e => setFindingForm({...findingForm, due_date: e.target.value})} /></div>
                     <div><Label>Resolved Date</Label><Input type="date" value={findingForm.resolved_date} onChange={e => setFindingForm({...findingForm, resolved_date: e.target.value})} /></div>
                   </div>
                   <div><Label>Resolution Notes</Label><Textarea rows={2} value={findingForm.resolution_notes} onChange={e => setFindingForm({...findingForm, resolution_notes: e.target.value})} /></div>
                   <div className="flex gap-2 justify-end">
                     {editingFinding && <Button variant="outline" size="sm" onClick={cancelFindingEdit}>Cancel Edit</Button>}
-                    <Button size="sm" onClick={saveFinding}>{editingFinding ? "Update Finding" : "Add Finding"}</Button>
+                    <Button size="sm" onClick={saveFinding}>{editingFinding ? "Update Item" : "Add Item"}</Button>
                   </div>
                 </div>
               </Card>
 
               <div>
-                <h4 className="font-semibold mb-2">Existing Findings ({visitFindings(selectedVisit.id).length})</h4>
+                <h4 className="font-semibold mb-2">Existing Oversight Items ({visitFindings(selectedVisit.id).length})</h4>
                 {visitFindings(selectedVisit.id).length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No findings recorded.</p>
+                  <p className="text-muted-foreground text-sm">No oversight items recorded.</p>
                 ) : (
                   <Table>
                     <TableHeader><TableRow>
@@ -664,7 +713,7 @@ export default function SiteMonitoring() {
                     <TableBody>
                       {visitFindings(selectedVisit.id).map(f => (
                         <TableRow key={f.id}>
-                          <TableCell>{f.category || "—"}</TableCell>
+                          <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
                           <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
                           <TableCell className="text-sm max-w-xs truncate" title={f.description}>{f.description}</TableCell>
                           <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
