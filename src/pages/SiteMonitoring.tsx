@@ -523,8 +523,8 @@ export default function SiteMonitoring() {
                   <TabsContent value="completed">{renderTable(completed)}</TabsContent>
 
                   <TabsContent value="findings">
-                    {findings.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-8">No oversight items recorded yet.</p>
+                    {filteredFindings.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No oversight items match the current filters.</p>
                     ) : (
                       <Table>
                         <TableHeader>
@@ -542,7 +542,7 @@ export default function SiteMonitoring() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {findings
+                          {filteredFindings
                             .slice()
                             .sort((a, b) => {
                               const va = visits.find(v => v.id === a.monitoring_visit_id);
