@@ -515,8 +515,8 @@ export default function SiteMonitoring() {
                     <TabsTrigger value="all">All ({filtered.length})</TabsTrigger>
                     <TabsTrigger value="planned">Planned ({planned.length})</TabsTrigger>
                     <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
-                    <TabsTrigger value="findings">Oversight ({findings.length})</TabsTrigger>
-                    <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
+                    <TabsTrigger value="findings">Oversight ({filteredFindings.length})</TabsTrigger>
+                    <TabsTrigger value="notes">Notes ({filteredNotes.length})</TabsTrigger>
                   </TabsList>
                   <TabsContent value="all">{renderTable(filtered)}</TabsContent>
                   <TabsContent value="planned">{renderTable(planned)}</TabsContent>
