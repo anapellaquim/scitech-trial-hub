@@ -40,6 +40,22 @@ const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
 const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
+const OVERSIGHT_CATEGORIES = [
+  { value: "pending", label: "Pending Item" },
+  { value: "ecrf_query", label: "eCRF Query" },
+  { value: "protocol_deviation", label: "Protocol Deviation" },
+  { value: "ae_deviation", label: "AE Deviation" },
+  { value: "other", label: "Other" },
+];
+const categoryLabel = (c: string | null) =>
+  OVERSIGHT_CATEGORIES.find(o => o.value === c)?.label || (c || "—");
+const categoryColors: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  ecrf_query: "bg-purple-100 text-purple-800",
+  protocol_deviation: "bg-red-100 text-red-800",
+  ae_deviation: "bg-pink-100 text-pink-800",
+  other: "bg-gray-100 text-gray-800",
+};
 const NOTE_CATEGORIES = ["General", "Site staff", "Subjects", "Documents", "Drug accountability", "Protocol deviation", "Action item", "Other"];
 const NOTE_IMPORTANCE = ["low", "medium", "high"];
 
