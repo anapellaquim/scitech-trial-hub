@@ -3122,7 +3122,7 @@ export type Database = {
           },
         ]
       }
-      site_monitoring_findings: {
+      site_monitoring_oversight: {
         Row: {
           action_required: string | null
           category: string | null
