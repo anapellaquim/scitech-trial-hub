@@ -365,6 +365,16 @@ export default function SiteMonitoring() {
   const completed = filtered.filter(v => v.status === "completed");
   const overdue = filtered.filter(v => ["planned", "scheduled"].includes(v.status) && v.planned_date && v.planned_date < today);
 
+  const filteredVisitIds = useMemo(() => new Set(filtered.map(v => v.id)), [filtered]);
+  const filteredFindings = useMemo(
+    () => findings.filter(f => filteredVisitIds.has(f.monitoring_visit_id)),
+    [findings, filteredVisitIds]
+  );
+  const filteredNotes = useMemo(
+    () => notes.filter(n => filteredVisitIds.has(n.monitoring_visit_id)),
+    [notes, filteredVisitIds]
+  );
+
   const exportData = filtered.map(v => ({
     Site: siteName(v.site_id), Code: v.visit_code || "", Type: v.visit_type,
     Status: v.status, "Planned Date": v.planned_date || "", "Actual Date": v.actual_date || "",
@@ -441,7 +451,7 @@ export default function SiteMonitoring() {
       ) : (
         <>
           {(() => {
-            const openItems = findings.filter(f => f.status === "open" || f.status === "in_progress");
+            const openItems = filteredFindings.filter(f => f.status === "open" || f.status === "in_progress");
             const byCat = (cat: string) => openItems.filter(f => f.category === cat).length;
             const todayMs = Date.now();
             const dueDays = openItems
@@ -505,16 +515,16 @@ export default function SiteMonitoring() {
                     <TabsTrigger value="all">All ({filtered.length})</TabsTrigger>
                     <TabsTrigger value="planned">Planned ({planned.length})</TabsTrigger>
                     <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
-                    <TabsTrigger value="findings">Oversight ({findings.length})</TabsTrigger>
-                    <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
+                    <TabsTrigger value="findings">Oversight ({filteredFindings.length})</TabsTrigger>
+                    <TabsTrigger value="notes">Notes ({filteredNotes.length})</TabsTrigger>
                   </TabsList>
                   <TabsContent value="all">{renderTable(filtered)}</TabsContent>
                   <TabsContent value="planned">{renderTable(planned)}</TabsContent>
                   <TabsContent value="completed">{renderTable(completed)}</TabsContent>
 
                   <TabsContent value="findings">
-                    {findings.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-8">No oversight items recorded yet.</p>
+                    {filteredFindings.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No oversight items match the current filters.</p>
                     ) : (
                       <Table>
                         <TableHeader>
@@ -532,7 +542,7 @@ export default function SiteMonitoring() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {findings
+                          {filteredFindings
                             .slice()
                             .sort((a, b) => {
                               const va = visits.find(v => v.id === a.monitoring_visit_id);
@@ -568,8 +578,8 @@ export default function SiteMonitoring() {
                   </TabsContent>
 
                   <TabsContent value="notes">
-                    {notes.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-8">No monitor notes recorded yet.</p>
+                    {filteredNotes.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No monitor notes match the current filters.</p>
                     ) : (
                       <Table>
                         <TableHeader>
@@ -584,7 +594,7 @@ export default function SiteMonitoring() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {notes.map(n => {
+                          {filteredNotes.map(n => {
                             const v = visits.find(x => x.id === n.monitoring_visit_id);
                             return (
                               <TableRow key={n.id}>

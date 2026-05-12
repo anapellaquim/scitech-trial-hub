@@ -1,43 +1,44 @@
-# Findings → Oversight no Site Monitoring
+## Problema
 
-Renomear a estrutura "Findings" do módulo Site Monitoring para "Oversight" e ampliá-la para servir como supervisão geral da visita, contabilizando pendências, queries de eCRF, desvios de protocolo e desvios de eventos adversos, com prazo de solução.
+Os filtros do card "Monitoring Visits" (Search, Site, Type, Status) só estão sendo aplicados às abas **All**, **Planned** e **Completed**. As abas **Oversight** e **Notes** ignoram completamente os filtros — elas iteram sobre `findings` e `notes` brutos, e os contadores (`Oversight (N)`, `Notes (N)`) mostram o total geral.
 
-Escopo limitado a `site_monitoring_findings` / página `Site Monitoring`. NÃO afeta `visit_findings` (Visit Report), Dashboard nem Communications, que continuam usando seu próprio modelo.
+Além disso, os KPIs do topo (Pending Items, eCRF Queries, Protocol Deviations, AE Deviations, Critical Open, Avg Days to Due) também usam `findings` bruto, então não respeitam o filtro por site/visita.
 
-## 1) Banco de dados (migração)
+## Solução proposta
 
-- Renomear tabela `site_monitoring_findings` → `site_monitoring_oversight`.
-- Renomear coluna `monitoring_visit_id` mantida (já é correta).
-- Padronizar `category` como uma das opções: `pending`, `ecrf_query`, `protocol_deviation`, `ae_deviation`, `other` (texto livre, validado por trigger leve — sem CHECK constraint imutável).
-- Renomear políticas RLS e índices para refletir o novo nome.
-- Atualizar `get_module_from_table()`: mapear `site_monitoring_oversight` → módulo `monitoring`.
-- Permissions: nenhuma alteração — segue herdando a permissão de Site Monitoring.
+Fazer com que **todos os filtros** (Search, Site, Type, Status) restrinjam de forma consistente todo o conteúdo do módulo — visitas, oversight items, notes e KPIs.
 
-## 2) UI — `src/pages/SiteMonitoring.tsx`
+### Mudanças em `src/pages/SiteMonitoring.tsx`
 
-- Renomear todas as ocorrências visíveis de "Findings" → "Oversight" (aba, KPIs, dialog, tabela, exports, mensagens, ícones de ação).
-- Substituir o input livre de **Category** por um `Select` com as 5 opções padronizadas (rótulos legíveis: "Pending Item", "eCRF Query", "Protocol Deviation", "AE Deviation", "Other").
-- KPIs no topo (substituem Open/Critical Findings):
-  - Pending Items (count category=pending, status open/in_progress)
-  - eCRF Queries (count category=ecrf_query, open/in_progress)
-  - Protocol Deviations (count category=protocol_deviation, open/in_progress)
-  - AE Deviations (count category=ae_deviation, open/in_progress)
-  - Critical Open (qualquer categoria, severity=critical)
-  - Avg Days to Due (média de dias entre hoje e `due_date` para itens em aberto)
-- Tabela de Oversight: adicionar coluna **Category** (badge colorida por tipo) e **Days Left** (calculado a partir de `due_date`).
-- Coluna "Findings" da tabela de visitas vira "Oversight" e mostra contagem total + breakdown rápido por categoria (tooltip).
-- Export: campo `Findings` → `Oversight`.
+1. **Derivar listas filtradas de oversight e notes** a partir das visitas filtradas:
+   ```ts
+   const filteredVisitIds = new Set(filtered.map(v => v.id));
+   const filteredFindings = useMemo(
+     () => findings.filter(f => filteredVisitIds.has(f.monitoring_visit_id)),
+     [findings, filtered]
+   );
+   const filteredNotes = useMemo(
+     () => notes.filter(n => filteredVisitIds.has(n.monitoring_visit_id)),
+     [notes, filtered]
+   );
+   ```
 
-## 3) Edge Function — `supabase/functions/generate-alerts/index.ts`
+2. **Atualizar contadores das abas**:
+   - `Oversight ({findings.length})` → `Oversight ({filteredFindings.length})`
+   - `Notes ({notes.length})` → `Notes ({filteredNotes.length})`
 
-- Atualizar referências a `site_monitoring_findings` → `site_monitoring_oversight` (4 ocorrências). Sem mudança de lógica.
+3. **Atualizar tabelas das abas Oversight e Notes** para iterar sobre `filteredFindings` / `filteredNotes` em vez de `findings` / `notes`.
 
-## 4) Tipos TS
+4. **Atualizar os KPIs do topo** (Pending Items, eCRF Queries, Protocol Deviations, AE Deviations, Critical Open, Avg Days to Due) para serem calculados a partir de `filteredFindings`, garantindo coerência com os filtros aplicados.
 
-- `interface Finding` → `interface OversightItem` em `SiteMonitoring.tsx`.
-- Após a migração ser aprovada, `src/integrations/supabase/types.ts` é regenerado automaticamente.
+5. **Mensagens de empty state**: Quando os filtros estiverem ativos e não houver resultado, manter a mensagem atual ("No oversight items recorded yet." / "No monitor notes recorded yet.") — opcionalmente trocar para "No oversight items match the current filters." quando há filtro ativo. (Decisão menor; mantenho a mensagem atual a menos que você prefira outra.)
 
-## Fora de escopo
+### Fora de escopo
 
-- Não toca em `visit_findings`, `VisitReport.tsx`, `Dashboard.tsx`, módulos Communications.
-- Não cria módulos novos para eCRF, desvios ou EAs — as contagens são manuais/derivadas da categoria.
+- Não alteramos os filtros em si (continuam Search, Site, Type, Status).
+- Não alteramos schema do banco nem edge functions.
+- Não tocamos em outras páginas.
+
+## Resultado esperado
+
+Selecionar um site (ou outro filtro) passa a restringir simultaneamente: visitas, oversight items, notes e KPIs do topo, mantendo coerência total entre as 5 abas.
