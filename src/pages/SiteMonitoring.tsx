@@ -109,7 +109,7 @@ export default function SiteMonitoring() {
   const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
   const [sites, setSites] = useState<Site[]>([]);
   const [visits, setVisits] = useState<MonitoringVisit[]>([]);
-  const [findings, setFindings] = useState<Finding[]>([]);
+  const [findings, setFindings] = useState<OversightItem[]>([]);
   const [notes, setNotes] = useState<MonitorNote[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -124,7 +124,7 @@ export default function SiteMonitoring() {
 
   const [findingDialogOpen, setFindingDialogOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<MonitoringVisit | null>(null);
-  const [editingFinding, setEditingFinding] = useState<Finding | null>(null);
+  const [editingFinding, setEditingFinding] = useState<OversightItem | null>(null);
   const [findingForm, setFindingForm] = useState(emptyFinding);
 
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
@@ -187,7 +187,7 @@ export default function SiteMonitoring() {
     if (visitsList.length > 0) {
       const ids = visitsList.map((x: any) => x.id);
       const [{ data: f }, { data: n }] = await Promise.all([
-        supabase.from("site_monitoring_findings" as any).select("*").in("monitoring_visit_id", ids),
+        supabase.from("site_monitoring_oversight" as any).select("*").in("monitoring_visit_id", ids),
         supabase.from("monitor_notes" as any).select("*").in("monitoring_visit_id", ids).order("created_at", { ascending: false }),
       ]);
       setFindings((f as any) || []);
@@ -248,7 +248,7 @@ export default function SiteMonitoring() {
   };
 
   const deleteVisit = async (id: string) => {
-    if (!confirm("Delete this monitoring visit and all its findings?")) return;
+    if (!confirm("Delete this monitoring visit and all its oversight items?")) return;
     await supabase.from("site_monitoring_visits" as any).delete().eq("id", id);
     toast.success("Deleted"); loadData();
   };
@@ -279,17 +279,17 @@ export default function SiteMonitoring() {
       resolution_notes: findingForm.resolution_notes.trim() || null,
     };
     if (editingFinding) {
-      await supabase.from("site_monitoring_findings" as any).update(payload).eq("id", editingFinding.id);
-      toast.success("Finding updated");
+      await supabase.from("site_monitoring_oversight" as any).update(payload).eq("id", editingFinding.id);
+      toast.success("Oversight item updated");
     } else {
-      await supabase.from("site_monitoring_findings" as any).insert(payload);
-      toast.success("Finding added");
+      await supabase.from("site_monitoring_oversight" as any).insert(payload);
+      toast.success("Oversight item added");
     }
     cancelFindingEdit(); loadData();
   };
   const deleteFinding = async (id: string) => {
-    await supabase.from("site_monitoring_findings" as any).delete().eq("id", id);
-    toast.success("Finding deleted"); loadData();
+    await supabase.from("site_monitoring_oversight" as any).delete().eq("id", id);
+    toast.success("Oversight item deleted"); loadData();
   };
 
   const visitFindings = (vid: string) => findings.filter(f => f.monitoring_visit_id === vid);
