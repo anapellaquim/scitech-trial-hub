@@ -402,7 +402,7 @@ export default function SiteMonitoring() {
                 <TableCell>{v.report_link ? <a href={v.report_link} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline"><ExternalLink className="h-3.5 w-3.5" />Open</a> : "—"}</TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" title="Findings" onClick={() => openFindings(v)}><ClipboardList className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" title="Oversight" onClick={() => openFindings(v)}><ShieldCheck className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" title="Monitor Notes" onClick={() => openNotes(v)}>
                       <span className="relative inline-flex">
                         <StickyNote className="h-4 w-4" />
