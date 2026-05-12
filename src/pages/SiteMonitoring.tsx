@@ -439,13 +439,33 @@ export default function SiteMonitoring() {
         <Card><CardContent className="py-10 text-center text-muted-foreground">Select a study to view monitoring visits.</CardContent></Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CalendarClock className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Planned</p><p className="text-2xl font-semibold">{planned.length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-green-600" /><div><p className="text-xs text-muted-foreground">Completed</p><p className="text-2xl font-semibold">{completed.length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">Total Visits</p><p className="text-2xl font-semibold">{filtered.length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-600" /><div><p className="text-xs text-muted-foreground">Open Findings</p><p className="text-2xl font-semibold">{findings.filter(f => f.status === "open" || f.status === "in_progress").length}</p></div></div></CardContent></Card>
-            <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-700" /><div><p className="text-xs text-muted-foreground">Critical Findings</p><p className="text-2xl font-semibold">{findings.filter(f => f.severity === "critical" && f.status !== "closed" && f.status !== "resolved").length}</p></div></div></CardContent></Card>
-          </div>
+          {(() => {
+            const openItems = findings.filter(f => f.status === "open" || f.status === "in_progress");
+            const byCat = (cat: string) => openItems.filter(f => f.category === cat).length;
+            const todayMs = Date.now();
+            const dueDays = openItems
+              .filter(f => f.due_date)
+              .map(f => Math.round((new Date(f.due_date as string).getTime() - todayMs) / 86400000));
+            const avgDays = dueDays.length ? Math.round(dueDays.reduce((a, b) => a + b, 0) / dueDays.length) : null;
+            const criticalOpen = openItems.filter(f => f.severity === "critical").length;
+            return (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CalendarClock className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Planned Visits</p><p className="text-2xl font-semibold">{planned.length}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-green-600" /><div><p className="text-xs text-muted-foreground">Completed Visits</p><p className="text-2xl font-semibold">{completed.length}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">Total Visits</p><p className="text-2xl font-semibold">{filtered.length}</p></div></div></CardContent></Card>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-amber-600" /><div><p className="text-xs text-muted-foreground">Pending Items</p><p className="text-2xl font-semibold">{byCat("pending")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><FileQuestion className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">eCRF Queries</p><p className="text-2xl font-semibold">{byCat("ecrf_query")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-red-600" /><div><p className="text-xs text-muted-foreground">Protocol Deviations</p><p className="text-2xl font-semibold">{byCat("protocol_deviation")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><HeartPulse className="h-5 w-5 text-pink-600" /><div><p className="text-xs text-muted-foreground">AE Deviations</p><p className="text-2xl font-semibold">{byCat("ae_deviation")}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-700" /><div><p className="text-xs text-muted-foreground">Critical Open</p><p className="text-2xl font-semibold">{criticalOpen}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><Hourglass className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Avg Days to Due</p><p className="text-2xl font-semibold">{avgDays === null ? "—" : avgDays}</p></div></div></CardContent></Card>
+                </div>
+              </>
+            );
+          })()}
 
           <Card>
             <CardHeader>
