@@ -365,6 +365,16 @@ export default function SiteMonitoring() {
   const completed = filtered.filter(v => v.status === "completed");
   const overdue = filtered.filter(v => ["planned", "scheduled"].includes(v.status) && v.planned_date && v.planned_date < today);
 
+  const filteredVisitIds = useMemo(() => new Set(filtered.map(v => v.id)), [filtered]);
+  const filteredFindings = useMemo(
+    () => findings.filter(f => filteredVisitIds.has(f.monitoring_visit_id)),
+    [findings, filteredVisitIds]
+  );
+  const filteredNotes = useMemo(
+    () => notes.filter(n => filteredVisitIds.has(n.monitoring_visit_id)),
+    [notes, filteredVisitIds]
+  );
+
   const exportData = filtered.map(v => ({
     Site: siteName(v.site_id), Code: v.visit_code || "", Type: v.visit_type,
     Status: v.status, "Planned Date": v.planned_date || "", "Actual Date": v.actual_date || "",
