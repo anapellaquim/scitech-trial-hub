@@ -655,19 +655,24 @@ export default function SiteMonitoring() {
         </DialogContent>
       </Dialog>
 
-      {/* Findings Dialog */}
+      {/* Oversight Dialog */}
       <Dialog open={findingDialogOpen} onOpenChange={setFindingDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Findings — {selectedVisit?.visit_type} {selectedVisit && `(${siteName(selectedVisit.site_id)})`}</DialogTitle>
+            <DialogTitle>Oversight — {selectedVisit?.visit_type} {selectedVisit && `(${siteName(selectedVisit.site_id)})`}</DialogTitle>
           </DialogHeader>
           {selectedVisit && (
             <div className="grid gap-4">
               <Card className="p-4">
-                <h4 className="font-semibold mb-3">{editingFinding ? "Edit Finding" : "Add Finding"}</h4>
+                <h4 className="font-semibold mb-3">{editingFinding ? "Edit Oversight Item" : "Add Oversight Item"}</h4>
                 <div className="grid gap-3">
                   <div className="grid grid-cols-3 gap-3">
-                    <div><Label>Category</Label><Input value={findingForm.category} onChange={e => setFindingForm({...findingForm, category: e.target.value})} placeholder="e.g. Documentation" /></div>
+                    <div><Label>Category</Label>
+                      <Select value={findingForm.category || "other"} onValueChange={v => setFindingForm({...findingForm, category: v})}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{OVERSIGHT_CATEGORIES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
                     <div><Label>Severity</Label>
                       <Select value={findingForm.severity} onValueChange={v => setFindingForm({...findingForm, severity: v})}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
@@ -684,21 +689,21 @@ export default function SiteMonitoring() {
                   <div><Label>Description *</Label><Textarea rows={2} value={findingForm.description} onChange={e => setFindingForm({...findingForm, description: e.target.value})} /></div>
                   <div><Label>Action Required</Label><Textarea rows={2} value={findingForm.action_required} onChange={e => setFindingForm({...findingForm, action_required: e.target.value})} /></div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>Due Date</Label><Input type="date" value={findingForm.due_date} onChange={e => setFindingForm({...findingForm, due_date: e.target.value})} /></div>
+                    <div><Label>Resolution Deadline</Label><Input type="date" value={findingForm.due_date} onChange={e => setFindingForm({...findingForm, due_date: e.target.value})} /></div>
                     <div><Label>Resolved Date</Label><Input type="date" value={findingForm.resolved_date} onChange={e => setFindingForm({...findingForm, resolved_date: e.target.value})} /></div>
                   </div>
                   <div><Label>Resolution Notes</Label><Textarea rows={2} value={findingForm.resolution_notes} onChange={e => setFindingForm({...findingForm, resolution_notes: e.target.value})} /></div>
                   <div className="flex gap-2 justify-end">
                     {editingFinding && <Button variant="outline" size="sm" onClick={cancelFindingEdit}>Cancel Edit</Button>}
-                    <Button size="sm" onClick={saveFinding}>{editingFinding ? "Update Finding" : "Add Finding"}</Button>
+                    <Button size="sm" onClick={saveFinding}>{editingFinding ? "Update Item" : "Add Item"}</Button>
                   </div>
                 </div>
               </Card>
 
               <div>
-                <h4 className="font-semibold mb-2">Existing Findings ({visitFindings(selectedVisit.id).length})</h4>
+                <h4 className="font-semibold mb-2">Existing Oversight Items ({visitFindings(selectedVisit.id).length})</h4>
                 {visitFindings(selectedVisit.id).length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No findings recorded.</p>
+                  <p className="text-muted-foreground text-sm">No oversight items recorded.</p>
                 ) : (
                   <Table>
                     <TableHeader><TableRow>
@@ -708,7 +713,7 @@ export default function SiteMonitoring() {
                     <TableBody>
                       {visitFindings(selectedVisit.id).map(f => (
                         <TableRow key={f.id}>
-                          <TableCell>{f.category || "—"}</TableCell>
+                          <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
                           <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
                           <TableCell className="text-sm max-w-xs truncate" title={f.description}>{f.description}</TableCell>
                           <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
