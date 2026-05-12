@@ -451,7 +451,7 @@ export default function SiteMonitoring() {
       ) : (
         <>
           {(() => {
-            const openItems = findings.filter(f => f.status === "open" || f.status === "in_progress");
+            const openItems = filteredFindings.filter(f => f.status === "open" || f.status === "in_progress");
             const byCat = (cat: string) => openItems.filter(f => f.category === cat).length;
             const todayMs = Date.now();
             const dueDays = openItems
