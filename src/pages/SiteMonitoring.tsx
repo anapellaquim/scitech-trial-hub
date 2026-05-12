@@ -369,7 +369,7 @@ export default function SiteMonitoring() {
     Status: v.status, "Planned Date": v.planned_date || "", "Actual Date": v.actual_date || "",
     Monitor: v.monitor_name || "", Purpose: v.purpose || "", Summary: v.summary || "",
     "Follow-up Actions": v.follow_up_actions || "", "Report Date": v.report_date || "",
-    "Report Link": v.report_link || "", Findings: visitFindings(v.id).length,
+    "Report Link": v.report_link || "", Oversight: visitFindings(v.id).length,
   }));
 
   const renderTable = (rows: MonitoringVisit[]) => (
