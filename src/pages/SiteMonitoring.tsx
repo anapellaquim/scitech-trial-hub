@@ -24,7 +24,7 @@ interface MonitoringVisit {
   monitor_name: string | null; purpose: string | null; summary: string | null;
   follow_up_actions: string | null; report_link: string | null; report_date: string | null;
 }
-interface Finding {
+interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
   description: string; action_required: string | null; due_date: string | null;
   status: string; resolved_date: string | null; resolution_notes: string | null;
