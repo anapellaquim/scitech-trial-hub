@@ -504,7 +504,7 @@ export default function SiteMonitoring() {
                     <TabsTrigger value="all">All ({filtered.length})</TabsTrigger>
                     <TabsTrigger value="planned">Planned ({planned.length})</TabsTrigger>
                     <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
-                    <TabsTrigger value="findings">Findings ({findings.length})</TabsTrigger>
+                    <TabsTrigger value="findings">Oversight ({findings.length})</TabsTrigger>
                     <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
                   </TabsList>
                   <TabsContent value="all">{renderTable(filtered)}</TabsContent>
@@ -513,7 +513,7 @@ export default function SiteMonitoring() {
 
                   <TabsContent value="findings">
                     {findings.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-8">No findings recorded yet.</p>
+                      <p className="text-muted-foreground text-center py-8">No oversight items recorded yet.</p>
                     ) : (
                       <Table>
                         <TableHeader>
@@ -525,6 +525,7 @@ export default function SiteMonitoring() {
                             <TableHead>Description</TableHead>
                             <TableHead>Action Required</TableHead>
                             <TableHead>Due Date</TableHead>
+                            <TableHead>Days Left</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Resolved</TableHead>
                           </TableRow>
@@ -539,15 +540,22 @@ export default function SiteMonitoring() {
                             })
                             .map(f => {
                               const v = visits.find(x => x.id === f.monitoring_visit_id);
+                              const daysLeft = f.due_date
+                                ? Math.round((new Date(f.due_date).getTime() - Date.now()) / 86400000)
+                                : null;
+                              const isOpen = f.status === "open" || f.status === "in_progress";
                               return (
                                 <TableRow key={f.id}>
                                   <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
                                   <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
-                                  <TableCell>{f.category || "—"}</TableCell>
+                                  <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
                                   <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
                                   <TableCell className="max-w-[260px] text-sm whitespace-pre-wrap">{f.description}</TableCell>
                                   <TableCell className="max-w-[200px] text-sm whitespace-pre-wrap">{f.action_required || "—"}</TableCell>
                                   <TableCell>{f.due_date || "—"}</TableCell>
+                                  <TableCell className={isOpen && daysLeft !== null && daysLeft < 0 ? "text-destructive font-semibold" : ""}>
+                                    {daysLeft === null ? "—" : `${daysLeft}d`}
+                                  </TableCell>
                                   <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
                                   <TableCell>{f.resolved_date || "—"}</TableCell>
                                 </TableRow>
