@@ -26,7 +26,7 @@ interface MonitoringVisit {
 }
 interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
-  description: string; action_required: string | null; due_date: string | null;
+  quantity: number; description: string; action_required: string | null; due_date: string | null;
   status: string; resolved_date: string | null; resolution_notes: string | null;
 }
 interface MonitorNote {
