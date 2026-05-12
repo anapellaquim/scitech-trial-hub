@@ -89,7 +89,7 @@ const emptyForm = {
 };
 
 const emptyFinding = {
-  category: "pending", severity: "medium", description: "", action_required: "",
+  category: "pending", severity: "medium", quantity: 1, description: "", action_required: "",
   due_date: "", status: "open", resolved_date: "", resolution_notes: "",
 };
 
