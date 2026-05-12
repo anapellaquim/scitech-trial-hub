@@ -378,7 +378,7 @@ export default function SiteMonitoring() {
         <TableHeader><TableRow>
           <TableHead>Site</TableHead><TableHead>Code</TableHead><TableHead>Type</TableHead>
           <TableHead>Status</TableHead><TableHead>Planned</TableHead><TableHead>Actual</TableHead>
-          <TableHead>Monitor</TableHead><TableHead>Findings</TableHead><TableHead>Report</TableHead>
+          <TableHead>Monitor</TableHead><TableHead>Oversight</TableHead><TableHead>Report</TableHead>
           <TableHead className="w-[140px]">Actions</TableHead>
         </TableRow></TableHeader>
         <TableBody>
