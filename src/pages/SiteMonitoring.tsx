@@ -255,7 +255,7 @@ export default function SiteMonitoring() {
 
   // Findings
   const openFindings = (v: MonitoringVisit) => { setSelectedVisit(v); setEditingFinding(null); setFindingForm(emptyFinding); setFindingDialogOpen(true); };
-  const editFinding = (f: Finding) => {
+  const editFinding = (f: OversightItem) => {
     setEditingFinding(f);
     setFindingForm({
       category: f.category || "", severity: f.severity, description: f.description,
