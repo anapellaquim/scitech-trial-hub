@@ -258,7 +258,7 @@ export default function SiteMonitoring() {
   const editFinding = (f: OversightItem) => {
     setEditingFinding(f);
     setFindingForm({
-      category: f.category || "", severity: f.severity, description: f.description,
+      category: f.category || "", severity: f.severity, quantity: f.quantity ?? 1, description: f.description,
       action_required: f.action_required || "", due_date: f.due_date || "", status: f.status,
       resolved_date: f.resolved_date || "", resolution_notes: f.resolution_notes || "",
     });
@@ -271,6 +271,7 @@ export default function SiteMonitoring() {
       monitoring_visit_id: selectedVisit.id,
       category: findingForm.category.trim() || null,
       severity: findingForm.severity,
+      quantity: Math.max(1, Number(findingForm.quantity) || 1),
       description: findingForm.description.trim(),
       action_required: findingForm.action_required.trim() || null,
       due_date: findingForm.due_date || null,
