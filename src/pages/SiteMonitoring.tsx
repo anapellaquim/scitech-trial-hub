@@ -674,11 +674,13 @@ export default function SiteMonitoring() {
                         <SelectContent>{OVERSIGHT_CATEGORIES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
-                    <div><Label>Severity</Label>
-                      <Select value={findingForm.severity} onValueChange={v => setFindingForm({...findingForm, severity: v})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>{FINDING_SEVERITIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
+                    <div><Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={findingForm.quantity}
+                        onChange={e => setFindingForm({...findingForm, quantity: Math.max(1, parseInt(e.target.value) || 1)})}
+                      />
                     </div>
                     <div><Label>Status</Label>
                       <Select value={findingForm.status} onValueChange={v => setFindingForm({...findingForm, status: v})}>
