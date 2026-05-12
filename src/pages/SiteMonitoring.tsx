@@ -26,7 +26,7 @@ interface MonitoringVisit {
 }
 interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
-  description: string; action_required: string | null; due_date: string | null;
+  quantity: number; description: string; action_required: string | null; due_date: string | null;
   status: string; resolved_date: string | null; resolution_notes: string | null;
 }
 interface MonitorNote {
@@ -89,7 +89,7 @@ const emptyForm = {
 };
 
 const emptyFinding = {
-  category: "pending", severity: "medium", description: "", action_required: "",
+  category: "pending", severity: "medium", quantity: 1, description: "", action_required: "",
   due_date: "", status: "open", resolved_date: "", resolution_notes: "",
 };
 
@@ -258,7 +258,7 @@ export default function SiteMonitoring() {
   const editFinding = (f: OversightItem) => {
     setEditingFinding(f);
     setFindingForm({
-      category: f.category || "", severity: f.severity, description: f.description,
+      category: f.category || "", severity: f.severity, quantity: f.quantity ?? 1, description: f.description,
       action_required: f.action_required || "", due_date: f.due_date || "", status: f.status,
       resolved_date: f.resolved_date || "", resolution_notes: f.resolution_notes || "",
     });
@@ -271,6 +271,7 @@ export default function SiteMonitoring() {
       monitoring_visit_id: selectedVisit.id,
       category: findingForm.category.trim() || null,
       severity: findingForm.severity,
+      quantity: Math.max(1, Number(findingForm.quantity) || 1),
       description: findingForm.description.trim(),
       action_required: findingForm.action_required.trim() || null,
       due_date: findingForm.due_date || null,
@@ -673,11 +674,13 @@ export default function SiteMonitoring() {
                         <SelectContent>{OVERSIGHT_CATEGORIES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
-                    <div><Label>Severity</Label>
-                      <Select value={findingForm.severity} onValueChange={v => setFindingForm({...findingForm, severity: v})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>{FINDING_SEVERITIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
+                    <div><Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={findingForm.quantity}
+                        onChange={e => setFindingForm({...findingForm, quantity: Math.max(1, parseInt(e.target.value) || 1)})}
+                      />
                     </div>
                     <div><Label>Status</Label>
                       <Select value={findingForm.status} onValueChange={v => setFindingForm({...findingForm, status: v})}>

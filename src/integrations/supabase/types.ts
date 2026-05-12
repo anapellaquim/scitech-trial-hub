@@ -3132,6 +3132,7 @@ export type Database = {
           due_date: string | null
           id: string
           monitoring_visit_id: string
+          quantity: number
           resolution_notes: string | null
           resolved_date: string | null
           severity: string
@@ -3147,6 +3148,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           monitoring_visit_id: string
+          quantity?: number
           resolution_notes?: string | null
           resolved_date?: string | null
           severity?: string
@@ -3162,6 +3164,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           monitoring_visit_id?: string
+          quantity?: number
           resolution_notes?: string | null
           resolved_date?: string | null
           severity?: string
