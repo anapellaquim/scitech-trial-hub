@@ -12,8 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, UserCheck, Calendar, DollarSign, Settings2, Trash2, Pencil, Search, Filter, AlertTriangle, CheckCircle2, X } from "lucide-react";
-import { format, addDays } from "date-fns";
+import { Plus, UserCheck, Calendar, DollarSign, Settings2, Trash2, Pencil, Search, Filter, AlertTriangle, CheckCircle2, X, ClipboardCheck, History } from "lucide-react";
+import { format, addDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
@@ -86,6 +86,16 @@ export default function PatientManagement() {
     site_id: "" // Can be empty for global study schedule
   });
 
+  const [visitDialogOpen, setVisitDialogOpen] = useState(false);
+  const [selectedPatientForVisits, setSelectedPatientForVisits] = useState<Patient | null>(null);
+  const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
+  const [visitForm, setVisitForm] = useState({
+    protocol_visit_id: "",
+    actual_date: "",
+    status: "Completed",
+    notes: ""
+  });
+
   useEffect(() => {
     loadBaseData();
   }, []);
@@ -104,15 +114,17 @@ export default function PatientManagement() {
   const loadProjectData = async () => {
     setLoading(true);
     try {
-      const [sitesRes, patientsRes, protocolRes] = await Promise.all([
+      const [sitesRes, patientsRes, protocolRes, visitsRes] = await Promise.all([
         supabase.from("research_centers").select("id, code, name").eq("project_id", selectedProject),
         supabase.from("patients").select("*, site:research_centers(code, name)").eq("project_id", selectedProject),
-        supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject).order("target_day")
+        supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject).order("target_day"),
+        supabase.from("patient_visits").select("*, protocol_visit:protocol_visit_schedules(*)").order("actual_date")
       ]);
 
       setSites(sitesRes.data || []);
       setPatients(patientsRes.data || []);
       setProtocolVisits(protocolRes.data || []);
+      setPatientVisits(visitsRes.data || []);
     } catch (error) {
       console.error(error);
       toast.error("Error loading patient data");
@@ -157,7 +169,7 @@ export default function PatientManagement() {
   const handleSaveSchedule = async () => {
     const payload = {
       project_id: selectedProject,
-      site_id: scheduleForm.site_id || null,
+      site_id: scheduleForm.site_id === "__none__" || !scheduleForm.site_id ? null : scheduleForm.site_id,
       visit_name: scheduleForm.visit_name,
       target_day: scheduleForm.target_day,
       window_minus: scheduleForm.window_minus,
@@ -179,6 +191,28 @@ export default function PatientManagement() {
     } else {
       toast.success("Schedule updated");
       setScheduleDialogOpen(false);
+      loadProjectData();
+    }
+  };
+
+  const handleSaveVisit = async () => {
+    if (!selectedPatientForVisits || !visitForm.protocol_visit_id) return;
+
+    const payload = {
+      patient_id: selectedPatientForVisits.id,
+      protocol_visit_id: visitForm.protocol_visit_id,
+      actual_date: visitForm.actual_date || null,
+      status: visitForm.status,
+      notes: visitForm.notes
+    };
+
+    const { error } = await supabase.from("patient_visits").insert(payload);
+
+    if (error) {
+      toast.error("Error recording visit");
+    } else {
+      toast.success("Visit recorded");
+      setVisitDialogOpen(false);
       loadProjectData();
     }
   };
@@ -277,7 +311,7 @@ export default function PatientManagement() {
                         <TableHead>Site</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Enrollment Date</TableHead>
-                        <TableHead>Notes</TableHead>
+                        <TableHead className="text-center">Visits</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -287,31 +321,51 @@ export default function PatientManagement() {
                       ) : filteredPatients.length === 0 ? (
                         <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
                       ) : (
-                        filteredPatients.map(p => (
-                          <TableRow key={p.id}>
-                            <TableCell className="font-bold">{p.patient_code}</TableCell>
-                            <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
-                            <TableCell>{getStatusBadge(p.status)}</TableCell>
-                            <TableCell>{p.enrollment_date ? format(new Date(p.enrollment_date), "dd/MM/yyyy") : "—"}</TableCell>
-                            <TableCell className="max-w-xs truncate text-muted-foreground text-xs">{p.notes || "—"}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => {
-                                  setEditingPatient(p);
-                                  setPatientForm({
-                                    patient_code: p.patient_code,
-                                    site_id: p.site_id,
-                                    status: p.status,
-                                    enrollment_date: p.enrollment_date || "",
-                                    notes: p.notes || ""
-                                  });
-                                  setPatientDialogOpen(true);
-                                }}><Pencil className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePatient(p.id)}><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                        filteredPatients.map(p => {
+                          const completedVisitsCount = patientVisits.filter(v => v.patient_id === p.id && v.status === 'Completed').length;
+                          return (
+                            <TableRow key={p.id}>
+                              <TableCell className="font-bold">{p.patient_code}</TableCell>
+                              <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
+                              <TableCell>{getStatusBadge(p.status)}</TableCell>
+                              <TableCell>{p.enrollment_date ? format(new Date(p.enrollment_date), "dd/MM/yyyy") : "—"}</TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex flex-col items-center">
+                                  <span className="font-semibold">{completedVisitsCount}/{protocolVisits.length}</span>
+                                  <div className="w-20 h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
+                                    <div 
+                                      className="h-full bg-primary transition-all" 
+                                      style={{ width: `${protocolVisits.length > 0 ? (completedVisitsCount / protocolVisits.length) * 100 : 0}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
+                                    setSelectedPatientForVisits(p);
+                                    setVisitForm({ protocol_visit_id: "", actual_date: format(new Date(), "yyyy-MM-dd"), status: "Completed", notes: "" });
+                                    setVisitDialogOpen(true);
+                                  }}>
+                                    <ClipboardCheck className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" onClick={() => {
+                                    setEditingPatient(p);
+                                    setPatientForm({
+                                      patient_code: p.patient_code,
+                                      site_id: p.site_id,
+                                      status: p.status,
+                                      enrollment_date: p.enrollment_date || "",
+                                      notes: p.notes || ""
+                                    });
+                                    setPatientDialogOpen(true);
+                                  }}><Pencil className="h-4 w-4" /></Button>
+                                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePatient(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -478,6 +532,83 @@ export default function PatientManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Evolution Dialog */}
+      <Dialog open={visitDialogOpen} onOpenChange={setVisitDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Patient Evolution - {selectedPatientForVisits?.patient_code}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid gap-6 py-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Record New Visit</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Protocol Visit</Label>
+                    <Select value={visitForm.protocol_visit_id} onValueChange={v => setVisitForm({...visitForm, protocol_visit_id: v})}>
+                      <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>
+                      <SelectContent>
+                        {protocolVisits.map(pv => (
+                          <SelectItem key={pv.id} value={pv.id}>{pv.visit_name} (Target Day {pv.target_day})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Date Performed</Label>
+                    <Input type="date" value={visitForm.actual_date} onChange={e => setVisitForm({...visitForm, actual_date: e.target.value})} />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Notes</Label>
+                  <Textarea value={visitForm.notes} onChange={e => setVisitForm({...visitForm, notes: e.target.value})} placeholder="Observations during visit..." />
+                </div>
+                <Button className="w-full" onClick={handleSaveVisit}>
+                  <ClipboardCheck className="h-4 w-4 mr-2" />
+                  Record Visit Completion
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Visit History
+              </h4>
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Visit</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Payment</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {patientVisits.filter(v => v.patient_id === selectedPatientForVisits?.id).length === 0 ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-6 text-muted-foreground text-xs">No visits recorded yet.</TableCell></TableRow>
+                    ) : (
+                      patientVisits.filter(v => v.patient_id === selectedPatientForVisits?.id).map(v => (
+                        <TableRow key={v.id}>
+                          <TableCell className="text-xs font-medium">{v.protocol_visit?.visit_name}</TableCell>
+                          <TableCell className="text-xs">{v.actual_date ? format(new Date(v.actual_date), "dd/MM/yyyy") : "—"}</TableCell>
+                          <TableCell><Badge variant="outline" className="text-[10px] h-5">{v.status}</Badge></TableCell>
+                          <TableCell><Badge className="text-[10px] h-5 bg-green-100 text-green-800">{v.payment_status}</Badge></TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

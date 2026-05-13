@@ -462,24 +462,61 @@ export default function Payments() {
       .eq("project_id", selectedProject)
       .order("code");
 
-    // Load participants
-    const { data: participants } = await supabase
+    // Load participants (merging both tables for backward compatibility)
+    const { data: participantsBase } = await supabase
       .from("participants")
       .select("id, participant_code, name, research_center")
-      .eq("project_id", selectedProject)
-      .order("participant_code");
+      .eq("project_id", selectedProject);
 
-    if (!participants || participants.length === 0) {
+    const { data: patientsBase } = await supabase
+      .from("patients")
+      .select("id, patient_code, site_id, status")
+      .eq("project_id", selectedProject);
+
+    // Merge logic: prefer newer 'patients' table data if available
+    const participants: Participant[] = [
+      ...(participantsBase || []).map(p => ({
+        id: p.id,
+        participant_code: p.participant_code,
+        name: p.name || "",
+        research_center: p.research_center
+      })),
+      ...(patientsBase || []).map(p => {
+        const site = centers?.find(c => c.id === p.site_id);
+        return {
+          id: p.id,
+          participant_code: p.patient_code,
+          name: `Patient ${p.patient_code}`,
+          research_center: site?.code || null
+        };
+      })
+    ];
+
+    if (participants.length === 0) {
       setParticipantPayments([]);
       setCenterSummaries([]);
       return;
     }
 
-    // Load visits
-    const { data: visitsData } = await supabase
-      .from("visits")
-      .select("id, participant_id, visit_number, status, payment_status, payment_amount, scheduled_date, completed_at")
-      .eq("project_id", selectedProject);
+    // Load visits (merging both tables)
+    const [visitsBaseRes, patientVisitsRes] = await Promise.all([
+      supabase.from("visits").select("id, participant_id, visit_number, status, payment_status, payment_amount, scheduled_date, completed_at").eq("project_id", selectedProject),
+      supabase.from("patient_visits").select("*, protocol_visit:protocol_visit_schedules(*)").order("actual_date")
+    ]);
+
+    const visitsData = [
+      ...(visitsBaseRes.data || []),
+      ...(patientVisitsRes.data || []).map(pv => ({
+        id: pv.id,
+        participant_id: pv.patient_id,
+        visit_number: pv.protocol_visit?.target_day || 0, // Fallback for mapping
+        status: pv.status.toLowerCase(),
+        payment_status: pv.payment_status.toLowerCase(),
+        payment_amount: pv.protocol_visit?.payment_amount || 0,
+        scheduled_date: null,
+        completed_at: pv.actual_date
+      }))
+    ];
 
     setParticipants(participants || []);
     setVisits(visitsData || []);
