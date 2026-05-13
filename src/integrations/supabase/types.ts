@@ -3198,12 +3198,14 @@ export type Database = {
       site_monitoring_visits: {
         Row: {
           actual_date: string | null
+          actual_date_end: string | null
           created_at: string
           created_by: string | null
           follow_up_actions: string | null
           id: string
           monitor_name: string | null
           planned_date: string | null
+          planned_date_end: string | null
           project_id: string
           purpose: string | null
           report_date: string | null
@@ -3217,12 +3219,14 @@ export type Database = {
         }
         Insert: {
           actual_date?: string | null
+          actual_date_end?: string | null
           created_at?: string
           created_by?: string | null
           follow_up_actions?: string | null
           id?: string
           monitor_name?: string | null
           planned_date?: string | null
+          planned_date_end?: string | null
           project_id: string
           purpose?: string | null
           report_date?: string | null
@@ -3236,12 +3240,14 @@ export type Database = {
         }
         Update: {
           actual_date?: string | null
+          actual_date_end?: string | null
           created_at?: string
           created_by?: string | null
           follow_up_actions?: string | null
           id?: string
           monitor_name?: string | null
           planned_date?: string | null
+          planned_date_end?: string | null
           project_id?: string
           purpose?: string | null
           report_date?: string | null
@@ -5157,6 +5163,7 @@ export type Database = {
           project_id: string | null
           project_title: string | null
           scheduled_date: string | null
+          scheduled_date_end: string | null
           site_code: string | null
           site_id: string | null
           site_name: string | null
