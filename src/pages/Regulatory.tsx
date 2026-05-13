@@ -1,5 +1,5 @@
 import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -11,12 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar } from "lucide-react";
+import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar, Upload, Download, RefreshCw } from "lucide-react";
 import { format, differenceInDays, isPast, isWithinInterval, addDays } from "date-fns";
 import { enUS } from "date-fns/locale";
 import NewSubmissionDialog from "@/components/regulatory/NewSubmissionDialog";
 import NewReportDialog from "@/components/regulatory/NewReportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
+import ExcelExportButton from "@/components/shared/ExcelExportButton";
 
 import EditSubmissionDialog from "@/components/regulatory/EditSubmissionDialog";
 import EditReportDialog from "@/components/regulatory/EditReportDialog";
@@ -95,6 +97,28 @@ export default function Regulatory() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [showEditReport, setShowEditReport] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+
+  const [importOpen, setImportOpen] = useState(false);
+  const [importType, setImportType] = useState<"submission" | "report">("submission");
+
+  const submissionImportColumns: ColumnMapping[] = [
+    { excelHeader: "Type", dbColumn: "submission_type", required: true },
+    { excelHeader: "Status", dbColumn: "status", required: true },
+    { excelHeader: "Planned Date", dbColumn: "planned_date" },
+    { excelHeader: "Submission Date", dbColumn: "submission_date" },
+    { excelHeader: "Notes", dbColumn: "notes" },
+    { excelHeader: "Compliance Response", dbColumn: "compliance_response" },
+  ];
+
+  const reportImportColumns: ColumnMapping[] = [
+    { excelHeader: "Type", dbColumn: "report_type", required: true },
+    { excelHeader: "Status", dbColumn: "status", required: true },
+    { excelHeader: "Due Date", dbColumn: "due_date", required: true },
+    { excelHeader: "Submitted Date", dbColumn: "submitted_date" },
+    { excelHeader: "Notes", dbColumn: "notes" },
+  ];
+
+
 
   useEffect(() => {
     checkAuthAndFetch();
@@ -194,7 +218,43 @@ export default function Regulatory() {
     return matchesSearch && matchesStatus && matchesProject;
   });
 
+  const submissionExportData = useMemo(() => filteredSubmissions.map(s => ({
+    Study: s.project?.title || "",
+    Site: s.site ? `${s.site.code} - ${s.site.name}` : "",
+    Type: s.submission_type,
+    Status: statusLabels[s.status] || s.status,
+    "Planned Date": s.planned_date || "",
+    "Submission Date": s.submission_date || "",
+    Notes: s.notes || "",
+    "Compliance Response": s.compliance_response || "",
+  })), [filteredSubmissions]);
+
+  const reportExportData = useMemo(() => filteredReports.map(r => ({
+    Study: r.project?.title || "",
+    Type: r.report_type,
+    Status: statusLabels[r.status] || r.status,
+    "Due Date": r.due_date || "",
+    "Submitted Date": r.submitted_date || "",
+    Notes: r.notes || "",
+  })), [filteredReports]);
+
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncData = async () => {
+    setSyncing(true);
+    try {
+      await fetchData();
+      toast({ title: "Sincronização concluída", description: "Todos os dados importados foram sincronizados com os registros dos módulos." });
+    } catch (err: any) {
+      toast({ title: "Erro na sincronização", description: err.message, variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // Stats
+
+
   const pendingSubmissions = submissions.filter(s => s.status === "pending").length;
   const overdueReports = reports.filter(r => r.status === "pending" && r.due_date && isPast(parseLocalDate(r.due_date))).length;
   const approvedSubmissions = submissions.filter(s => s.status === "approved").length;
@@ -228,7 +288,29 @@ export default function Regulatory() {
               Track regulatory deadlines and workflows for your studies
             </p>
           </div>
-          <div className="flex gap-2 mt-4 md:mt-0">
+          <div className="flex gap-2 mt-4 md:mt-0 flex-wrap">
+            <Button variant="outline" onClick={handleSyncData} disabled={syncing}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              Sincronizar
+            </Button>
+            <ExcelExportButton 
+              data={importType === "submission" ? submissionExportData : reportExportData} 
+              fileName={importType === "submission" ? "submissions" : "reports"} 
+            />
+            <Button variant="outline" onClick={() => {
+              setImportType("report");
+              setImportOpen(true);
+            }}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import Reports
+            </Button>
+            <Button variant="outline" onClick={() => {
+              setImportType("submission");
+              setImportOpen(true);
+            }}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import Submissions
+            </Button>
             <Button variant="outline" onClick={() => setShowNewReport(true)}>
               <Plus className="mr-2 h-4 w-4" />
               New Report
@@ -238,6 +320,8 @@ export default function Regulatory() {
               New Submission
             </Button>
           </div>
+
+
         </div>
 
         {/* Stats Cards */}
@@ -337,7 +421,7 @@ export default function Regulatory() {
         </div>
 
         {/* Tabs for Submissions and Reports */}
-        <Tabs defaultValue="submissions" className="space-y-4">
+        <Tabs defaultValue="submissions" className="space-y-4" onValueChange={(v) => setImportType(v === "submissions" ? "submission" : "report")}>
           <TabsList>
             <TabsTrigger value="submissions">Submissions ({filteredSubmissions.length})</TabsTrigger>
             <TabsTrigger value="reports">Reports ({filteredReports.length})</TabsTrigger>
@@ -491,6 +575,16 @@ export default function Regulatory() {
           projects={projects}
           onSuccess={fetchData}
         />
+
+        <BulkImportDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          tableName={importType === "submission" ? "regulatory_submissions" : "regulatory_reports"}
+          projectId={projectFilter === "all" ? undefined : projectFilter}
+          columns={importType === "submission" ? submissionImportColumns : reportImportColumns}
+          onSuccess={fetchData}
+        />
+
         <NewReportDialog
           open={showNewReport}
           onOpenChange={setShowNewReport}

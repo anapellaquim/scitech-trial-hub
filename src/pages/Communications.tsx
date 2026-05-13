@@ -16,6 +16,8 @@ import {
   Layers,
   CalendarClock,
   Users,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { useNotifications, useNotificationStats } from '@/hooks/useNotifications';
 import { AlertCard } from '@/components/communications/AlertCard';
@@ -23,6 +25,9 @@ import { AlertFilters } from '@/components/communications/AlertFilters';
 import { StudySummaryPanel } from '@/components/communications/StudySummaryPanel';
 import GlobalStudySelector from '@/components/shared/GlobalStudySelector';
 import CommunicationPlanList from '@/components/communications/CommunicationPlanList';
+import BulkImportDialog, { type ColumnMapping } from '@/components/shared/BulkImportDialog';
+import ExcelExportButton from '@/components/shared/ExcelExportButton';
+
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -34,6 +39,21 @@ export default function Communications() {
   const [selectedSeverity, setSelectedSeverity] = useState('all');
   const [onlyUnread, setOnlyUnread] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncData = async () => {
+    setSyncing(true);
+    try {
+      await refresh();
+      toast.success('Sincronização concluída!');
+    } catch (error) {
+      toast.error('Erro na sincronização');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const [importOpen, setImportOpen] = useState(false);
 
   const { 
     notifications, 
@@ -51,6 +71,24 @@ export default function Communications() {
     severity: selectedSeverity !== 'all' ? selectedSeverity : undefined,
     onlyUnread
   });
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Study ID", dbColumn: "project_id", required: true },
+    { excelHeader: "Title", dbColumn: "title", required: true },
+    { excelHeader: "Message", dbColumn: "message", required: true },
+    { excelHeader: "Severity", dbColumn: "severity", required: true },
+    { excelHeader: "Type", dbColumn: "type", required: true },
+  ];
+
+  const exportData = useMemo(() => notifications.map(n => ({
+    Study: n.project?.title || "Global",
+    Type: n.type,
+    Severity: n.severity,
+    Message: n.message,
+    Status: n.read_at ? "Read" : "Unread",
+    Date: n.created_at,
+  })), [notifications]);
+
 
   const { stats } = useNotificationStats();
 
@@ -184,6 +222,16 @@ export default function Communications() {
           </div>
           
           <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" onClick={handleSyncData} disabled={syncing}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              Sincronizar
+            </Button>
+            <ExcelExportButton data={exportData} fileName="communications" />
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import
+            </Button>
+
             <GlobalStudySelector
               value={selectedProject === 'all' ? '' : selectedProject}
               onChange={(v) => setSelectedProject(v || 'all')}
@@ -204,6 +252,7 @@ export default function Communications() {
               </Button>
             )}
           </div>
+
         </div>
 
         <Tabs defaultValue="alerts" className="w-full">
@@ -530,6 +579,16 @@ export default function Communications() {
             )}
           </TabsContent>
         </Tabs>
+
+        <BulkImportDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          tableName="notifications"
+          projectId={selectedProject === "all" ? undefined : selectedProject}
+          columns={importColumns}
+          onSuccess={refresh}
+        />
+
       </main>
     </div>
   );
