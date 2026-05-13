@@ -285,7 +285,6 @@ export default function PatientManagement() {
     const patientsData = patients.map(p => {
       const row: any = {
         'Código do Paciente': p.patient_code,
-        'Centro (ID)': p.site_id,
         'Centro (Código)': p.site?.code || '',
         'Status': p.status,
         'Notas': p.notes
@@ -305,14 +304,17 @@ export default function PatientManagement() {
     XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes e Visitas");
 
     // Protocol Visits Sheet (Configuration)
-    const protocolData = protocolVisits.map(v => ({
-      'Nome da Visita': v.visit_name,
-      'Dia Alvo': v.target_day,
-      'Janela Negativa': v.window_minus,
-      'Janela Positiva': v.window_plus,
-      'Valor do Pagamento': v.payment_amount,
-      'Centro (ID)': v.site_id || 'Global'
-    }));
+    const protocolData = protocolVisits.map(v => {
+      const site = sites.find(s => s.id === v.site_id);
+      return {
+        'Nome da Visita': v.visit_name,
+        'Dia Alvo': v.target_day,
+        'Janela Negativa': v.window_minus,
+        'Janela Positiva': v.window_plus,
+        'Valor do Pagamento': v.payment_amount,
+        'Centro (Código)': site?.code || 'Global'
+      };
+    });
     const protocolSheet = XLSX.utils.json_to_sheet(protocolData);
     XLSX.utils.book_append_sheet(workbook, protocolSheet, "Configuracao Protocolo");
 
@@ -326,7 +328,7 @@ export default function PatientManagement() {
     // Create combined data for template
     const templateRow: any = {
       'Código do Paciente': 'PAC-001',
-      'Centro (ID)': sites[0]?.id || 'ID_DO_CENTRO',
+      'Centro (Código)': sites[0]?.code || 'CODIGO_DO_CENTRO',
       'Status': 'Screening',
       'Notas': 'Exemplo'
     };
