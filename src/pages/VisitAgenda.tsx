@@ -779,8 +779,8 @@ export default function VisitAgenda() {
               {filteredVisits.length === 0 ? (
                 <Card className="col-span-full p-12 text-center">
                   <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Nenhuma visita agendada</h3>
-                  <p className="text-muted-foreground mb-4">Comece agendando sua primeira visita</p>
+                  <h3 className="text-lg font-semibold mb-2">No scheduled visits</h3>
+                  <p className="text-muted-foreground mb-4">Start by scheduling your first visit</p>
                   <Button onClick={() => setNewVisitOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Agendar Visita
