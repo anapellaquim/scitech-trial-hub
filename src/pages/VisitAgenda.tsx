@@ -307,7 +307,7 @@ export default function VisitAgenda() {
                                 if (visit.source === 'site_monitoring') {
                                   navigate(`/site-monitoring?visitId=${visit.id}`);
                                 } else {
-                                  navigate(`/visits/${visit.id}`);
+                                  navigate(`/site-monitoring?visitId=${visit.id}`);
                                 }
                               }}
                               className={`text-xs p-1 rounded cursor-pointer truncate ${visitTypeColors[visit.visit_type] || "bg-muted"}`}
