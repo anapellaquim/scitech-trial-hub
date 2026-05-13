@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import CTMSNav from "@/components/CTMSNav";
@@ -79,13 +80,20 @@ export default function PatientManagement() {
 
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ProtocolVisit | null>(null);
-  const [scheduleForm, setScheduleForm] = useState({
+  const [scheduleForm, setScheduleForm] = useState<{
+    visit_name: string;
+    target_day: number;
+    window_minus: number;
+    window_plus: number;
+    payment_amount: number;
+    site_ids: string[];
+  }>({
     visit_name: "",
     target_day: 0,
     window_minus: 0,
     window_plus: 0,
     payment_amount: 0,
-    site_id: "" // Can be empty for global study schedule
+    site_ids: [] // Can be empty for global study schedule
   });
 
   const [visitDialogOpen, setVisitDialogOpen] = useState(false);
@@ -180,22 +188,33 @@ export default function PatientManagement() {
   };
 
   const handleSaveSchedule = async () => {
-    const payload = {
+    // If multiple sites are selected, we save one record for each.
+    // If none are selected, it's global (site_id = null).
+    const siteIdsToSave = (scheduleForm as any).site_ids.length > 0 ? (scheduleForm as any).site_ids : [null];
+    
+    const updates = siteIdsToSave.map((siteId: string | null) => ({
       project_id: selectedProject,
-      site_id: scheduleForm.site_id === "__none__" || !scheduleForm.site_id ? null : scheduleForm.site_id,
+      site_id: siteId,
       visit_name: scheduleForm.visit_name,
       target_day: scheduleForm.target_day,
       window_minus: scheduleForm.window_minus,
       window_plus: scheduleForm.window_plus,
       payment_amount: scheduleForm.payment_amount
-    };
+    }));
 
     let error;
     if (editingSchedule) {
-      const { error: err } = await supabase.from("protocol_visit_schedules").update(payload).eq("id", editingSchedule.id);
+      const { error: err } = await supabase.from("protocol_visit_schedules").update({
+        visit_name: scheduleForm.visit_name,
+        target_day: scheduleForm.target_day,
+        window_minus: scheduleForm.window_minus,
+        window_plus: scheduleForm.window_plus,
+        payment_amount: scheduleForm.payment_amount,
+        site_id: updates[0].site_id
+      }).eq("id", editingSchedule.id);
       error = err;
     } else {
-      const { error: err } = await supabase.from("protocol_visit_schedules").insert(payload);
+      const { error: err } = await supabase.from("protocol_visit_schedules").insert(updates);
       error = err;
     }
 
@@ -664,7 +683,7 @@ export default function PatientManagement() {
                   </div>
                   <Button variant="outline" size="sm" onClick={() => {
                     setEditingSchedule(null);
-                    setScheduleForm({ visit_name: "", target_day: 0, window_minus: 0, window_plus: 0, payment_amount: 0, site_id: "" });
+                    setScheduleForm({ visit_name: "", target_day: 0, window_minus: 0, window_plus: 0, payment_amount: 0, site_ids: [] });
                     setScheduleDialogOpen(true);
                   }}>
                     <Plus className="h-4 w-4 mr-2" /> Add Visit Type
@@ -698,14 +717,14 @@ export default function PatientManagement() {
                             <TableCell className="text-right">
                               <Button variant="ghost" size="icon" onClick={() => {
                                 setEditingSchedule(v);
-                                setScheduleForm({
-                                  visit_name: v.visit_name,
-                                  target_day: v.target_day,
-                                  window_minus: v.window_minus,
-                                  window_plus: v.window_plus,
-                                  payment_amount: v.payment_amount,
-                                  site_id: v.site_id || ""
-                                });
+                                  setScheduleForm({
+                                    visit_name: v.visit_name,
+                                    target_day: v.target_day,
+                                    window_minus: v.window_minus,
+                                    window_plus: v.window_plus,
+                                    payment_amount: v.payment_amount,
+                                    site_ids: v.site_id ? [v.site_id] : []
+                                  });
                                 setScheduleDialogOpen(true);
                               }}><Pencil className="h-4 w-4" /></Button>
                             </TableCell>
@@ -798,14 +817,36 @@ export default function PatientManagement() {
               <Input type="number" value={scheduleForm.payment_amount} onChange={e => setScheduleForm({...scheduleForm, payment_amount: parseFloat(e.target.value)})} />
             </div>
             <div className="grid gap-2">
-              <Label>Site Specific (optional)</Label>
-              <Select value={scheduleForm.site_id} onValueChange={v => setScheduleForm({...scheduleForm, site_id: v})}>
-                <SelectTrigger><SelectValue placeholder="Global (all sites)" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Global Study-wide</SelectItem>
-                  {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>Site Selection</Label>
+              <div className="grid grid-cols-2 gap-2 border p-3 rounded-md max-h-[150px] overflow-y-auto">
+                <div className="flex items-center gap-2 col-span-2 pb-2 border-b mb-1">
+                  <Checkbox 
+                    id="site-global" 
+                    checked={(scheduleForm as any).site_ids.length === 0}
+                    onCheckedChange={(checked) => {
+                      if (checked) setScheduleForm({...scheduleForm, site_ids: []} as any);
+                    }}
+                  />
+                  <Label htmlFor="site-global" className="font-bold">Global Study-wide</Label>
+                </div>
+                {sites.map(s => (
+                  <div key={s.id} className="flex items-center gap-2">
+                    <Checkbox 
+                      id={`site-${s.id}`} 
+                      checked={(scheduleForm as any).site_ids.includes(s.id)}
+                      onCheckedChange={(checked) => {
+                        const currentSites = (scheduleForm as any).site_ids;
+                        const newSites = checked 
+                          ? [...currentSites, s.id]
+                          : currentSites.filter((id: string) => id !== s.id);
+                        setScheduleForm({...scheduleForm, site_ids: newSites} as any);
+                      }}
+                    />
+                    <Label htmlFor={`site-${s.id}`} className="text-xs">{s.code}</Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">If none selected, visit is global.</p>
             </div>
           </div>
           <DialogFooter>
