@@ -94,7 +94,7 @@ export default function PatientManagement() {
   const [visitForm, setVisitForm] = useState({
     protocol_visit_id: "",
     actual_date: "",
-    status: "Completed",
+    status: "Completed", // Options: Completed, Lost Visit, Pending
     notes: ""
   });
 
@@ -561,6 +561,10 @@ export default function PatientManagement() {
                                     computedStatus = 'Completed';
                                     statusColor = 'bg-green-500 text-white';
                                     Icon = CheckCircle2;
+                                  } else if (visit?.status === 'Lost Visit') {
+                                    computedStatus = 'Lost Visit';
+                                    statusColor = 'bg-slate-500 text-white';
+                                    Icon = X;
                                   } else if (p.enrollment_date) {
                                     const enrollmentDate = new Date(p.enrollment_date);
                                     const targetDate = addDays(enrollmentDate, pv.target_day);
@@ -799,7 +803,17 @@ export default function PatientManagement() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+                  <div className="grid gap-2">
+                    <Label>Visit Status</Label>
+                    <Select value={visitForm.status} onValueChange={v => setVisitForm({...visitForm, status: v})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Lost Visit">Lost Visit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setScheduleDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveSchedule}>Save Schedule</Button>
