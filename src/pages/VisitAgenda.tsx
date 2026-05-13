@@ -819,6 +819,286 @@ export default function VisitAgenda() {
           fetchData();
         }}
       />
-    </div>
-  );
-}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Monitoring Visit</DialogTitle></DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Site *</Label>
+                <Select value={form.site_id} onValueChange={v => setForm({...form, site_id: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select site" /></SelectTrigger>
+                  <SelectContent>
+                    {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} — {s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Visit Code</Label><Input value={form.visit_code} onChange={e => setForm({...form, visit_code: e.target.value})} placeholder="e.g. MV-2026-001" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Visit Type</Label>
+                <Select value={form.visit_type} onValueChange={v => setForm({...form, visit_type: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{VISIT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><Label>Status</Label>
+                <Select value={form.status} onValueChange={v => setForm({...form, status: v})}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{VISIT_STATUSES.map(s => <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Planned Date (Start)</Label><Input type="date" value={form.planned_date} onChange={e => setForm({...form, planned_date: e.target.value})} /></div>
+              <div><Label>Planned Date (End)</Label><Input type="date" value={form.planned_date_end} onChange={e => setForm({...form, planned_date_end: e.target.value})} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Actual Date (Start)</Label><Input type="date" value={form.actual_date} onChange={e => setForm({...form, actual_date: e.target.value})} /></div>
+              <div><Label>Actual Date (End)</Label><Input type="date" value={form.actual_date_end} onChange={e => setForm({...form, actual_date_end: e.target.value})} /></div>
+            </div>
+            <div><Label>Monitor (CRA)</Label><Input value={form.monitor_name} onChange={e => setForm({...form, monitor_name: e.target.value})} /></div>
+            <div><Label>Purpose / Objective</Label><Textarea rows={2} value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} /></div>
+            <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
+            <div><Label>Follow-up Actions</Label><Textarea rows={2} value={form.follow_up_actions} onChange={e => setForm({...form, follow_up_actions: e.target.value})} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Report Date</Label><Input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} /></div>
+              <div><Label>Report Link</Label><Input type="url" value={form.report_link} onChange={e => setForm({...form, report_link: e.target.value})} placeholder="https://..." /></div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1 gap-2" 
+                onClick={() => setFindingDialogOpen(true)}
+                disabled={!editing}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Oversight ({findings.length})
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex-1 gap-2" 
+                onClick={() => setNotesDialogOpen(true)}
+                disabled={!editing}
+              >
+                <StickyNote className="h-4 w-4" />
+                Notes ({notes.length})
+              </Button>
+            </div>
+
+            {editing && <AuditTrail entityId={editing.id} />}
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={saveVisit}>{editing ? "Update" : "Create"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Oversight Dialog */}
+      <Dialog open={findingDialogOpen} onOpenChange={setFindingDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Oversight — {editing?.visit_type} {editing && `(${siteName(editing.site_id)})`}</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="grid gap-4">
+              <Card className="p-4">
+                <h4 className="font-semibold mb-3">{editingFinding ? "Edit Oversight Item" : "Add Oversight Item"}</h4>
+                <div className="grid gap-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div><Label>Category</Label>
+                      <Select value={findingForm.category || "other"} onValueChange={v => setFindingForm({...findingForm, category: v})}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{OVERSIGHT_CATEGORIES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div><Label>Quantity</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={findingForm.quantity}
+                        onChange={e => setFindingForm({...findingForm, quantity: Math.max(1, parseInt(e.target.value) || 1)})}
+                      />
+                    </div>
+                    <div><Label>Status</Label>
+                      <Select value={findingForm.status} onValueChange={v => setFindingForm({...findingForm, status: v})}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{FINDING_STATUSES.map(s => <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div><Label>Description *</Label><Textarea rows={2} value={findingForm.description} onChange={e => setFindingForm({...findingForm, description: e.target.value})} /></div>
+                  <div><Label>Action Required</Label><Textarea rows={2} value={findingForm.action_required} onChange={e => setFindingForm({...findingForm, action_required: e.target.value})} /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>Resolution Deadline</Label><Input type="date" value={findingForm.due_date} onChange={e => setFindingForm({...findingForm, due_date: e.target.value})} /></div>
+                    <div><Label>Resolved Date</Label><Input type="date" value={findingForm.resolved_date} onChange={e => setFindingForm({...findingForm, resolved_date: e.target.value})} /></div>
+                  </div>
+                  <div><Label>Resolution Notes</Label><Textarea rows={2} value={findingForm.resolution_notes} onChange={e => setFindingForm({...findingForm, resolution_notes: e.target.value})} /></div>
+                  <div className="flex gap-2 justify-end">
+                    {editingFinding && <Button variant="outline" size="sm" onClick={cancelFindingEdit}>Cancel Edit</Button>}
+                    <Button size="sm" onClick={saveFinding}>{editingFinding ? "Update Item" : "Add Item"}</Button>
+                  </div>
+                </div>
+              </Card>
+
+              <div>
+                <h4 className="font-semibold mb-2">Existing Oversight Items ({visitFindings(editing.id).length})</h4>
+                {visitFindings(editing.id).length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No oversight items recorded.</p>
+                ) : (
+                  <Table>
+                    <TableHeader><TableRow>
+                      <TableHead>Category</TableHead><TableHead>Severity</TableHead><TableHead>Description</TableHead>
+                      <TableHead>Status</TableHead><TableHead>Due</TableHead><TableHead className="w-[100px]">Actions</TableHead>
+                    </TableRow></TableHeader>
+                    <TableBody>
+                      {visitFindings(editing.id).map(f => {
+                        const isExpanded = expandedFindingId === f.id;
+                        return (
+                          <>
+                            <TableRow key={f.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}>
+                              <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
+                              <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
+                              <TableCell className="text-sm max-w-xs truncate" title={f.description}>{f.description}</TableCell>
+                              <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
+                              <TableCell>{f.due_date || "—"}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}
+                                    title="View History"
+                                  >
+                                    <History className={`h-4 w-4 ${isExpanded ? "text-primary" : ""}`} />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" onClick={() => editFinding(f)}><Pencil className="h-4 w-4" /></Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            {isExpanded && (
+                              <TableRow className="bg-muted/30">
+                                <TableCell colSpan={6} className="p-4">
+                                  <AuditTrail entityId={f.id} />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Monitor Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={(open) => { setNotesDialogOpen(open); if (!open) cancelNoteEdit(); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Monitor Notes {editing && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  — {siteName(editing.site_id)} {editing.visit_code ? `(${editing.visit_code})` : ""}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          {editing && (
+            <div className="space-y-6">
+              {/* Note form */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{editingNote ? "Edit note" : "Add new note"}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Category</Label>
+                      <Select value={noteForm.category || "General"} onValueChange={v => setNoteForm({ ...noteForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{NOTE_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Importance</Label>
+                      <Select value={noteForm.importance} onValueChange={v => setNoteForm({ ...noteForm, importance: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{NOTE_IMPORTANCE.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Note *</Label>
+                    <Textarea
+                      rows={4}
+                      value={noteForm.content}
+                      onChange={e => setNoteForm({ ...noteForm, content: e.target.value })}
+                      placeholder="Record observations, follow-ups, conversations with site staff, action items, etc."
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    {editingNote && <Button variant="outline" size="sm" onClick={cancelNoteEdit}>Cancel</Button>}
+                    <Button size="sm" onClick={saveNote}>
+                      <Plus className="h-4 w-4 mr-1" />{editingNote ? "Update note" : "Add note"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Notes history */}
+              <div>
+                <h4 className="font-semibold mb-2">History ({visitNotes(editing.id).length})</h4>
+                {visitNotes(editing.id).length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">No notes yet for this visit.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {visitNotes(editing.id).map(n => {
+                      const isExpanded = expandedNoteId === n.id;
+                      return (
+                        <Card key={n.id}>
+                          <CardContent className="py-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 mb-1">
+                                  <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
+                                  {n.category && <Badge variant="outline">{n.category}</Badge>}
+                                  <span className="text-xs text-muted-foreground">
+                                    {n.author_name || "—"} · {new Date(n.created_at).toLocaleString("en-US")}
+                                    {n.updated_at !== n.created_at && " (edited)"}
+                                  </span>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-6 px-1 text-muted-foreground"
+                                    onClick={() => setExpandedNoteId(isExpanded ? null : n.id)}
+                                  >
+                                    <History className={`h-3 w-3 mr-1 ${isExpanded ? "text-primary" : ""}`} />
+                                    {isExpanded ? "Hide History" : "Show History"}
+                                  </Button>
+                                </div>
+                                <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                                {isExpanded && <AuditTrail entityId={n.id} />}
+                              </div>
+                              <div className="flex gap-1 shrink-0">
+                                <Button variant="ghost" size="icon" title="Edit" onClick={() => editNote(n)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteNote(n.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
