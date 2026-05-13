@@ -310,7 +310,7 @@ export default function VisitAgenda() {
       
       // Refresh findings
       const { data } = await supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", editing.id);
-      setFindings(data || []);
+      setFindings((data as any) || []);
       cancelFindingEdit();
     } catch (error: any) {
       toast.error(error.message);
