@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, UserCheck, Calendar, DollarSign, Settings2, Trash2, Pencil, Search, Filter, AlertTriangle, CheckCircle2, X, ClipboardCheck, History, Download, Upload } from "lucide-react";
+import { Plus, UserCheck, Calendar, DollarSign, Settings2, Trash2, Pencil, Search, Filter, AlertTriangle, CheckCircle2, X, ClipboardCheck, History, Download, Upload, Clock, AlertCircle } from "lucide-react";
 import { format, addDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
@@ -552,22 +552,51 @@ export default function PatientManagement() {
                                 
                                 {protocolVisits.map(pv => {
                                   const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
+                                  
+                                  let computedStatus = visit?.status || 'Scheduled';
+                                  let statusColor = 'bg-slate-100 text-slate-800';
+                                  let Icon = null;
+
+                                  if (visit?.status === 'Completed' || visit?.status === 'Complete') {
+                                    computedStatus = 'Completed';
+                                    statusColor = 'bg-green-500 text-white';
+                                    Icon = CheckCircle2;
+                                  } else if (p.enrollment_date) {
+                                    const enrollmentDate = new Date(p.enrollment_date);
+                                    const targetDate = addDays(enrollmentDate, pv.target_day);
+                                    const windowStart = addDays(targetDate, -pv.window_minus);
+                                    const windowEnd = addDays(targetDate, pv.window_plus);
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+
+                                    if (today > windowEnd) {
+                                      computedStatus = 'Overdue';
+                                      statusColor = 'bg-red-500 text-white';
+                                      Icon = AlertTriangle;
+                                    } else if (today >= windowStart && today <= windowEnd) {
+                                      computedStatus = 'Window';
+                                      statusColor = 'bg-amber-500 text-white';
+                                      Icon = Clock;
+                                    }
+                                  }
+
                                   return (
                                     <TableCell key={pv.id} className="text-center">
-                                      {visit ? (
-                                        <div className="flex flex-col items-center">
-                                          <Badge variant={visit.status === 'Completed' ? 'default' : 'outline'} className={visit.status === 'Completed' ? 'bg-green-500' : ''}>
-                                            {visit.status}
-                                          </Badge>
-                                          {visit.actual_date && (
-                                            <span className="text-[10px] text-muted-foreground mt-1">
-                                              {format(new Date(visit.actual_date), "dd/MM/yyyy")}
-                                            </span>
-                                          )}
-                                        </div>
-                                      ) : (
-                                        <span className="text-muted-foreground text-xs">—</span>
-                                      )}
+                                      <div className="flex flex-col items-center">
+                                        <Badge className={`${statusColor} flex items-center gap-1`}>
+                                          {Icon && <Icon className="h-3 w-3" />}
+                                          {computedStatus}
+                                        </Badge>
+                                        {visit?.actual_date ? (
+                                          <span className="text-[10px] text-muted-foreground mt-1">
+                                            {format(new Date(visit.actual_date), "dd/MM/yyyy")}
+                                          </span>
+                                        ) : p.enrollment_date ? (
+                                          <span className="text-[10px] text-muted-foreground mt-1">
+                                            Exp: {format(addDays(new Date(p.enrollment_date), pv.target_day), "dd/MM/yyyy")}
+                                          </span>
+                                        ) : null}
+                                      </div>
                                     </TableCell>
                                   );
                                 })}
