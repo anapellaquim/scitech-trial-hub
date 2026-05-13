@@ -532,9 +532,10 @@ export default function SiteMonitoring() {
             const criticalOpen = openItems.filter(f => f.severity === "critical").length;
             return (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CalendarClock className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Planned Visits</p><p className="text-2xl font-semibold">{planned.length}</p></div></div></CardContent></Card>
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-green-600" /><div><p className="text-xs text-muted-foreground">Completed Visits</p><p className="text-2xl font-semibold">{completed.length}</p></div></div></CardContent></Card>
+                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-red-600" /><div><p className="text-xs text-muted-foreground">Overdue</p><p className="text-2xl font-semibold">{overdue.length}</p></div></div></CardContent></Card>
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">Total Visits</p><p className="text-2xl font-semibold">{filtered.length}</p></div></div></CardContent></Card>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
