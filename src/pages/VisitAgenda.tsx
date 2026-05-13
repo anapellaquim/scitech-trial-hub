@@ -202,6 +202,24 @@ export default function VisitAgenda() {
   const visitFindings = (vid: string) => findings.filter(f => f.monitoring_visit_id === vid);
   const visitNotes = (vid: string) => notes.filter(n => n.monitoring_visit_id === vid);
 
+  const editFinding = (f: OversightItem) => {
+    setEditingFinding(f);
+    setFindingForm({
+      category: f.category || "", severity: f.severity, quantity: f.quantity ?? 1, description: f.description,
+      action_required: f.action_required || "", due_date: f.due_date || "", status: f.status,
+      resolved_date: f.resolved_date || "", resolution_notes: f.resolution_notes || "",
+    });
+  };
+
+  const editNote = (n: MonitorNote) => {
+    setEditingNote(n);
+    setNoteForm({
+      category: n.category || "General",
+      importance: n.importance,
+      content: n.content,
+    });
+  };
+
   const openEdit = useCallback(async (visit: Visit) => {
     if (visit.source !== 'site_monitoring') {
       navigate(`/visits/${visit.id}`);
