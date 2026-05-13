@@ -86,6 +86,16 @@ export default function PatientManagement() {
     site_id: "" // Can be empty for global study schedule
   });
 
+  const [visitDialogOpen, setVisitDialogOpen] = useState(false);
+  const [selectedPatientForVisits, setSelectedPatientForVisits] = useState<Patient | null>(null);
+  const [patientVisits, setPatientVisits] = useState<PatientVisit[]>([]);
+  const [visitForm, setVisitForm] = useState({
+    protocol_visit_id: "",
+    actual_date: "",
+    status: "Completed",
+    notes: ""
+  });
+
   useEffect(() => {
     loadBaseData();
   }, []);
