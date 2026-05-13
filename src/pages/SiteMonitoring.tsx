@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-// ... keep existing code
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ModulePageLayout from "@/components/shared/ModulePageLayout";
@@ -14,9 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, StickyNote, ShieldCheck, FileQuestion, AlertTriangle, HeartPulse, Hourglass, History } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, AlertTriangle, HeartPulse, Hourglass, History, ShieldCheck, StickyNote, FileQuestion } from "lucide-react";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { AuditTrail } from "@/components/shared/AuditTrail";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Site { id: string; project_id: string | null; site_code: string; name: string; }
 interface MonitoringVisit {
@@ -24,8 +24,9 @@ interface MonitoringVisit {
   visit_code: string | null; visit_type: string; status: string;
   planned_date: string | null; planned_date_end: string | null;
   actual_date: string | null; actual_date_end: string | null;
-  monitor_name: string | null; purpose: string | null; summary: string | null;
-  follow_up_actions: string | null; report_link: string | null; report_date: string | null;
+  monitor_name: string | null; summary: string | null;
+  report_link: string | null; report_date: string | null;
+  checklist?: Record<string, boolean>;
 }
 interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
@@ -40,7 +41,18 @@ interface MonitorNote {
 }
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
-const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
+const CHECKLIST_ITEMS = [
+  "Confirm availability of PI and study staff",
+  "Review Subject Enrollment and Screening logs",
+  "Verify Source Documentation (SDV)",
+  "Review Informed Consent Forms (ICFs)",
+  "Perform Drug/Device Accountability",
+  "Review Investigator Site File (ISF)",
+  "Discuss deviations/findings with PI",
+  "Tour facilities (if applicable)",
+];
+
+const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "pending_report"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
 const OVERSIGHT_CATEGORIES = [
@@ -67,8 +79,7 @@ const statusColors: Record<string, string> = {
   scheduled: "bg-cyan-100 text-cyan-800",
   in_progress: "bg-yellow-100 text-yellow-800",
   completed: "bg-green-100 text-green-800",
-  cancelled: "bg-gray-100 text-gray-800",
-  postponed: "bg-orange-100 text-orange-800",
+  pending_report: "bg-orange-100 text-orange-800",
 };
 
 const severityColors: Record<string, string> = {
@@ -89,8 +100,9 @@ const emptyForm = {
   site_id: "", visit_code: "", visit_type: "IMV", status: "planned",
   planned_date: "", planned_date_end: "",
   actual_date: "", actual_date_end: "",
-  monitor_name: "", purpose: "",
-  summary: "", follow_up_actions: "", report_link: "", report_date: "",
+  monitor_name: "", 
+  summary: "", report_link: "", report_date: "",
+  checklist: {} as Record<string, boolean>,
 };
 
 const emptyFinding = {
@@ -149,8 +161,9 @@ export default function SiteMonitoring() {
       status: v.status, 
       planned_date: v.planned_date || "", planned_date_end: v.planned_date_end || "",
       actual_date: v.actual_date || "", actual_date_end: v.actual_date_end || "",
-      monitor_name: v.monitor_name || "", purpose: v.purpose || "", summary: v.summary || "",
-      follow_up_actions: v.follow_up_actions || "", report_link: v.report_link || "", report_date: v.report_date || "",
+      monitor_name: v.monitor_name || "", summary: v.summary || "",
+      report_link: v.report_link || "", report_date: v.report_date || "",
+      checklist: v.checklist || {},
     });
     setDialogOpen(true);
   }, []);
@@ -384,7 +397,7 @@ export default function SiteMonitoring() {
   const filtered = useMemo(() => visits.filter(v => {
     const matchSearch = !search || (v.monitor_name || "").toLowerCase().includes(search.toLowerCase())
       || (v.visit_code || "").toLowerCase().includes(search.toLowerCase())
-      || (v.purpose || "").toLowerCase().includes(search.toLowerCase());
+      || (v.summary || "").toLowerCase().includes(search.toLowerCase());
     const matchSite = siteFilter === "all" || v.site_id === siteFilter;
     const matchStatus = statusFilter === "all" || v.status === statusFilter;
     const matchType = typeFilter === "all" || v.visit_type === typeFilter;
@@ -409,8 +422,8 @@ export default function SiteMonitoring() {
   const exportData = filtered.map(v => ({
     Site: siteName(v.site_id), Code: v.visit_code || "", Type: v.visit_type,
     Status: v.status, "Planned Date": v.planned_date || "", "Actual Date": v.actual_date || "",
-    Monitor: v.monitor_name || "", Purpose: v.purpose || "", Summary: v.summary || "",
-    "Follow-up Actions": v.follow_up_actions || "", "Report Date": v.report_date || "",
+    Monitor: v.monitor_name || "", Summary: v.summary || "",
+    "Report Date": v.report_date || "",
     "Report Link": v.report_link || "", Oversight: visitFindings(v.id).length,
   }));
 
@@ -816,9 +829,36 @@ export default function SiteMonitoring() {
               <div><Label>Actual Date (End)</Label><Input type="date" value={form.actual_date_end} onChange={e => setForm({...form, actual_date_end: e.target.value})} /></div>
             </div>
             <div><Label>Monitor (CRA)</Label><Input value={form.monitor_name} onChange={e => setForm({...form, monitor_name: e.target.value})} /></div>
-            <div><Label>Purpose / Objective</Label><Textarea rows={2} value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} /></div>
             <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
-            <div><Label>Follow-up Actions</Label><Textarea rows={2} value={form.follow_up_actions} onChange={e => setForm({...form, follow_up_actions: e.target.value})} /></div>
+            
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Monitoring Checklist</Label>
+              <div className="grid gap-2 border rounded-md p-3 bg-muted/20">
+                {CHECKLIST_ITEMS.map((item) => (
+                  <div key={item} className="flex items-center space-x-2 py-1">
+                    <Checkbox 
+                      id={`sm-${item}`} 
+                      checked={!!form.checklist[item]} 
+                      onCheckedChange={(checked) => {
+                        setForm({
+                          ...form,
+                          checklist: { ...form.checklist, [item]: !!checked }
+                        });
+                      }}
+                    />
+                    <label 
+                      htmlFor={`sm-${item}`} 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {item}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
+            <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Report Date</Label><Input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} /></div>
               <div><Label>Report Link</Label><Input type="url" value={form.report_link} onChange={e => setForm({...form, report_link: e.target.value})} placeholder="https://..." /></div>
