@@ -41,24 +41,6 @@ export default function Communications() {
   const [generating, setGenerating] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
 
-  const importColumns: ColumnMapping[] = [
-    { excelHeader: "Study ID", dbColumn: "project_id", required: true },
-    { excelHeader: "Title", dbColumn: "title", required: true },
-    { excelHeader: "Message", dbColumn: "event_message", required: true },
-    { excelHeader: "Severity", dbColumn: "severity", required: true },
-    { excelHeader: "Type", dbColumn: "type", required: true },
-  ];
-
-  const exportData = useMemo(() => notifications.map(n => ({
-    Study: n.project?.title || "Global",
-    Type: n.type,
-    Severity: n.severity,
-    Message: n.event_message,
-    Status: n.read_at ? "Read" : "Unread",
-    Date: n.created_at,
-  })), [notifications]);
-
-
   const { 
     notifications, 
     loading, 
@@ -75,6 +57,24 @@ export default function Communications() {
     severity: selectedSeverity !== 'all' ? selectedSeverity : undefined,
     onlyUnread
   });
+
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Study ID", dbColumn: "project_id", required: true },
+    { excelHeader: "Title", dbColumn: "title", required: true },
+    { excelHeader: "Message", dbColumn: "message", required: true },
+    { excelHeader: "Severity", dbColumn: "severity", required: true },
+    { excelHeader: "Type", dbColumn: "type", required: true },
+  ];
+
+  const exportData = useMemo(() => notifications.map(n => ({
+    Study: n.project?.title || "Global",
+    Type: n.type,
+    Severity: n.severity,
+    Message: n.message,
+    Status: n.read_at ? "Read" : "Unread",
+    Date: n.created_at,
+  })), [notifications]);
+
 
   const { stats } = useNotificationStats();
 
