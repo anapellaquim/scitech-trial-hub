@@ -41,6 +41,17 @@ interface MonitorNote {
 }
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
+const CHECKLIST_ITEMS = [
+  "Confirm availability of PI and study staff",
+  "Review Subject Enrollment and Screening logs",
+  "Verify Source Documentation (SDV)",
+  "Review Informed Consent Forms (ICFs)",
+  "Perform Drug/Device Accountability",
+  "Review Investigator Site File (ISF)",
+  "Discuss deviations/findings with PI",
+  "Tour facilities (if applicable)",
+];
+
 const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "pending_report"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
