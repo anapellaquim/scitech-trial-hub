@@ -288,29 +288,57 @@ export default function VisitAgenda() {
 
           <TabsContent value="calendar">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg">
-                  {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-                </CardTitle>
+              <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-4 space-y-4 md:space-y-0">
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                  <CardTitle className="text-lg min-w-[150px]">
+                    {timeRange === "month" && format(currentDate, "MMMM yyyy", { locale: ptBR })}
+                    {timeRange === "semester" && `${format(currentDate, "yyyy")} - ${currentDate.getMonth() < 6 ? '1º Semestre' : '2º Semestre'}`}
+                    {timeRange === "year" && format(currentDate, "yyyy")}
+                  </CardTitle>
+                  <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Visualização" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="month">Mensal</SelectItem>
+                      <SelectItem value="semester">Semestral</SelectItem>
+                      <SelectItem value="year">Anual</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    if (timeRange === "month") setCurrentDate(subMonths(currentDate, 1));
+                    else if (timeRange === "semester") setCurrentDate(subMonths(currentDate, 6));
+                    else setCurrentDate(subYears(currentDate, 1));
+                  }}>
                     Anterior
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentMonth(new Date())}>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
                     Hoje
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    if (timeRange === "month") setCurrentDate(addMonths(currentDate, 1));
+                    else if (timeRange === "semester") setCurrentDate(addMonths(currentDate, 6));
+                    else setCurrentDate(addYears(currentDate, 1));
+                  }}>
                     Próximo
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-7 gap-1">
-                  {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
-                    <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
-                      {day}
-                    </div>
-                  ))}
+                {timeRange === "month" ? (
+                  <div className="grid grid-cols-7 gap-1">
+                    {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
+                      <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
+                        {day}
+                      </div>
+                    ))}
+                    
+                    {/* Empty cells for days before month starts */}
+                    {Array.from({ length: startOfMonth(currentDate).getDay() }).map((_, i) => (
+                      <div key={`empty-${i}`} className="p-2 min-h-[100px] bg-muted/20" />
+                    ))}
                   
                   {/* Empty cells for days before month starts */}
                   {Array.from({ length: startOfMonth(currentMonth).getDay() }).map((_, i) => (
