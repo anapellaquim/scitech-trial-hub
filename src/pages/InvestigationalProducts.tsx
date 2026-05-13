@@ -141,6 +141,7 @@ export default function InvestigationalProducts() {
   const [records, setRecords] = useState<IPRecord[]>([]);
   const [supplies, setSupplies] = useState<SupplyRecord[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
+  const [predefinedItems, setPredefinedItems] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -152,14 +153,18 @@ export default function InvestigationalProducts() {
   const [editingSupply, setEditingSupply] = useState<SupplyRecord | null>(null);
   const [supplyForm, setSupplyForm] = useState(emptySupply());
 
+  const [itemsDialogOpen, setItemsDialogOpen] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+
   const loadRecords = useCallback(async () => {
     setLoading(true);
-    const [ip, sup, siteData] = await Promise.all([
+    const [ip, sup, siteData, itemsData] = await Promise.all([
       supabase.from("investigational_products").select("*").order("created_at", { ascending: false }),
       supabase.from("ip_supply").select("*").order("date", { ascending: false }),
       selectedProject 
         ? supabase.from("study_sites").select("id, name, code").eq("project_id", selectedProject)
-        : Promise.resolve({ data: [], error: null })
+        : Promise.resolve({ data: [], error: null }),
+      supabase.from("investigational_product_items").select("id, name").order("name")
     ]);
     if (ip.error) toast.error("Failed to load IP: " + ip.error.message);
     else setRecords((ip.data || []) as IPRecord[]);
@@ -167,8 +172,11 @@ export default function InvestigationalProducts() {
     else setSupplies((sup.data || []) as SupplyRecord[]);
     if (siteData.error) console.error("Failed to load sites:", siteData.error);
     else setSites((siteData.data || []) as Site[]);
+    if (itemsData.error) console.error("Failed to load items:", itemsData.error);
+    else setPredefinedItems((itemsData.data || []) as { id: string; name: string }[]);
     setLoading(false);
   }, [selectedProject]);
+
 
 
   useEffect(() => {
