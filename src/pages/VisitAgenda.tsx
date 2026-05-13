@@ -15,7 +15,7 @@ import KpiCards from "@/components/shared/KpiCards";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfYear, endOfYear, addYears, subYears, eachMonthOfInterval, isSameMonth } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import NewVisitDialog from "@/components/visits/NewVisitDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,10 +88,10 @@ const statusColors: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  scheduled: "Agendada",
-  in_progress: "Em Andamento",
-  completed: "Concluída",
-  cancelled: "Cancelada",
+  scheduled: "Scheduled",
+  in_progress: "In Progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 const taskStatusColors: Record<string, string> = {
@@ -288,7 +288,7 @@ export default function VisitAgenda() {
       setSites(rc || []);
       setDialogOpen(true);
     } catch (error: any) {
-      toast.error("Erro ao carregar monitoria: " + error.message);
+      toast.error("Error loading monitoring visit: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -495,7 +495,7 @@ export default function VisitAgenda() {
       setProjects(projectsRes.data || []);
       setTasks(tasksRes.data as Task[] || []);
     } catch (error: any) {
-      toast.error("Erro ao carregar dados: " + error.message);
+      toast.error("Error loading data: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -554,16 +554,16 @@ export default function VisitAgenda() {
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Agenda de Visitas</h1>
-            <p className="text-muted-foreground mt-1">Planeje e acompanhe visitas de monitoria</p>
+            <h1 className="text-3xl font-bold text-foreground">Visit Agenda</h1>
+            <p className="text-muted-foreground mt-1">Plan and track monitoring visits</p>
           </div>
           <div className="flex items-center gap-3">
             <Select value={selectedProject} onValueChange={setSelectedProject}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filtrar por projeto" />
+                <SelectValue placeholder="Filter by project" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os projetos</SelectItem>
+                <SelectItem value="all">All projects</SelectItem>
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.title}
@@ -573,10 +573,10 @@ export default function VisitAgenda() {
             </Select>
             <Select value={selectedSite} onValueChange={setSelectedSite}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filtrar por centro" />
+                <SelectValue placeholder="Filter by center" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os centros</SelectItem>
+                <SelectItem value="all">All centers</SelectItem>
                 {availableSites.map((site) => (
                   <SelectItem key={site.id} value={site.id}>
                     {site.code} - {site.name}
@@ -612,11 +612,11 @@ export default function VisitAgenda() {
           <TabsList className="mb-6">
             <TabsTrigger value="calendar" className="gap-2">
               <CalendarIcon className="h-4 w-4" />
-              Calendário
+              Calendar
             </TabsTrigger>
             <TabsTrigger value="list" className="gap-2">
               <List className="h-4 w-4" />
-              Lista
+              List
             </TabsTrigger>
           </TabsList>
 
@@ -625,18 +625,18 @@ export default function VisitAgenda() {
               <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-4 space-y-4 md:space-y-0">
                 <div className="flex flex-col md:flex-row items-center gap-4">
                   <CardTitle className="text-lg min-w-[150px]">
-                    {timeRange === "month" && format(currentDate, "MMMM yyyy", { locale: ptBR })}
-                    {timeRange === "semester" && `${format(currentDate, "yyyy")} - ${currentDate.getMonth() < 6 ? '1º Semestre' : '2º Semestre'}`}
+                    {timeRange === "month" && format(currentDate, "MMMM yyyy", { locale: enUS })}
+                    {timeRange === "semester" && `${format(currentDate, "yyyy")} - ${currentDate.getMonth() < 6 ? '1st Semester' : '2nd Semester'}`}
                     {timeRange === "year" && format(currentDate, "yyyy")}
                   </CardTitle>
                   <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
                     <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="Visualização" />
+                      <SelectValue placeholder="View" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="month">Mensal</SelectItem>
-                      <SelectItem value="semester">Semestral</SelectItem>
-                      <SelectItem value="year">Anual</SelectItem>
+                      <SelectItem value="month">Monthly</SelectItem>
+                      <SelectItem value="semester">Semiannual</SelectItem>
+                      <SelectItem value="year">Annual</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -646,17 +646,17 @@ export default function VisitAgenda() {
                     else if (timeRange === "semester") setCurrentDate(subMonths(currentDate, 6));
                     else setCurrentDate(subYears(currentDate, 1));
                   }}>
-                    Anterior
+                    Previous
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
-                    Hoje
+                    Today
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => {
                     if (timeRange === "month") setCurrentDate(addMonths(currentDate, 1));
                     else if (timeRange === "semester") setCurrentDate(addMonths(currentDate, 6));
                     else setCurrentDate(addYears(currentDate, 1));
                   }}>
-                    Próximo
+                    Next
                   </Button>
                 </div>
               </CardHeader>
@@ -687,7 +687,7 @@ export default function VisitAgenda() {
                             <div key={month.toISOString()} className="space-y-4">
                               <h3 className="text-base font-bold text-foreground px-1 capitalize flex items-center gap-2">
                                 <CalendarIcon className="h-4 w-4 text-primary" />
-                                {format(month, "MMMM yyyy", { locale: ptBR })}
+                                {format(month, "MMMM yyyy", { locale: enUS })}
                               </h3>
                               <div className="grid grid-cols-7 gap-px bg-muted/30 border rounded-xl overflow-hidden shadow-sm">
                                 {["D", "S", "T", "Q", "Q", "S", "S"].map((day) => (
@@ -779,11 +779,11 @@ export default function VisitAgenda() {
               {filteredVisits.length === 0 ? (
                 <Card className="col-span-full p-12 text-center">
                   <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Nenhuma visita agendada</h3>
-                  <p className="text-muted-foreground mb-4">Comece agendando sua primeira visita</p>
+                  <h3 className="text-lg font-semibold mb-2">No scheduled visits</h3>
+                  <p className="text-muted-foreground mb-4">Start by scheduling your first visit</p>
                   <Button onClick={() => setNewVisitOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Agendar Visita
+                    Schedule Visit
                   </Button>
                 </Card>
               ) : (
@@ -808,8 +808,8 @@ export default function VisitAgenda() {
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          {format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}
-                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM/yyyy", { locale: ptBR })}`}
+                          {format(parseLocalDate(visit.scheduled_date), "MM/dd/yyyy", { locale: enUS })}
+                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "MM/dd/yyyy", { locale: enUS })}`}
                         </span>
                         {visit.scheduled_time && (
                           <>
@@ -842,7 +842,7 @@ export default function VisitAgenda() {
         {viewMode === "calendar" && upcomingVisits.length > 0 && (
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle className="text-lg">Próximas Visitas</CardTitle>
+              <CardTitle className="text-lg">Upcoming Visits</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -861,8 +861,8 @@ export default function VisitAgenda() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        {format(parseLocalDate(visit.scheduled_date), "dd/MM", { locale: ptBR })}
-                        {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM", { locale: ptBR })}`}
+                        {format(parseLocalDate(visit.scheduled_date), "MM/dd", { locale: enUS })}
+                        {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "MM/dd", { locale: enUS })}`}
                       </p>
                       {visit.scheduled_time && (
                         <p className="text-xs text-muted-foreground">{visit.scheduled_time.slice(0, 5)}</p>
@@ -887,7 +887,7 @@ export default function VisitAgenda() {
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} Visita de Monitoria / Estudo</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Monitoring / Study Visit</DialogTitle></DialogHeader>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Site *</Label>
