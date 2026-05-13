@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Package, Upload, TrendingUp, TrendingDown, Boxes } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Upload, TrendingUp, TrendingDown, Boxes, Settings2 } from "lucide-react";
 import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
