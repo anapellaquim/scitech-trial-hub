@@ -274,6 +274,24 @@ export default function Regulatory() {
             </p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0">
+            <ExcelExportButton 
+              data={importType === "submission" ? submissionExportData : reportExportData} 
+              fileName={importType === "submission" ? "submissions" : "reports"} 
+            />
+            <Button variant="outline" onClick={() => {
+              setImportType("report");
+              setImportOpen(true);
+            }}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import Reports
+            </Button>
+            <Button variant="outline" onClick={() => {
+              setImportType("submission");
+              setImportOpen(true);
+            }}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import Submissions
+            </Button>
             <Button variant="outline" onClick={() => setShowNewReport(true)}>
               <Plus className="mr-2 h-4 w-4" />
               New Report
@@ -283,6 +301,7 @@ export default function Regulatory() {
               New Submission
             </Button>
           </div>
+
         </div>
 
         {/* Stats Cards */}
