@@ -71,20 +71,20 @@ const TYPE_OPTIONS = [
   { value: "protocol", label: "Protocol" },
   { value: "regulatory", label: "Regulatory" },
   { value: "operational", label: "Operational" },
-  { value: "systems", label: "Sistemas (CTMS/EDC/eTMF)" },
-  { value: "vendor", label: "Fornecedor/Vendor" },
-  { value: "schedule", label: "Cronograma" },
-  { value: "quality", label: "Qualidade" },
+  { value: "systems", label: "Systems (CTMS/EDC/eTMF)" },
+  { value: "vendor", label: "Vendor" },
+  { value: "schedule", label: "Schedule" },
+  { value: "quality", label: "Quality" },
 ];
 
 const IMPACT_AREAS = [
-  { value: "participant_safety", label: "Segurança do Participante" },
-  { value: "data", label: "Dados" },
-  { value: "regulatory_ethical", label: "Regulatório/Ético" },
-  { value: "schedule", label: "Cronograma" },
-  { value: "budget", label: "Orçamento" },
-  { value: "systems", label: "Sistemas (CTMS/EDC/eTMF)" },
-  { value: "other", label: "Outros" },
+  { value: "participant_safety", label: "Participant Safety" },
+  { value: "data", label: "Data" },
+  { value: "regulatory_ethical", label: "Regulatory/Ethical" },
+  { value: "schedule", label: "Schedule" },
+  { value: "budget", label: "Budget" },
+  { value: "systems", label: "Systems (CTMS/EDC/eTMF)" },
+  { value: "other", label: "Others" },
 ];
 
 const GENERAL_VALUE = "__general__";
@@ -426,18 +426,18 @@ export default function ChangeControl() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Solicitante</Label><Input value={form.requester} onChange={e => setForm({...form, requester: e.target.value})} placeholder="Nome do solicitante" /></div>
+              <div><Label>Requester</Label><Input value={form.requester} onChange={e => setForm({...form, requester: e.target.value})} placeholder="Requester name" /></div>
               <div><Label>Responsible</Label><Input value={form.responsible} onChange={e => setForm({...form, responsible: e.target.value})} /></div>
             </div>
 
             <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} /></div>
 
-            <div><Label>Motivo da Mudança</Label><Textarea value={form.change_reason} onChange={e => setForm({...form, change_reason: e.target.value})} placeholder="Por que essa mudança é necessária?" /></div>
+            <div><Label>Reason for Change</Label><Textarea value={form.change_reason} onChange={e => setForm({...form, change_reason: e.target.value})} placeholder="Why is this change necessary?" /></div>
 
-            <div><Label>Documentos/Processos Afetados</Label><Textarea value={form.affected_documents} onChange={e => setForm({...form, affected_documents: e.target.value})} placeholder="Liste documentos, SOPs e processos impactados" /></div>
+            <div><Label>Affected Documents/Processes</Label><Textarea value={form.affected_documents} onChange={e => setForm({...form, affected_documents: e.target.value})} placeholder="List documents, SOPs and impacted processes" /></div>
 
             <div>
-              <Label>Avaliação do Impacto</Label>
+              <Label>Impact Assessment</Label>
               <div className="grid grid-cols-2 gap-2 mt-2 p-3 border rounded-md">
                 {IMPACT_AREAS.map(area => (
                   <label key={area.value} className="flex items-center gap-2 cursor-pointer text-sm">
@@ -451,11 +451,11 @@ export default function ChangeControl() {
               </div>
               {form.impact_areas.includes("other") && (
                 <div className="mt-2">
-                  <Label className="text-xs">Descreva "Outros" Impactos</Label>
+                  <Label className="text-xs">Describe "Other" Impacts</Label>
                   <Input 
                     value={form.impact_areas_other} 
                     onChange={e => setForm({...form, impact_areas_other: e.target.value})}
-                    placeholder="Especifique os outros impactos..."
+                    placeholder="Specify other impacts..."
                     className="mt-1"
                   />
                 </div>
@@ -468,37 +468,37 @@ export default function ChangeControl() {
                   checked={form.requires_training}
                   onCheckedChange={(v) => setForm({...form, requires_training: !!v})}
                 />
-                Necessidade de Treinamento
+                Training Required
               </label>
               <label className="flex items-center gap-2 cursor-pointer text-sm">
                 <Checkbox
                   checked={form.requires_communication}
                   onCheckedChange={(v) => setForm({...form, requires_communication: !!v})}
                 />
-                Necessidade de Comunicação
+                Communication Required
               </label>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label>Plano de Ação</Label>
-                <Button type="button" size="sm" variant="outline" onClick={addActionItem}><Plus className="h-3 w-3 mr-1" />Add Ação</Button>
+                <Label>Action Plan</Label>
+                <Button type="button" size="sm" variant="outline" onClick={addActionItem}><Plus className="h-3 w-3 mr-1" />Add Action</Button>
               </div>
               {actionItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4 border rounded-md">Nenhuma ação cadastrada.</p>
+                <p className="text-sm text-muted-foreground text-center py-4 border rounded-md">No actions registered.</p>
               ) : (
                 <div className="space-y-2">
                   {actionItems.map((item, idx) => (
                     <div key={idx} className="grid grid-cols-12 gap-2 items-start p-2 border rounded-md">
                       <Textarea
                         className="col-span-5 min-h-[40px]"
-                        placeholder="Descrição da ação"
+                        placeholder="Action description"
                         value={item.action_description}
                         onChange={e => updateActionItem(idx, { action_description: e.target.value })}
                       />
                       <Input
                         className="col-span-3"
-                        placeholder="Responsável"
+                        placeholder="Responsible"
                         value={item.responsible}
                         onChange={e => updateActionItem(idx, { responsible: e.target.value })}
                       />
@@ -511,9 +511,9 @@ export default function ChangeControl() {
                       <Select value={item.status} onValueChange={v => updateActionItem(idx, { status: v })}>
                         <SelectTrigger className="col-span-1"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="in_progress">Em andamento</SelectItem>
-                          <SelectItem value="completed">Concluída</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button type="button" variant="ghost" size="icon" className="col-span-1" onClick={() => removeActionItem(idx)}>
