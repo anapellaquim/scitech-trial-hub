@@ -166,9 +166,29 @@ export default function VisitAgenda() {
     }
   };
 
-  const filteredVisits = selectedProject === "all" 
-    ? visits 
-    : visits.filter(v => v.project?.id === selectedProject);
+  const filteredVisits = visits.filter(v => {
+    const matchProject = selectedProject === "all" || v.project?.id === selectedProject;
+    const matchSite = selectedSite === "all" || v.research_center?.id === selectedSite;
+    return matchProject && matchSite;
+  });
+
+  const availableSites = useMemo(() => {
+    const sitesMap = new Map();
+    const relevantVisits = selectedProject === "all" 
+      ? visits 
+      : visits.filter(v => v.project?.id === selectedProject);
+      
+    relevantVisits.forEach(v => {
+      if (v.research_center) {
+        sitesMap.set(v.research_center.id, v.research_center);
+      }
+    });
+    return Array.from(sitesMap.values());
+  }, [visits, selectedProject]);
+
+  useEffect(() => {
+    setSelectedSite("all");
+  }, [selectedProject]);
 
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentMonth),
