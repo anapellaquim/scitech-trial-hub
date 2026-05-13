@@ -50,6 +50,8 @@ interface DashboardStats {
   completedVisits: number;
   openFindings: number;
   criticalFindings: number;
+  totalPatients: number;
+  randomizedPatients: number;
   findingsAging: { range: string; count: number }[];
   siteChecklistCompletion: { siteCode: string; siteName: string; completion: number; total: number; completed: number }[];
 }
