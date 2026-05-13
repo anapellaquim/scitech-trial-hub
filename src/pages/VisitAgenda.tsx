@@ -306,11 +306,10 @@ export default function VisitAgenda() {
         payload.actual_date = form.actual_date || null;
         payload.actual_date_end = form.actual_date_end || null;
         payload.monitor_name = form.monitor_name.trim() || null;
-        payload.purpose = form.purpose.trim() || null;
         payload.summary = form.summary.trim() || null;
-        payload.follow_up_actions = form.follow_up_actions.trim() || null;
         payload.report_link = form.report_link.trim() || null;
         payload.report_date = form.report_date || null;
+        payload.checklist = form.checklist;
       } else {
         payload.research_center_id = form.site_id;
         payload.scheduled_date = form.planned_date || null;
