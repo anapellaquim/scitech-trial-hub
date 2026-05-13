@@ -89,8 +89,9 @@ const emptyForm = {
   site_id: "", visit_code: "", visit_type: "IMV", status: "planned",
   planned_date: "", planned_date_end: "",
   actual_date: "", actual_date_end: "",
-  monitor_name: "", purpose: "",
-  summary: "", follow_up_actions: "", report_link: "", report_date: "",
+  monitor_name: "", 
+  summary: "", report_link: "", report_date: "",
+  checklist: {} as Record<string, boolean>,
 };
 
 const emptyFinding = {
