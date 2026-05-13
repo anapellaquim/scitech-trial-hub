@@ -525,18 +525,28 @@ export default function Payments() {
         const visitType = protocolSchedulesData?.find(vt => vt.target_day === visit.visit_number);
         const visitValue = visit.payment_amount ?? visitType?.payment_amount ?? 0;
 
+        if (visit.payment_status === "paid") {
+          paidCount++;
+          totalPaid += Number(visitValue);
+        }
+
         if (visit.status === "completed") {
           completedCount++;
-          totalEarned += Number(visitValue);
-          
-          if (visit.payment_status === "paid") {
-            paidCount++;
-            totalPaid += Number(visitValue);
-          }
-        } else if (visit.status === "lost visit") {
-          // Explicitly do not count for payments
         }
       });
+
+      // Based on instructions: 
+      // "Valor Pendente" = all visits with status "a pagar" (which I infer as NOT paid)
+      // "Total Pago" = visits with status "Pago"
+      // "Total Acumulado" = Total Pago + Valor Pendente
+      
+      // I'll calculate total possible value (all visits associated with patient)
+      const totalVisitsValue = participantVisits.reduce((sum, v) => {
+        const vt = protocolSchedulesData?.find(schedule => schedule.target_day === v.visit_number);
+        return sum + (v.payment_amount ?? vt?.payment_amount ?? 0);
+      }, 0);
+
+      const pendingPayment = totalVisitsValue - totalPaid;
 
       return {
         participant_id: participant.id,
@@ -544,8 +554,8 @@ export default function Payments() {
         research_center: participant.research_center || "Sem Centro",
         completed_visits: completedCount,
         paid_visits: paidCount,
-        pending_payment: totalEarned - totalPaid,
-        total_earned: totalEarned,
+        pending_payment: pendingPayment,
+        total_earned: totalPaid + pendingPayment,
         total_paid: totalPaid,
       };
     });
@@ -1724,6 +1734,32 @@ export default function Payments() {
                           className="pl-8"
                         />
                       </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <Card className="bg-amber-50 border-amber-200">
+                        <CardContent className="pt-4">
+                          <p className="text-sm font-medium text-amber-800 mb-1">Valor Pendente</p>
+                          <p className="text-2xl font-bold text-amber-900">
+                            {formatCurrency(participantPayments.reduce((sum, p) => sum + p.pending_payment, 0))}
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-emerald-50 border-emerald-200">
+                        <CardContent className="pt-4">
+                          <p className="text-sm font-medium text-emerald-800 mb-1">Total Pago</p>
+                          <p className="text-2xl font-bold text-emerald-900">
+                            {formatCurrency(participantPayments.reduce((sum, p) => sum + p.total_paid, 0))}
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-blue-50 border-blue-200">
+                        <CardContent className="pt-4">
+                          <p className="text-sm font-medium text-blue-800 mb-1">Total Acumulado</p>
+                          <p className="text-2xl font-bold text-blue-900">
+                            {formatCurrency(participantPayments.reduce((sum, p) => sum + p.total_earned, 0))}
+                          </p>
+                        </CardContent>
+                      </Card>
                     </div>
                     <ScrollArea className="w-full">
                       <Table>
