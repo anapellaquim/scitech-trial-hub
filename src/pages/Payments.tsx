@@ -462,35 +462,21 @@ export default function Payments() {
       .eq("project_id", selectedProject)
       .order("code");
 
-    // Load participants (merging both tables for backward compatibility)
-    const { data: participantsBase } = await supabase
-      .from("participants")
-      .select("id, participant_code, name, research_center")
-      .eq("project_id", selectedProject);
-
+    // Load patients from the new Patient Management module
     const { data: patientsBase } = await supabase
       .from("patients")
       .select("id, patient_code, site_id, status")
       .eq("project_id", selectedProject);
 
-    // Merge logic: prefer newer 'patients' table data if available
-    const participants: Participant[] = [
-      ...(participantsBase || []).map(p => ({
+    const participants: Participant[] = (patientsBase || []).map(p => {
+      const site = centers?.find(c => c.id === p.site_id);
+      return {
         id: p.id,
-        participant_code: p.participant_code,
-        name: p.name || "",
-        research_center: p.research_center
-      })),
-      ...(patientsBase || []).map(p => {
-        const site = centers?.find(c => c.id === p.site_id);
-        return {
-          id: p.id,
-          participant_code: p.patient_code,
-          name: `Patient ${p.patient_code}`,
-          research_center: site?.code || null
-        };
-      })
-    ];
+        participant_code: p.patient_code,
+        name: `Patient ${p.patient_code}`,
+        research_center: site?.code || null
+      };
+    });
 
     if (participants.length === 0) {
       setParticipantPayments([]);
@@ -498,25 +484,23 @@ export default function Payments() {
       return;
     }
 
-    // Load visits (merging both tables)
-    const [visitsBaseRes, patientVisitsRes] = await Promise.all([
-      supabase.from("visits").select("id, participant_id, visit_number, status, payment_status, payment_amount, scheduled_date, completed_at").eq("project_id", selectedProject),
-      supabase.from("patient_visits").select("*, protocol_visit:protocol_visit_schedules(*)").order("actual_date")
-    ]);
+    // Load patient visits from the Patient Management module
+    const { data: patientVisitsRes } = await supabase
+      .from("patient_visits")
+      .select("*, protocol_visit:protocol_visit_schedules(*)")
+      .eq("status", "Completed")
+      .order("actual_date");
 
-    const visitsData = [
-      ...(visitsBaseRes.data || []),
-      ...(patientVisitsRes.data || []).map(pv => ({
-        id: pv.id,
-        participant_id: pv.patient_id,
-        visit_number: pv.protocol_visit?.target_day || 0, // Fallback for mapping
-        status: pv.status.toLowerCase(),
-        payment_status: pv.payment_status.toLowerCase(),
-        payment_amount: pv.protocol_visit?.payment_amount || 0,
-        scheduled_date: null,
-        completed_at: pv.actual_date
-      }))
-    ];
+    const visitsData = (patientVisitsRes || []).map(pv => ({
+      id: pv.id,
+      participant_id: pv.patient_id,
+      visit_number: pv.protocol_visit?.target_day || 0,
+      status: pv.status.toLowerCase(),
+      payment_status: pv.payment_status?.toLowerCase() || "pending",
+      payment_amount: pv.protocol_visit?.payment_amount || 0,
+      scheduled_date: null,
+      completed_at: pv.actual_date
+    }));
 
     setParticipants(participants || []);
     setVisits(visitsData || []);
@@ -1259,23 +1243,9 @@ export default function Payments() {
               </p>
             </CardContent>
           </Card>
-        ) : visitTypes.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground text-center">
-                Configure as visitas do estudo na página de Visitas primeiro
-              </p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => navigate(`/visits?project=${selectedProject}`)}
-              >
-                Ir para Visitas
-              </Button>
-            </CardContent>
-          </Card>
         ) : (
+          <div className="space-y-6">
+            {/* Date Filter for Indicators */}
           <div className="space-y-6">
             {/* Date Filter for Indicators */}
             <Card>
