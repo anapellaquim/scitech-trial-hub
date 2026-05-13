@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import CTMSNav from "@/components/CTMSNav";
@@ -504,71 +505,100 @@ export default function PatientManagement() {
                   <CardDescription>Track recruitment and study progress</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Patient Code</TableHead>
-                        <TableHead>Site</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Enrollment Date</TableHead>
-                        <TableHead className="text-center">Visits</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {loading ? (
-                        <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
-                      ) : filteredPatients.length === 0 ? (
-                        <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
-                      ) : (
-                        filteredPatients.map(p => {
-                          const completedVisitsCount = patientVisits.filter(v => v.patient_id === p.id && v.status === 'Completed').length;
-                          return (
-                            <TableRow key={p.id}>
-                              <TableCell className="font-bold">{p.patient_code}</TableCell>
-                              <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
-                              <TableCell>{getStatusBadge(p.status)}</TableCell>
-                              <TableCell>{p.enrollment_date ? format(new Date(p.enrollment_date), "dd/MM/yyyy") : "—"}</TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex flex-col items-center">
-                                  <span className="font-semibold">{completedVisitsCount}/{protocolVisits.length}</span>
-                                  <div className="w-20 h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
-                                    <div 
-                                      className="h-full bg-primary transition-all" 
-                                      style={{ width: `${protocolVisits.length > 0 ? (completedVisitsCount / protocolVisits.length) * 100 : 0}%` }}
-                                    />
+                  <ScrollArea className="w-full">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="min-w-[120px]">Patient Code</TableHead>
+                          <TableHead className="min-w-[150px]">Site</TableHead>
+                          <TableHead className="min-w-[120px]">Status</TableHead>
+                          {protocolVisits.map(pv => (
+                            <TableHead key={pv.id} className="text-center min-w-[150px]">
+                              {pv.visit_name}
+                            </TableHead>
+                          ))}
+                          <TableHead className="text-center min-w-[100px]">Visits</TableHead>
+                          <TableHead className="text-right min-w-[120px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {loading ? (
+                          <TableRow><TableCell colSpan={protocolVisits.length + 5} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
+                        ) : filteredPatients.length === 0 ? (
+                          <TableRow><TableCell colSpan={protocolVisits.length + 5} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
+                        ) : (
+                          filteredPatients.map(p => {
+                            const completedVisitsCount = patientVisits.filter(v => v.patient_id === p.id && v.status === 'Completed').length;
+                            return (
+                              <TableRow key={p.id}>
+                                <TableCell className="font-bold">{p.patient_code}</TableCell>
+                                <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
+                                <TableCell>{getStatusBadge(p.status)}</TableCell>
+                                
+                                {protocolVisits.map(pv => {
+                                  const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
+                                  return (
+                                    <TableCell key={pv.id} className="text-center">
+                                      {visit ? (
+                                        <div className="flex flex-col items-center">
+                                          <Badge variant={visit.status === 'Completed' ? 'default' : 'outline'} className={visit.status === 'Completed' ? 'bg-green-500' : ''}>
+                                            {visit.status}
+                                          </Badge>
+                                          {visit.actual_date && (
+                                            <span className="text-[10px] text-muted-foreground mt-1">
+                                              {format(new Date(visit.actual_date), "dd/MM/yyyy")}
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <span className="text-muted-foreground text-xs">—</span>
+                                      )}
+                                    </TableCell>
+                                  );
+                                })}
+
+                                <TableCell className="text-center">
+                                  <div className="flex flex-col items-center">
+                                    <span className="font-semibold">{completedVisitsCount}/{protocolVisits.length}</span>
+                                    <div className="w-20 h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
+                                      <div 
+                                        className="h-full bg-primary transition-all" 
+                                        style={{ width: `${protocolVisits.length > 0 ? (completedVisitsCount / protocolVisits.length) * 100 : 0}%` }}
+                                      />
+                                    </div>
                                   </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                  <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
-                                    setSelectedPatientForVisits(p);
-                                    setVisitForm({ protocol_visit_id: "", actual_date: format(new Date(), "yyyy-MM-dd"), status: "Completed", notes: "" });
-                                    setVisitDialogOpen(true);
-                                  }}>
-                                    <ClipboardCheck className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => {
-                                    setEditingPatient(p);
-                                    setPatientForm({
-                                      patient_code: p.patient_code,
-                                      site_id: p.site_id,
-                                      status: p.status,
-                                      enrollment_date: p.enrollment_date || "",
-                                      notes: p.notes || ""
-                                    });
-                                    setPatientDialogOpen(true);
-                                  }}><Pencil className="h-4 w-4" /></Button>
-                                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePatient(p.id)}><Trash2 className="h-4 w-4" /></Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                      )}
-                    </TableBody>
-                  </Table>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
+                                      setSelectedPatientForVisits(p);
+                                      setVisitForm({ protocol_visit_id: "", actual_date: format(new Date(), "yyyy-MM-dd"), status: "Completed", notes: "" });
+                                      setVisitDialogOpen(true);
+                                    }}>
+                                      <ClipboardCheck className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => {
+                                      setEditingPatient(p);
+                                      setPatientForm({
+                                        patient_code: p.patient_code,
+                                        site_id: p.site_id,
+                                        status: p.status,
+                                        enrollment_date: p.enrollment_date || "",
+                                        notes: p.notes || ""
+                                      });
+                                      setPatientDialogOpen(true);
+                                    }}><Pencil className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePatient(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
                 </CardContent>
               </Card>
             </TabsContent>
