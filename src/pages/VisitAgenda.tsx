@@ -1,5 +1,5 @@
 import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
 import { Button } from "@/components/ui/button";
@@ -79,9 +79,9 @@ export default function VisitAgenda() {
   const [loading, setLoading] = useState(true);
   const [newVisitOpen, setNewVisitOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [selectedSite, setSelectedSite] = useState<string>("all");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
-  const [showTasks, setShowTasks] = useState(true);
 
   useEffect(() => {
     checkAuth();
@@ -166,9 +166,29 @@ export default function VisitAgenda() {
     }
   };
 
-  const filteredVisits = selectedProject === "all" 
-    ? visits 
-    : visits.filter(v => v.project?.id === selectedProject);
+  const filteredVisits = visits.filter(v => {
+    const matchProject = selectedProject === "all" || v.project?.id === selectedProject;
+    const matchSite = selectedSite === "all" || v.research_center?.id === selectedSite;
+    return matchProject && matchSite;
+  });
+
+  const availableSites = useMemo(() => {
+    const sitesMap = new Map();
+    const relevantVisits = selectedProject === "all" 
+      ? visits 
+      : visits.filter(v => v.project?.id === selectedProject);
+      
+    relevantVisits.forEach(v => {
+      if (v.research_center) {
+        sitesMap.set(v.research_center.id, v.research_center);
+      }
+    });
+    return Array.from(sitesMap.values());
+  }, [visits, selectedProject]);
+
+  useEffect(() => {
+    setSelectedSite("all");
+  }, [selectedProject]);
 
   const daysInMonth = eachDayOfInterval({
     start: startOfMonth(currentMonth),
@@ -204,7 +224,7 @@ export default function VisitAgenda() {
           </div>
           <div className="flex items-center gap-3">
             <Select value={selectedProject} onValueChange={setSelectedProject}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filtrar por projeto" />
               </SelectTrigger>
               <SelectContent>
@@ -212,6 +232,19 @@ export default function VisitAgenda() {
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedSite} onValueChange={setSelectedSite}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filtrar por centro" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os centros</SelectItem>
+                {availableSites.map((site) => (
+                  <SelectItem key={site.id} value={site.id}>
+                    {site.code} - {site.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -226,15 +259,17 @@ export default function VisitAgenda() {
           const completed = filteredVisits.filter(v => v.status === "completed").length;
           const upcoming = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) >= today).length;
           const overdue = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) < today).length;
+          const siteCount = new Set(filteredVisits.map(v => v.research_center?.id).filter(Boolean)).size;
           
           return (
             <div className="mb-6">
-              <KpiCards cols={5} items={[
+              <KpiCards cols={6} items={[
                 { label: "Total Visits", value: total, icon: CalendarIcon, accent: "primary" },
                 { label: "Scheduled/Planned", value: scheduled, icon: Clock, accent: "primary" },
                 { label: "Upcoming", value: upcoming, icon: CalendarIcon, accent: "primary" },
                 { label: "Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
                 { label: "Completed", value: completed, icon: CheckCircle2, accent: "success" },
+                { label: "Centros Ativos", value: siteCount, icon: MapPin, accent: "warning" },
               ]} />
             </div>
           );
@@ -285,8 +320,8 @@ export default function VisitAgenda() {
                   
                   {daysInMonth.map((day) => {
                     const dayVisits = getVisitsForDay(day);
-                    const dayTasks = showTasks ? getTasksForDay(day) : [];
-                    const totalItems = dayVisits.length + dayTasks.length;
+                    const dayTasks: any[] = [];
+                    const totalItems = dayVisits.length;
                     
                     return (
                       <div
@@ -299,7 +334,7 @@ export default function VisitAgenda() {
                           {format(day, "d")}
                         </span>
                         <div className="mt-1 space-y-1">
-                          {dayVisits.slice(0, showTasks ? 2 : 3).map((visit) => (
+                          {dayVisits.slice(0, 3).map((visit) => (
                             <div
                               key={visit.id}
                               onClick={() => {
