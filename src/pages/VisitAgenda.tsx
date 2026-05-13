@@ -576,7 +576,7 @@ export default function VisitAgenda() {
                 <SelectValue placeholder="Filter by center" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os centros</SelectItem>
+                <SelectItem value="all">All centers</SelectItem>
                 {availableSites.map((site) => (
                   <SelectItem key={site.id} value={site.id}>
                     {site.code} - {site.name}
