@@ -323,33 +323,26 @@ export default function PatientManagement() {
   const downloadTemplate = () => {
     const workbook = XLSX.utils.book_new();
     
-    const patientsTemplate = [{
+    // Create combined data for template
+    const templateRow: any = {
       'Código do Paciente': 'PAC-001',
       'Centro (ID)': sites[0]?.id || 'ID_DO_CENTRO',
       'Status': 'Screening',
       'Notas': 'Exemplo'
-    }];
-    
-    // Create a visits sample row based on protocol setup
-    const visitsTemplate: any = {
-      'Código do Paciente': 'PAC-001'
     };
     
     protocolVisits.forEach(v => {
-      visitsTemplate[`${v.visit_name} (Data)`] = format(new Date(), 'yyyy-MM-dd');
-      visitsTemplate[`${v.visit_name} (Status)`] = 'Completed';
+      templateRow[`${v.visit_name} (Status)`] = 'Completed';
+      templateRow[`${v.visit_name} (Data)`] = format(new Date(), 'yyyy-MM-dd');
     });
     
     if (protocolVisits.length === 0) {
-      visitsTemplate['Visita Exemplo (Data)'] = format(new Date(), 'yyyy-MM-dd');
-      visitsTemplate['Visita Exemplo (Status)'] = 'Completed';
+      templateRow['Visita Exemplo (Status)'] = 'Completed';
+      templateRow['Visita Exemplo (Data)'] = format(new Date(), 'yyyy-MM-dd');
     }
 
-    const patientsSheet = XLSX.utils.json_to_sheet(patientsTemplate);
-    XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes");
-
-    const visitsSheet = XLSX.utils.json_to_sheet([visitsTemplate]);
-    XLSX.utils.book_append_sheet(workbook, visitsSheet, "Visitas");
+    const patientsSheet = XLSX.utils.json_to_sheet([templateRow]);
+    XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes e Visitas");
 
     const protocolTemplate = [{
       'Nome da Visita': 'V1 - Screening',
@@ -360,7 +353,7 @@ export default function PatientManagement() {
       'Centro (ID)': 'Global'
     }];
     const protocolSheet = XLSX.utils.json_to_sheet(protocolTemplate);
-    XLSX.utils.book_append_sheet(workbook, protocolSheet, "Protocolo");
+    XLSX.utils.book_append_sheet(workbook, protocolSheet, "Configuracao Protocolo");
 
     XLSX.writeFile(workbook, "template-patient-management.xlsx");
     toast.success("Template baixado");
@@ -375,9 +368,9 @@ export default function PatientManagement() {
         
         setLoading(true);
 
-        // Import Protocol (Aba Protocolo)
-        if (workbook.SheetNames.includes("Protocolo")) {
-          const protocolRows = XLSX.utils.sheet_to_json(workbook.Sheets["Protocolo"]) as any[];
+        // Import Protocol (Configuracao Protocolo)
+        if (workbook.SheetNames.includes("Configuracao Protocolo")) {
+          const protocolRows = XLSX.utils.sheet_to_json(workbook.Sheets["Configuracao Protocolo"]) as any[];
           for (const row of protocolRows) {
             await supabase.from("protocol_visit_schedules").upsert({
               project_id: selectedProject,
@@ -391,12 +384,17 @@ export default function PatientManagement() {
           }
         }
 
-        // Import Patients (Aba Pacientes)
-        let importedPatientsMap = new Map<string, string>(); // Code to ID
-        if (workbook.SheetNames.includes("Pacientes")) {
-          const patientRows = XLSX.utils.sheet_to_json(workbook.Sheets["Pacientes"]) as any[];
-          for (const row of patientRows) {
-            const { data, error } = await supabase.from("patients").upsert({
+        // Reload protocol visits to ensure we have correct IDs for visit matching
+        const { data: pvSchedules } = await supabase.from("protocol_visit_schedules")
+          .select("*")
+          .eq("project_id", selectedProject);
+
+        // Import Patients & Visits (Aba Pacientes e Visitas)
+        if (workbook.SheetNames.includes("Pacientes e Visitas")) {
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets["Pacientes e Visitas"]) as any[];
+          for (const row of rows) {
+            // 1. Upsert Patient
+            const { data: pData } = await supabase.from("patients").upsert({
               project_id: selectedProject,
               patient_code: row['Código do Paciente'],
               site_id: row['Centro (ID)'],
@@ -408,40 +406,42 @@ export default function PatientManagement() {
               notes: row['Notas'] || null
             }).select('id').single();
             
-            if (data) {
-              importedPatientsMap.set(row['Código do Paciente'], data.id);
-            }
-          }
-        }
+            if (!pData) continue;
 
-        // Import Visits (Aba Visitas)
-        if (workbook.SheetNames.includes("Visitas")) {
-          const visitRows = XLSX.utils.sheet_to_json(workbook.Sheets["Visitas"]) as any[];
-          // Reload protocol visits to have IDs
-          const { data: pvSchedules } = await supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject);
-          
-          for (const row of visitRows) {
-            const patientCode = row['Código do Paciente'];
-            const patientId = importedPatientsMap.get(patientCode) || patients.find(p => p.patient_code === patientCode)?.id;
-            
-            if (!patientId) continue;
-
+            // 2. Process dynamic visit columns
             for (const pv of (pvSchedules || [])) {
-              const dateKey = `${pv.visit_name} (Data)`;
               const statusKey = `${pv.visit_name} (Status)`;
+              const dateKey = `${pv.visit_name} (Data)`;
               
-              if (row[dateKey] || row[statusKey]) {
-                await supabase.from("patient_visits").upsert({
-                  patient_id: patientId,
-                  protocol_visit_id: pv.id,
-                  actual_date: row[dateKey] || null,
-                  status: row[statusKey] || 'Completed',
-                  payment_status: 'Pending'
-                });
+              if (row[statusKey] || row[dateKey]) {
+                const visitStatus = row[statusKey] || 'Scheduled';
+                // Only upsert if it's not a placeholder/scheduled status that doesn't need DB persistence yet,
+                // or if specifically requested. Here we persist if status is Completed or Lost Visit.
+                if (['Completed', 'Lost Visit'].includes(visitStatus)) {
+                  await supabase.from("patient_visits").upsert({
+                    patient_id: pData.id,
+                    protocol_visit_id: pv.id,
+                    actual_date: row[dateKey] || null,
+                    status: visitStatus,
+                    payment_status: 'Pending'
+                  });
+                }
               }
             }
           }
         }
+
+        toast.success("Dados importados com sucesso");
+        loadProjectData();
+      } catch (err) {
+        console.error(err);
+        toast.error("Erro ao importar Excel. Verifique o formato.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
         toast.success("Dados importados com sucesso");
         loadProjectData();
