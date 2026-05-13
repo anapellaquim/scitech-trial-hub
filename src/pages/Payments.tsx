@@ -485,11 +485,11 @@ export default function Payments() {
     }
 
     // Load patient visits from the Patient Management module
-    const { data: patientVisitsRes } = await supabase
-      .from("patient_visits")
-      .select("*, protocol_visit:protocol_visit_schedules(*)")
-      .eq("status", "Completed")
-      .order("actual_date");
+      // Load ALL patient visits (not just completed) from the Patient Management module
+      const { data: patientVisitsRes } = await supabase
+        .from("patient_visits")
+        .select("*, protocol_visit:protocol_visit_schedules(*)")
+        .order("actual_date");
 
     const visitsData = (patientVisitsRes || []).map(pv => ({
       id: pv.id,
