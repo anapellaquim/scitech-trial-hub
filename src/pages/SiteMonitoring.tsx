@@ -41,7 +41,7 @@ interface MonitorNote {
 }
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
-const CHECKLIST_ITEMS = [
+const DEFAULT_CHECKLIST_ITEMS = [
   "Confirm availability of PI and study staff",
   "Review Subject Enrollment and Screening logs",
   "Verify Source Documentation (SDV)",
