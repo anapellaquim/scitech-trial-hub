@@ -533,6 +533,8 @@ export default function Payments() {
             paidCount++;
             totalPaid += Number(visitValue);
           }
+        } else if (visit.status === "lost visit") {
+          // Explicitly do not count for payments
         }
       });
 
