@@ -114,15 +114,17 @@ export default function PatientManagement() {
   const loadProjectData = async () => {
     setLoading(true);
     try {
-      const [sitesRes, patientsRes, protocolRes] = await Promise.all([
+      const [sitesRes, patientsRes, protocolRes, visitsRes] = await Promise.all([
         supabase.from("research_centers").select("id, code, name").eq("project_id", selectedProject),
         supabase.from("patients").select("*, site:research_centers(code, name)").eq("project_id", selectedProject),
-        supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject).order("target_day")
+        supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject).order("target_day"),
+        supabase.from("patient_visits").select("*, protocol_visit:protocol_visit_schedules(*)").order("actual_date")
       ]);
 
       setSites(sitesRes.data || []);
       setPatients(patientsRes.data || []);
       setProtocolVisits(protocolRes.data || []);
+      setPatientVisits(visitsRes.data || []);
     } catch (error) {
       console.error(error);
       toast.error("Error loading patient data");
