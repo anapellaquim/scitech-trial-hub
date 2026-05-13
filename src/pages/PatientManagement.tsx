@@ -169,7 +169,7 @@ export default function PatientManagement() {
   const handleSaveSchedule = async () => {
     const payload = {
       project_id: selectedProject,
-      site_id: scheduleForm.site_id || null,
+      site_id: scheduleForm.site_id === "__none__" || !scheduleForm.site_id ? null : scheduleForm.site_id,
       visit_name: scheduleForm.visit_name,
       target_day: scheduleForm.target_day,
       window_minus: scheduleForm.window_minus,
@@ -191,6 +191,28 @@ export default function PatientManagement() {
     } else {
       toast.success("Schedule updated");
       setScheduleDialogOpen(false);
+      loadProjectData();
+    }
+  };
+
+  const handleSaveVisit = async () => {
+    if (!selectedPatientForVisits || !visitForm.protocol_visit_id) return;
+
+    const payload = {
+      patient_id: selectedPatientForVisits.id,
+      protocol_visit_id: visitForm.protocol_visit_id,
+      actual_date: visitForm.actual_date || null,
+      status: visitForm.status,
+      notes: visitForm.notes
+    };
+
+    const { error } = await supabase.from("patient_visits").insert(payload);
+
+    if (error) {
+      toast.error("Error recording visit");
+    } else {
+      toast.success("Visit recorded");
+      setVisitDialogOpen(false);
       loadProjectData();
     }
   };
