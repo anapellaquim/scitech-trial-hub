@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Calendar as CalendarIcon, List, MapPin, Clock, FileText, CheckSquare, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import KpiCards from "@/components/shared/KpiCards";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -327,120 +329,105 @@ export default function VisitAgenda() {
                 </div>
               </CardHeader>
               <CardContent>
-                {timeRange === "month" ? (
-                  <div className="grid grid-cols-7 gap-1">
-                    {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
-                      <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
-                        {day}
-                      </div>
-                    ))}
-                    
-                    {/* Empty cells for days before month starts */}
-                    {Array.from({ length: startOfMonth(currentDate).getDay() }).map((_, i) => (
-                      <div key={`empty-${i}`} className="p-2 min-h-[100px] bg-muted/20" />
-                    ))}
-                  
-                  
-                  {daysInMonth.map((day) => {
-                    const dayVisits = getVisitsForDay(day);
-                    const dayTasks: any[] = [];
-                    const totalItems = dayVisits.length;
-                    
+                <div className="space-y-8">
+                  {(() => {
+                    const months = timeRange === "month" 
+                      ? [startOfMonth(currentDate)]
+                      : timeRange === "semester"
+                        ? eachMonthOfInterval({
+                            start: currentDate.getMonth() < 6 ? startOfYear(currentDate) : addMonths(startOfYear(currentDate), 6),
+                            end: currentDate.getMonth() < 6 ? addMonths(startOfYear(currentDate), 5) : endOfYear(currentDate)
+                          })
+                        : eachMonthOfInterval({ start: startOfYear(currentDate), end: endOfYear(currentDate) });
+
                     return (
-                      <div
-                        key={day.toISOString()}
-                        className={`p-2 min-h-[100px] border rounded-lg ${
-                          isToday(day) ? "bg-primary/5 border-primary" : "border-border"
-                        }`}
-                      >
-                        <span className={`text-sm font-medium ${isToday(day) ? "text-primary" : ""}`}>
-                          {format(day, "d")}
-                        </span>
-                        <div className="mt-1 space-y-1">
-                          {dayVisits.slice(0, 3).map((visit) => (
-                            <div
-                              key={visit.id}
-                              onClick={() => {
-                                if (visit.source === 'site_monitoring') {
-                                  navigate(`/site-monitoring?visitId=${visit.id}`);
-                                } else {
-                                  navigate(`/site-monitoring?visitId=${visit.id}`);
-                                }
-                              }}
-                              className={`text-xs p-1 rounded cursor-pointer truncate ${visitTypeColors[visit.visit_type] || "bg-muted"}`}
-                            >
-                              {visit.visit_type} - {visit.research_center?.code || "N/A"}
+                      <div className={cn(
+                        "grid gap-8",
+                        timeRange === "month" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                      )}>
+                        {months.map((month) => {
+                          const monthDays = eachDayOfInterval({
+                            start: startOfMonth(month),
+                            end: endOfMonth(month),
+                          });
+                          
+                          return (
+                            <div key={month.toISOString()} className="space-y-3">
+                              <h3 className="text-sm font-semibold text-center border-b pb-1 capitalize">
+                                {format(month, "MMMM yyyy", { locale: ptBR })}
+                              </h3>
+                              <div className="grid grid-cols-7 gap-px bg-muted border rounded-sm overflow-hidden">
+                                {["D", "S", "T", "Q", "Q", "S", "S"].map((day) => (
+                                  <div key={day} className="bg-background p-1 text-center text-[10px] font-bold text-muted-foreground">
+                                    {day}
+                                  </div>
+                                ))}
+                                
+                                {Array.from({ length: startOfMonth(month).getDay() }).map((_, i) => (
+                                  <div key={`empty-${i}`} className="bg-background/50 p-1 h-12 md:h-16" />
+                                ))}
+                                
+                                {monthDays.map((day) => {
+                                  const dayVisits = filteredVisits.filter(v => {
+                                    const start = parseLocalDate(v.scheduled_date);
+                                    if (v.scheduled_date_end) {
+                                      const end = parseLocalDate(v.scheduled_date_end);
+                                      return day >= start && day <= end;
+                                    }
+                                    return isSameDay(start, day);
+                                  });
+                                  
+                                  return (
+                                    <div
+                                      key={day.toISOString()}
+                                      className={cn(
+                                        "bg-background p-1 h-12 md:h-16 flex flex-col items-center",
+                                        isToday(day) && "ring-1 ring-primary ring-inset bg-primary/5"
+                                      )}
+                                    >
+                                      <span className={cn(
+                                        "text-[10px] font-medium mb-0.5",
+                                        isToday(day) ? "text-primary" : "text-muted-foreground"
+                                      )}>
+                                        {format(day, "d")}
+                                      </span>
+                                      <div className="flex flex-wrap justify-center gap-0.5 w-full">
+                                        {dayVisits.slice(0, 3).map((visit) => (
+                                          <Tooltip key={visit.id} delayDuration={0}>
+                                            <TooltipTrigger asChild>
+                                              <div 
+                                                onClick={() => navigate(`/site-monitoring?visitId=${visit.id}`)}
+                                                className={cn(
+                                                  "w-1.5 h-1.5 rounded-full cursor-pointer hover:scale-125 transition-transform",
+                                                  visit.visit_type === "SQV" && "bg-blue-500",
+                                                  visit.visit_type === "SIV" && "bg-green-500",
+                                                  visit.visit_type === "IMV" && "bg-primary",
+                                                  visit.visit_type === "COV" && "bg-orange-500",
+                                                  !["SQV", "SIV", "IMV", "COV"].includes(visit.visit_type) && "bg-slate-400"
+                                                )}
+                                              />
+                                            </TooltipTrigger>
+                                            <TooltipContent className="text-[10px] p-2">
+                                              <p className="font-bold">{visit.visit_type} - {visit.research_center?.code}</p>
+                                              <p>{visit.project?.title}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        ))}
+                                        {dayVisits.length > 3 && (
+                                          <span className="text-[8px] font-bold text-muted-foreground">+{dayVisits.length - 3}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          ))}
-                          {dayTasks.slice(0, 2).map((task) => (
-                            <div
-                              key={task.id}
-                              onClick={() => navigate(`/tasks`)}
-                              className={`text-xs p-1 rounded cursor-pointer truncate ${taskStatusColors[task.status] || "bg-muted"}`}
-                            >
-                              <CheckSquare className="h-3 w-3 inline mr-1" />
-                              {task.title}
-                            </div>
-                          ))}
-                          {totalItems > 4 && (
-                            <div className="text-xs text-muted-foreground">
-                              +{totalItems - 4} mais
-                            </div>
-                          )}
-                        </div>
+                          );
+                        })}
                       </div>
                     );
-                  })}
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {(() => {
-                      const startDate = timeRange === "semester" 
-                        ? (currentDate.getMonth() < 6 ? startOfYear(currentDate) : addMonths(startOfYear(currentDate), 6))
-                        : startOfYear(currentDate);
-                      const endDate = timeRange === "semester"
-                        ? (currentDate.getMonth() < 6 ? addMonths(startOfYear(currentDate), 5) : endOfYear(currentDate))
-                        : endOfYear(currentDate);
-                      
-                      const months = eachMonthOfInterval({ start: startDate, end: endDate });
-                      
-                      return months.map(month => {
-                        const monthVisits = filteredVisits.filter(v => {
-                          const vDate = parseLocalDate(v.scheduled_date);
-                          return isSameMonth(vDate, month);
-                        });
-                        
-                        if (monthVisits.length === 0) return null;
-                        
-                        return (
-                          <div key={month.toISOString()} className="space-y-2">
-                            <h3 className="text-md font-semibold border-b pb-1">
-                              {format(month, "MMMM yyyy", { locale: ptBR })}
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {monthVisits.map(visit => (
-                                <Card 
-                                  key={visit.id} 
-                                  className="cursor-pointer hover:bg-muted/50 p-3 transition-colors"
-                                  onClick={() => navigate(`/site-monitoring?visitId=${visit.id}`)}
-                                >
-                                  <div className="flex justify-between items-start mb-2">
-                                    <Badge className={visitTypeColors[visit.visit_type]}>{visit.visit_type}</Badge>
-                                    <span className="text-xs text-muted-foreground">
-                                      {format(parseLocalDate(visit.scheduled_date), "dd/MM")}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm font-medium truncate">{visit.research_center?.code} - {visit.research_center?.name}</p>
-                                  <p className="text-xs text-muted-foreground truncate">{visit.project?.title}</p>
-                                </Card>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      }).filter(Boolean);
-                    })()}
-                  </div>
-                )}
+                  })()}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
