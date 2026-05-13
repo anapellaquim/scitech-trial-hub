@@ -188,22 +188,34 @@ export default function PatientManagement() {
   };
 
   const handleSaveSchedule = async () => {
-    const payload = {
+    // If multiple sites are selected, we save one record for each.
+    // If none are selected, it's global (site_id = null).
+    const siteIdsToSave = scheduleForm.site_ids.length > 0 ? scheduleForm.site_ids : [null];
+    
+    const updates = siteIdsToSave.map(siteId => ({
       project_id: selectedProject,
-      site_id: scheduleForm.site_id === "__none__" || !scheduleForm.site_id ? null : scheduleForm.site_id,
+      site_id: siteId,
       visit_name: scheduleForm.visit_name,
       target_day: scheduleForm.target_day,
       window_minus: scheduleForm.window_minus,
       window_plus: scheduleForm.window_plus,
       payment_amount: scheduleForm.payment_amount
-    };
+    }));
 
     let error;
     if (editingSchedule) {
-      const { error: err } = await supabase.from("protocol_visit_schedules").update(payload).eq("id", editingSchedule.id);
+      // If editing, we update the specific record. We use updates[0] but with the original site_id logic
+      const { error: err } = await supabase.from("protocol_visit_schedules").update({
+        visit_name: scheduleForm.visit_name,
+        target_day: scheduleForm.target_day,
+        window_minus: scheduleForm.window_minus,
+        window_plus: scheduleForm.window_plus,
+        payment_amount: scheduleForm.payment_amount,
+        site_id: updates[0].site_id
+      }).eq("id", editingSchedule.id);
       error = err;
     } else {
-      const { error: err } = await supabase.from("protocol_visit_schedules").insert(payload);
+      const { error: err } = await supabase.from("protocol_visit_schedules").insert(updates);
       error = err;
     }
 
