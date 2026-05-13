@@ -74,6 +74,7 @@ const TYPE_OPTIONS = [
   { value: "systems", label: "Sistemas (CTMS/EDC/eTMF)" },
   { value: "vendor", label: "Fornecedor/Vendor" },
   { value: "schedule", label: "Cronograma" },
+  { value: "quality", label: "Qualidade" },
 ];
 
 const IMPACT_AREAS = [
