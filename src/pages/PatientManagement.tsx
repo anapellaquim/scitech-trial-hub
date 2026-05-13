@@ -255,6 +255,28 @@ export default function PatientManagement() {
             <p className="text-muted-foreground mt-1">Manage participants, protocol visits, and payments</p>
           </div>
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 mr-2">
+              <Button variant="outline" size="sm" onClick={() => exportData()} disabled={!selectedProject}>
+                <Download className="h-4 w-4 mr-2" /> Export
+              </Button>
+              <div className="relative">
+                <Input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  id="import-data"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) importData(file);
+                  }}
+                />
+                <Button variant="outline" size="sm" asChild disabled={!selectedProject}>
+                  <label htmlFor="import-data" className="cursor-pointer">
+                    <Upload className="h-4 w-4 mr-2" /> Import
+                  </label>
+                </Button>
+              </div>
+            </div>
             <Select value={selectedProject || ""} onValueChange={setSelectedProject}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select Study" />
