@@ -856,7 +856,7 @@ export default function PatientManagement() {
                     handleSaveVisitExplicit("Completed");
                   }}>
                     <ClipboardCheck className="h-4 w-4 mr-2" />
-                    Record Visit Completion
+                    Visit Completion
                   </Button>
                   <Button variant="destructive" className="flex-1" onClick={() => {
                     const newVisitForm = { ...visitForm, status: "Lost Visit" };
