@@ -676,7 +676,7 @@ export default function VisitAgenda() {
                                         {dayVisits.slice(0, 4).map((visit) => (
                                           <div 
                                             key={visit.id}
-                                            onClick={() => navigate(`/site-monitoring?visitId=${visit.id}&edit=true`)}
+                                            onClick={() => openEdit(visit)}
                                             className={cn(
                                               "text-[8px] leading-tight px-1 py-0.5 rounded-sm cursor-pointer truncate font-medium border",
                                               visit.visit_type === "SQV" && "bg-blue-100 text-blue-800 border-blue-200",
