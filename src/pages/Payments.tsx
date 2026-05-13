@@ -653,6 +653,16 @@ export default function Payments() {
       )
       .on(
         "postgres_changes",
+        { event: "*", schema: "public", table: "patients", filter: `project_id=eq.${selectedProject}` },
+        () => loadProjectData()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "patient_visits" },
+        () => loadProjectData()
+      )
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "payment_history", filter: `project_id=eq.${selectedProject}` },
         () => loadPaymentHistory()
       )
