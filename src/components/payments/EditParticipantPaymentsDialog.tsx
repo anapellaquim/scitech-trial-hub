@@ -109,7 +109,7 @@ export function EditParticipantPaymentsDialog({
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             {visitTypes.map((vt) => {
               const visit = participantVisits.find((v) => v.visit_number === vt.visit_number);
-              const isCompleted = visit?.status === "completed";
+              const isCompleted = visit?.status === "completed" || visit?.status === "Completed";
               const notPerformed = visit?.status === "not_performed";
 
               if (!visit || notPerformed) {
