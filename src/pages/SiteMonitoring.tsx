@@ -681,6 +681,7 @@ export default function SiteMonitoring() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[30px]"></TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Site</TableHead>
                             <TableHead>Visit</TableHead>
@@ -694,40 +695,55 @@ export default function SiteMonitoring() {
                         <TableBody>
                           {filteredNotes.map(n => {
                             const v = visits.find(x => x.id === n.monitoring_visit_id);
+                            const isExpanded = expandedNoteId === n.id;
                             return (
-                              <TableRow key={n.id}>
-                                <TableCell className="text-xs whitespace-nowrap">{new Date(n.created_at).toLocaleString("en-US")}</TableCell>
-                                <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
-                                <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
-                                <TableCell className="text-sm">{n.author_name || "—"}</TableCell>
-                                <TableCell>{n.category || "—"}</TableCell>
-                                <TableCell><Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge></TableCell>
-                                <TableCell className="max-w-[420px] text-sm whitespace-pre-wrap">{n.content}</TableCell>
-                                <TableCell>
-                                  <div className="flex gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      title="Edit"
-                                      onClick={() => {
-                                        setNotesVisit(v || null);
-                                        editNote(n);
-                                        setNotesDialogOpen(true);
-                                      }}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      title="Delete"
-                                      onClick={() => deleteNote(n.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
+                              <>
+                                <TableRow key={n.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedNoteId(isExpanded ? null : n.id)}>
+                                  <TableCell>
+                                    <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
+                                  </TableCell>
+                                  <TableCell className="text-xs whitespace-nowrap">{new Date(n.created_at).toLocaleString("en-US")}</TableCell>
+                                  <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
+                                  <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
+                                  <TableCell className="text-sm">{n.author_name || "—"}</TableCell>
+                                  <TableCell>{n.category || "—"}</TableCell>
+                                  <TableCell><Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge></TableCell>
+                                  <TableCell className="max-w-[420px] text-sm whitespace-pre-wrap">{n.content}</TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Edit"
+                                        onClick={() => {
+                                          setNotesVisit(v || null);
+                                          editNote(n);
+                                          setNotesDialogOpen(true);
+                                        }}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Delete"
+                                        onClick={() => deleteNote(n.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                                {isExpanded && (
+                                  <TableRow className="bg-muted/30">
+                                    <TableCell colSpan={9} className="p-4">
+                                      <div className="max-w-4xl mx-auto">
+                                        <AuditTrail entityId={n.id} />
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </>
                             );
                           })}
                         </TableBody>
