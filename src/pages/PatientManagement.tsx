@@ -281,19 +281,30 @@ export default function PatientManagement() {
   const exportData = () => {
     const workbook = XLSX.utils.book_new();
     
-    // Patients Sheet
-    const patientsData = patients.map(p => ({
-      'Código do Paciente': p.patient_code,
-      'Centro (ID)': p.site_id,
-      'Centro (Código)': p.site?.code || '',
-      'Status': p.status,
-      'Data de Inclusão': p.enrollment_date,
-      'Notas': p.notes
-    }));
-    const patientsSheet = XLSX.utils.json_to_sheet(patientsData);
-    XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes");
+    // Patients & Visits Sheet (Merged like the UI)
+    const patientsData = patients.map(p => {
+      const row: any = {
+        'Código do Paciente': p.patient_code,
+        'Centro (ID)': p.site_id,
+        'Centro (Código)': p.site?.code || '',
+        'Status': p.status,
+        'Notas': p.notes
+      };
 
-    // Protocol Visits Sheet
+      // Add visit columns matching the UI
+      protocolVisits.forEach(pv => {
+        const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
+        row[`${pv.visit_name} (Status)`] = visit?.status || 'Scheduled';
+        row[`${pv.visit_name} (Data)`] = visit?.actual_date || '';
+      });
+
+      return row;
+    });
+
+    const patientsSheet = XLSX.utils.json_to_sheet(patientsData);
+    XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes e Visitas");
+
+    // Protocol Visits Sheet (Configuration)
     const protocolData = protocolVisits.map(v => ({
       'Nome da Visita': v.visit_name,
       'Dia Alvo': v.target_day,
@@ -303,7 +314,7 @@ export default function PatientManagement() {
       'Centro (ID)': v.site_id || 'Global'
     }));
     const protocolSheet = XLSX.utils.json_to_sheet(protocolData);
-    XLSX.utils.book_append_sheet(workbook, protocolSheet, "Protocolo");
+    XLSX.utils.book_append_sheet(workbook, protocolSheet, "Configuracao Protocolo");
 
     XLSX.writeFile(workbook, `patient-management-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
     toast.success("Dados exportados para Excel");
