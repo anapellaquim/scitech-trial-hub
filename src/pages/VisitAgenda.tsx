@@ -915,14 +915,39 @@ export default function VisitAgenda() {
               <div><Label>Actual Date (End)</Label><Input type="date" value={form.actual_date_end} onChange={e => setForm({...form, actual_date_end: e.target.value})} /></div>
             </div>
             <div><Label>Monitor (CRA)</Label><Input value={form.monitor_name} onChange={e => setForm({...form, monitor_name: e.target.value})} /></div>
-            <div><Label>Purpose / Objective</Label><Textarea rows={2} value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} /></div>
             <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
-            <div><Label>Follow-up Actions</Label><Textarea rows={2} value={form.follow_up_actions} onChange={e => setForm({...form, follow_up_actions: e.target.value})} /></div>
+            
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Monitoring Checklist</Label>
+              <div className="grid gap-2 border rounded-md p-3 bg-muted/20">
+                {CHECKLIST_ITEMS.map((item) => (
+                  <div key={item} className="flex items-center space-x-2 py-1">
+                    <Checkbox 
+                      id={item} 
+                      checked={!!form.checklist[item]} 
+                      onCheckedChange={(checked) => {
+                        setForm({
+                          ...form,
+                          checklist: { ...form.checklist, [item]: !!checked }
+                        });
+                      }}
+                    />
+                    <label 
+                      htmlFor={item} 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {item}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Report Date</Label><Input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} /></div>
               <div><Label>Report Link</Label><Input type="url" value={form.report_link} onChange={e => setForm({...form, report_link: e.target.value})} placeholder="https://..." /></div>
             </div>
-            
+
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
