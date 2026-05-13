@@ -160,6 +160,7 @@ const Dashboard = () => {
       let visits = visitsRes.data || [];
       let findings = findingsRes.data || [];
       let checklistItems = checklistRes.data || [];
+      let patientsData = patientsRes.data || [];
 
       if (selectedProject !== "all") {
         findings = findings.filter(f => f.visit?.project_id === selectedProject);
