@@ -10,7 +10,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import VisitAgenda from "./pages/VisitAgenda";
-import Visits from "./pages/Visits";
+
 import Payments from "./pages/Payments";
 import Budget from "./pages/Budget";
 
