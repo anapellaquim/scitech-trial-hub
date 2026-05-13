@@ -110,6 +110,7 @@ export function EditParticipantPaymentsDialog({
             {visitTypes.map((vt) => {
               const visit = participantVisits.find((v) => v.visit_number === vt.visit_number);
               const isCompleted = visit?.status?.toLowerCase() === "completed";
+              const isLostVisit = visit?.status?.toLowerCase() === "lost visit";
               const notPerformed = visit?.status?.toLowerCase() === "not_performed";
 
               if (!visit || notPerformed) {
