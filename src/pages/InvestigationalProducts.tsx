@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Package, Upload, TrendingUp, TrendingDown, Boxes } from "lucide-react";
 import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface IPRecord {
   id: string;
@@ -47,6 +48,13 @@ interface SupplyRecord {
   value: number | null;
   note: string | null;
 }
+
+interface Site {
+  id: string;
+  name: string;
+  code: string;
+}
+
 
 const emptyForm = () => ({
   id: "",
