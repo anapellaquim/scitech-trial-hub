@@ -358,7 +358,7 @@ export default function VisitAgenda() {
     if (!confirm("Delete this note?")) return;
     await supabase.from("monitor_notes" as any).delete().eq("id", id);
     const { data } = await supabase.from("monitor_notes" as any).select("*").eq("monitoring_visit_id", editing?.id).order("created_at", { ascending: false });
-    setNotes(data || []);
+    setNotes((data as any) || []);
   };
 
   const siteName = (id: string | null) => {
