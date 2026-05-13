@@ -861,8 +861,8 @@ export default function VisitAgenda() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        {format(parseLocalDate(visit.scheduled_date), "dd/MM", { locale: ptBR })}
-                        {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM", { locale: ptBR })}`}
+                        {format(parseLocalDate(visit.scheduled_date), "MM/dd", { locale: enUS })}
+                        {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "MM/dd", { locale: enUS })}`}
                       </p>
                       {visit.scheduled_time && (
                         <p className="text-xs text-muted-foreground">{visit.scheduled_time.slice(0, 5)}</p>
