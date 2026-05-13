@@ -288,7 +288,11 @@ export default function Regulatory() {
               Track regulatory deadlines and workflows for your studies
             </p>
           </div>
-          <div className="flex gap-2 mt-4 md:mt-0">
+          <div className="flex gap-2 mt-4 md:mt-0 flex-wrap">
+            <Button variant="outline" onClick={handleSyncData} disabled={syncing}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              Sincronizar
+            </Button>
             <ExcelExportButton 
               data={importType === "submission" ? submissionExportData : reportExportData} 
               fileName={importType === "submission" ? "submissions" : "reports"} 
@@ -316,6 +320,7 @@ export default function Regulatory() {
               New Submission
             </Button>
           </div>
+
 
         </div>
 
