@@ -843,10 +843,25 @@ export default function PatientManagement() {
                   <Label>Notes</Label>
                   <Textarea value={visitForm.notes} onChange={e => setVisitForm({...visitForm, notes: e.target.value})} placeholder="Observations during visit..." />
                 </div>
-                <Button className="w-full" onClick={handleSaveVisit}>
-                  <ClipboardCheck className="h-4 w-4 mr-2" />
-                  Record Visit Completion
-                </Button>
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={() => {
+                    const newVisitForm = { ...visitForm, status: "Completed" };
+                    setVisitForm(newVisitForm);
+                    // Use a temporary object because state update is async
+                    handleSaveVisitExplicit("Completed");
+                  }}>
+                    <ClipboardCheck className="h-4 w-4 mr-2" />
+                    Record Visit Completion
+                  </Button>
+                  <Button variant="destructive" className="flex-1" onClick={() => {
+                    const newVisitForm = { ...visitForm, status: "Lost Visit" };
+                    setVisitForm(newVisitForm);
+                    handleSaveVisitExplicit("Lost Visit");
+                  }}>
+                    <X className="h-4 w-4 mr-2" />
+                    Lost Visit
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
