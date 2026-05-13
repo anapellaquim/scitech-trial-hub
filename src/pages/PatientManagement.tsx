@@ -20,7 +20,7 @@ import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 // --- Types ---
-type PatientStatus = 'Screening' | 'Screen Failure' | 'Randomized' | 'Completed' | 'Lost to Follow-up' | 'Early Exit' | 'Withdrawn';
+type PatientStatus = 'Screening' | 'Screen failure' | 'Included' | 'Complete' | 'Lost to FUP' | 'Early exit' | 'Withdrawn';
 
 interface Patient {
   id: string;
@@ -124,7 +124,14 @@ export default function PatientManagement() {
       ]);
 
       setSites(sitesRes.data || []);
-      setPatients(patientsRes.data || []);
+      setPatients((patientsRes.data || []).map((p: any) => ({
+        ...p,
+        status: (p.status === 'Completed' ? 'Complete' : 
+                 p.status === 'Randomized' ? 'Included' : 
+                 p.status === 'Screen Failure' ? 'Screen failure' :
+                 p.status === 'Lost to Follow-up' ? 'Lost to FUP' :
+                 p.status === 'Early Exit' ? 'Early exit' : p.status) as PatientStatus
+      })));
       setProtocolVisits(protocolRes.data || []);
       setPatientVisits(visitsRes.data || []);
     } catch (error) {
@@ -145,7 +152,11 @@ export default function PatientManagement() {
       project_id: selectedProject,
       site_id: patientForm.site_id,
       patient_code: patientForm.patient_code,
-      status: patientForm.status,
+      status: (patientForm.status === 'Complete' ? 'Completed' : 
+               patientForm.status === 'Included' ? 'Randomized' : 
+               patientForm.status === 'Screen failure' ? 'Screen Failure' :
+               patientForm.status === 'Lost to FUP' ? 'Lost to Follow-up' :
+               patientForm.status === 'Early exit' ? 'Early Exit' : patientForm.status) as any,
       enrollment_date: patientForm.enrollment_date || null,
       notes: patientForm.notes
     };
@@ -234,11 +245,11 @@ export default function PatientManagement() {
   const getStatusBadge = (status: PatientStatus) => {
     const variants: Record<PatientStatus, string> = {
       'Screening': 'bg-blue-100 text-blue-800',
-      'Screen Failure': 'bg-red-100 text-red-800',
-      'Randomized': 'bg-green-100 text-green-800',
-      'Completed': 'bg-purple-100 text-purple-800',
-      'Lost to Follow-up': 'bg-orange-100 text-orange-800',
-      'Early Exit': 'bg-gray-100 text-gray-800',
+      'Screen failure': 'bg-red-100 text-red-800',
+      'Included': 'bg-green-100 text-green-800',
+      'Complete': 'bg-purple-100 text-purple-800',
+      'Lost to FUP': 'bg-orange-100 text-orange-800',
+      'Early exit': 'bg-gray-100 text-gray-800',
       'Withdrawn': 'bg-slate-100 text-slate-800'
     };
     return <Badge className={variants[status]}>{status}</Badge>;
@@ -355,7 +366,11 @@ export default function PatientManagement() {
               project_id: selectedProject,
               patient_code: row['Código do Paciente'],
               site_id: row['Centro (ID)'],
-              status: row['Status'] as PatientStatus,
+              status: (row['Status'] === 'Complete' ? 'Completed' : 
+                       row['Status'] === 'Included' ? 'Randomized' : 
+                       row['Status'] === 'Screen failure' ? 'Screen Failure' :
+                       row['Status'] === 'Lost to FUP' ? 'Lost to Follow-up' :
+                       row['Status'] === 'Early exit' ? 'Early Exit' : row['Status']) as any,
               notes: row['Notas'] || null
             }).select('id').single();
             
@@ -693,11 +708,11 @@ export default function PatientManagement() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Screening">Screening</SelectItem>
-                  <SelectItem value="Screen Failure">Screen Failure</SelectItem>
-                  <SelectItem value="Randomized">Randomized</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Lost to Follow-up">Lost to Follow-up</SelectItem>
-                  <SelectItem value="Early Exit">Early Exit</SelectItem>
+                  <SelectItem value="Screen failure">Screen failure</SelectItem>
+                  <SelectItem value="Included">Included</SelectItem>
+                  <SelectItem value="Complete">Complete</SelectItem>
+                  <SelectItem value="Lost to FUP">Lost to FUP</SelectItem>
+                  <SelectItem value="Early exit">Early exit</SelectItem>
                   <SelectItem value="Withdrawn">Withdrawn</SelectItem>
                 </SelectContent>
               </Select>
