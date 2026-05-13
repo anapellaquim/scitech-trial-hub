@@ -51,7 +51,7 @@ export function EditParticipantPaymentsDialog({
     if (open) {
       const initialStatus: Record<string, boolean> = {};
       visits.forEach((visit) => {
-        initialStatus[visit.id] = visit.payment_status === "paid";
+        initialStatus[visit.id] = visit.payment_status?.toLowerCase() === "paid";
       });
       setPaymentStatus(initialStatus);
     }
@@ -67,19 +67,38 @@ export function EditParticipantPaymentsDialog({
   const handleSave = async () => {
     setLoading(true);
     try {
-      const updates = participantVisits.map((visit) => {
-          const isPaid = paymentStatus[visit.id];
-          const newStatus = isPaid ? "Paid" : "Pending";
-          
+      // First, update existing visit payment statuses
+      const visitUpdates = participantVisits.map((visit) => {
+        const isPaid = paymentStatus[visit.id];
+        const newStatus = isPaid ? "Paid" : "Pending";
+        
+        return supabase
+          .from("patient_visits")
+          .update({
+            payment_status: newStatus,
+          })
+          .eq("id", visit.id);
+      });
+
+      // Then, handle unscheduled/random visits that don't have a record yet but are marked as paid
+      const unscheduledVisitsToCreate = visitTypes
+        .filter(vt => {
+          const isUnscheduled = vt.visit_number === 99 || vt.name.toLowerCase().includes("random") || vt.name.toLowerCase().includes("unscheduled");
+          const hasNoRecord = !participantVisits.some(v => v.visit_number === vt.visit_number);
+          return isUnscheduled && hasNoRecord && paymentStatus[`type-${vt.id}`];
+        })
+        .map(vt => {
           return supabase
             .from("patient_visits")
-            .update({
-              payment_status: newStatus,
-            })
-            .eq("id", visit.id);
+            .insert({
+              patient_id: participantId,
+              protocol_visit_id: vt.id,
+              status: "Completed",
+              payment_status: "Paid"
+            });
         });
 
-      const results = await Promise.all(updates);
+      const results = await Promise.all([...visitUpdates, ...unscheduledVisitsToCreate]);
       const hasError = results.some((r) => r.error);
 
       if (hasError) {
@@ -98,6 +117,8 @@ export function EditParticipantPaymentsDialog({
   };
 
   const participantVisits = visits.filter((v) => v.participant_id === participantId);
+  console.log("EditParticipantPaymentsDialog - Participant visits:", participantVisits);
+  console.log("EditParticipantPaymentsDialog - Payment status:", paymentStatus);
 
   return (
     <>
@@ -111,6 +132,7 @@ export function EditParticipantPaymentsDialog({
               const visit = participantVisits.find((v) => v.visit_number === vt.visit_number);
               const isCompleted = visit?.status?.toLowerCase() === "completed";
               const isLostVisit = visit?.status?.toLowerCase() === "lost visit";
+              const isUnscheduled = vt.visit_number === 99 || vt.name.toLowerCase().includes("random") || vt.name.toLowerCase().includes("unscheduled");
               const notPerformed = visit?.status?.toLowerCase() === "not_performed";
 
               if (!visit || notPerformed) {
@@ -123,9 +145,23 @@ export function EditParticipantPaymentsDialog({
                       <p className="font-medium">{vt.name}</p>
                       <p className="text-sm text-muted-foreground">{formatCurrency(vt.value)}</p>
                     </div>
-                    <Badge variant="outline" className="text-muted-foreground">
-                      {notPerformed ? "Não realizada" : "Não agendada"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {isUnscheduled && (
+                        <Checkbox
+                          id={`vt-${vt.id}`}
+                          checked={paymentStatus[`type-${vt.id}`] || false}
+                          onCheckedChange={(checked) =>
+                            setPaymentStatus((prev) => ({
+                              ...prev,
+                              [`type-${vt.id}`]: checked === true,
+                            }))
+                          }
+                        />
+                      )}
+                      <Badge variant="outline" className="text-muted-foreground">
+                        {notPerformed ? "Não realizada" : "Não agendada"}
+                      </Badge>
+                    </div>
                   </div>
                 );
               }
@@ -140,9 +176,23 @@ export function EditParticipantPaymentsDialog({
                       <p className="font-medium">{vt.name}</p>
                       <p className="text-sm text-muted-foreground">{formatCurrency(vt.value)}</p>
                     </div>
-                    <Badge variant="outline" className={isLostVisit ? "bg-slate-200 text-slate-700" : "text-muted-foreground"}>
-                      {isLostVisit ? "Lost Visit" : "Pendente"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {isUnscheduled && (
+                        <Checkbox
+                          id={`vt-${vt.id}`}
+                          checked={paymentStatus[`type-${vt.id}`] || false}
+                          onCheckedChange={(checked) =>
+                            setPaymentStatus((prev) => ({
+                              ...prev,
+                              [`type-${vt.id}`]: checked === true,
+                            }))
+                          }
+                        />
+                      )}
+                      <Badge variant="outline" className={isLostVisit ? "bg-slate-200 text-slate-700" : "text-muted-foreground"}>
+                        {isLostVisit ? "Lost Visit" : "Pendente"}
+                      </Badge>
+                    </div>
                   </div>
                 );
               }
