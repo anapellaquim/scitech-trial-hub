@@ -561,6 +561,10 @@ export default function PatientManagement() {
                                     computedStatus = 'Completed';
                                     statusColor = 'bg-green-500 text-white';
                                     Icon = CheckCircle2;
+                                  } else if (visit?.status === 'Lost Visit') {
+                                    computedStatus = 'Lost Visit';
+                                    statusColor = 'bg-slate-500 text-white';
+                                    Icon = X;
                                   } else if (p.enrollment_date) {
                                     const enrollmentDate = new Date(p.enrollment_date);
                                     const targetDate = addDays(enrollmentDate, pv.target_day);
