@@ -347,7 +347,7 @@ export default function VisitAgenda() {
       }
       
       const { data } = await supabase.from("monitor_notes" as any).select("*").eq("monitoring_visit_id", editing.id).order("created_at", { ascending: false });
-      setNotes(data || []);
+      setNotes((data as any) || []);
       cancelNoteEdit();
     } catch (error: any) {
       toast.error(error.message);
