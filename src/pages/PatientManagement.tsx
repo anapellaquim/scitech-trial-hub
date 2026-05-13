@@ -818,14 +818,35 @@ export default function PatientManagement() {
               <Input type="number" value={scheduleForm.payment_amount} onChange={e => setScheduleForm({...scheduleForm, payment_amount: parseFloat(e.target.value)})} />
             </div>
             <div className="grid gap-2">
-              <Label>Site Specific (optional)</Label>
-              <Select value={scheduleForm.site_id} onValueChange={v => setScheduleForm({...scheduleForm, site_id: v})}>
-                <SelectTrigger><SelectValue placeholder="Global (all sites)" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Global Study-wide</SelectItem>
-                  {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label>Site Selection</Label>
+              <div className="grid grid-cols-2 gap-2 border p-3 rounded-md max-h-[150px] overflow-y-auto">
+                <div className="flex items-center gap-2 col-span-2 pb-2 border-b mb-1">
+                  <Checkbox 
+                    id="site-global" 
+                    checked={scheduleForm.site_ids.length === 0}
+                    onCheckedChange={(checked) => {
+                      if (checked) setScheduleForm({...scheduleForm, site_ids: []});
+                    }}
+                  />
+                  <Label htmlFor="site-global" className="font-bold">Global Study-wide</Label>
+                </div>
+                {sites.map(s => (
+                  <div key={s.id} className="flex items-center gap-2">
+                    <Checkbox 
+                      id={`site-${s.id}`} 
+                      checked={scheduleForm.site_ids.includes(s.id)}
+                      onCheckedChange={(checked) => {
+                        const newSites = checked 
+                          ? [...scheduleForm.site_ids, s.id]
+                          : scheduleForm.site_ids.filter(id => id !== s.id);
+                        setScheduleForm({...scheduleForm, site_ids: newSites});
+                      }}
+                    />
+                    <Label htmlFor={`site-${s.id}`} className="text-xs">{s.code}</Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">If none selected, visit is global.</p>
             </div>
           </div>
           <DialogFooter>
