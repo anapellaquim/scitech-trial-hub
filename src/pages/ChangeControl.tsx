@@ -447,6 +447,17 @@ export default function ChangeControl() {
                   </label>
                 ))}
               </div>
+              {form.impact_areas.includes("other") && (
+                <div className="mt-2">
+                  <Label className="text-xs">Descreva "Outros" Impactos</Label>
+                  <Input 
+                    value={form.impact_areas_other} 
+                    onChange={e => setForm({...form, impact_areas_other: e.target.value})}
+                    placeholder="Especifique os outros impactos..."
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 p-3 border rounded-md">
