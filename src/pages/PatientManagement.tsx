@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, UserCheck, Calendar, DollarSign, Settings2, Trash2, Pencil, Search, Filter, AlertTriangle, CheckCircle2, X, ClipboardCheck, History } from "lucide-react";
+import { Plus, UserCheck, Calendar, DollarSign, Settings2, Trash2, Pencil, Search, Filter, AlertTriangle, CheckCircle2, X, ClipboardCheck, History, Download, Upload } from "lucide-react";
 import { format, addDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
@@ -242,6 +242,77 @@ export default function PatientManagement() {
     return <Badge className={variants[status]}>{status}</Badge>;
   };
 
+  const exportData = () => {
+    const data = {
+      patients,
+      protocolVisits,
+      patientVisits,
+      exportDate: new Date().toISOString(),
+      projectId: selectedProject
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `patient-management-export-${format(new Date(), 'yyyy-MM-dd')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Data exported successfully");
+  };
+
+  const importData = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        const data = JSON.parse(content);
+        
+        if (!data.patients || !data.protocolVisits) {
+          throw new Error("Invalid format");
+        }
+
+        setLoading(true);
+
+        // Import Protocol Visits
+        for (const pv of data.protocolVisits) {
+          const { id, site, ...pvData } = pv;
+          await supabase.from("protocol_visit_schedules").upsert({
+            ...pvData,
+            project_id: selectedProject
+          });
+        }
+
+        // Import Patients
+        for (const p of data.patients) {
+          const { id, site, ...pData } = p;
+          await supabase.from("patients").upsert({
+            ...pData,
+            project_id: selectedProject
+          });
+        }
+
+        // Import Patient Visits
+        if (data.patientVisits) {
+          for (const v of data.patientVisits) {
+            const { id, protocol_visit, ...vData } = v;
+            await supabase.from("patient_visits").upsert(vData);
+          }
+        }
+
+        toast.success("Data imported successfully");
+        loadProjectData();
+      } catch (err) {
+        console.error(err);
+        toast.error("Error importing data. Please check the file format.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <CTMSNav />
@@ -255,6 +326,28 @@ export default function PatientManagement() {
             <p className="text-muted-foreground mt-1">Manage participants, protocol visits, and payments</p>
           </div>
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 mr-2">
+              <Button variant="outline" size="sm" onClick={() => exportData()} disabled={!selectedProject}>
+                <Download className="h-4 w-4 mr-2" /> Export
+              </Button>
+              <div className="relative">
+                <Input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  id="import-data"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) importData(file);
+                  }}
+                />
+                <Button variant="outline" size="sm" asChild disabled={!selectedProject}>
+                  <label htmlFor="import-data" className="cursor-pointer">
+                    <Upload className="h-4 w-4 mr-2" /> Import
+                  </label>
+                </Button>
+              </div>
+            </div>
             <Select value={selectedProject || ""} onValueChange={setSelectedProject}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select Study" />
