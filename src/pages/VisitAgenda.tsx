@@ -831,7 +831,7 @@ export default function VisitAgenda() {
                     className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Badge className={visitTypeColors[visit.visit_type]}>{visit.visit_type}</Badge>
+                      <Badge className={visitTypeColors[visit.visit_type] || "bg-muted text-muted-foreground"}>{visit.visit_type}</Badge>
                       <div>
                         <p className="font-medium text-sm">{visit.research_center?.name || visit.research_center?.code}</p>
                         <p className="text-xs text-muted-foreground">{visit.project?.title}</p>
