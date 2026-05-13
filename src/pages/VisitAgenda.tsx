@@ -259,15 +259,17 @@ export default function VisitAgenda() {
           const completed = filteredVisits.filter(v => v.status === "completed").length;
           const upcoming = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) >= today).length;
           const overdue = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) < today).length;
+          const siteCount = new Set(filteredVisits.map(v => v.research_center?.id).filter(Boolean)).size;
           
           return (
             <div className="mb-6">
-              <KpiCards cols={5} items={[
+              <KpiCards cols={6} items={[
                 { label: "Total Visits", value: total, icon: CalendarIcon, accent: "primary" },
                 { label: "Scheduled/Planned", value: scheduled, icon: Clock, accent: "primary" },
                 { label: "Upcoming", value: upcoming, icon: CalendarIcon, accent: "primary" },
                 { label: "Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
                 { label: "Completed", value: completed, icon: CheckCircle2, accent: "success" },
+                { label: "Centros Ativos", value: siteCount, icon: MapPin, accent: "warning" },
               ]} />
             </div>
           );
