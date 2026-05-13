@@ -244,74 +244,114 @@ export default function PatientManagement() {
   };
 
   const exportData = () => {
-    const data = {
-      patients,
-      protocolVisits,
-      patientVisits,
-      exportDate: new Date().toISOString(),
-      projectId: selectedProject
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `patient-management-export-${format(new Date(), 'yyyy-MM-dd')}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success("Data exported successfully");
+    const workbook = XLSX.utils.book_new();
+    
+    // Patients Sheet
+    const patientsData = patients.map(p => ({
+      'Código do Paciente': p.patient_code,
+      'Centro (ID)': p.site_id,
+      'Centro (Código)': p.site?.code || '',
+      'Status': p.status,
+      'Data de Inclusão': p.enrollment_date,
+      'Notas': p.notes
+    }));
+    const patientsSheet = XLSX.utils.json_to_sheet(patientsData);
+    XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes");
+
+    // Protocol Visits Sheet
+    const protocolData = protocolVisits.map(v => ({
+      'Nome da Visita': v.visit_name,
+      'Dia Alvo': v.target_day,
+      'Janela Negativa': v.window_minus,
+      'Janela Positiva': v.window_plus,
+      'Valor do Pagamento': v.payment_amount,
+      'Centro (ID)': v.site_id || 'Global'
+    }));
+    const protocolSheet = XLSX.utils.json_to_sheet(protocolData);
+    XLSX.utils.book_append_sheet(workbook, protocolSheet, "Protocolo");
+
+    XLSX.writeFile(workbook, `patient-management-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    toast.success("Dados exportados para Excel");
+  };
+
+  const downloadTemplate = () => {
+    const workbook = XLSX.utils.book_new();
+    
+    const patientsTemplate = [{
+      'Código do Paciente': 'PAC-001',
+      'Centro (ID)': sites[0]?.id || 'ID_DO_CENTRO',
+      'Status': 'Screening',
+      'Data de Inclusão': format(new Date(), 'yyyy-MM-dd'),
+      'Notas': 'Exemplo'
+    }];
+    const patientsSheet = XLSX.utils.json_to_sheet(patientsTemplate);
+    XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes");
+
+    const protocolTemplate = [{
+      'Nome da Visita': 'V1 - Screening',
+      'Dia Alvo': 0,
+      'Janela Negativa': 0,
+      'Janela Positiva': 0,
+      'Valor do Pagamento': 500.00,
+      'Centro (ID)': 'Global'
+    }];
+    const protocolSheet = XLSX.utils.json_to_sheet(protocolTemplate);
+    XLSX.utils.book_append_sheet(workbook, protocolSheet, "Protocolo");
+
+    XLSX.writeFile(workbook, "template-patient-management.xlsx");
+    toast.success("Template baixado");
   };
 
   const importData = async (file: File) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const content = e.target?.result as string;
-        const data = JSON.parse(content);
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
         
-        if (!data.patients || !data.protocolVisits) {
-          throw new Error("Invalid format");
-        }
-
         setLoading(true);
 
-        // Import Protocol Visits
-        for (const pv of data.protocolVisits) {
-          const { id, site, ...pvData } = pv;
-          await supabase.from("protocol_visit_schedules").upsert({
-            ...pvData,
-            project_id: selectedProject
-          });
-        }
-
-        // Import Patients
-        for (const p of data.patients) {
-          const { id, site, ...pData } = p;
-          await supabase.from("patients").upsert({
-            ...pData,
-            project_id: selectedProject
-          });
-        }
-
-        // Import Patient Visits
-        if (data.patientVisits) {
-          for (const v of data.patientVisits) {
-            const { id, protocol_visit, ...vData } = v;
-            await supabase.from("patient_visits").upsert(vData);
+        // Import Protocol (Aba Protocolo)
+        if (workbook.SheetNames.includes("Protocolo")) {
+          const protocolRows = XLSX.utils.sheet_to_json(workbook.Sheets["Protocolo"]) as any[];
+          for (const row of protocolRows) {
+            await supabase.from("protocol_visit_schedules").upsert({
+              project_id: selectedProject,
+              visit_name: row['Nome da Visita'],
+              target_day: Number(row['Dia Alvo']),
+              window_minus: Number(row['Janela Negativa']),
+              window_plus: Number(row['Janela Positiva']),
+              payment_amount: Number(row['Valor do Pagamento']),
+              site_id: row['Centro (ID)'] === 'Global' ? null : row['Centro (ID)']
+            });
           }
         }
 
-        toast.success("Data imported successfully");
+        // Import Patients (Aba Pacientes)
+        if (workbook.SheetNames.includes("Pacientes")) {
+          const patientRows = XLSX.utils.sheet_to_json(workbook.Sheets["Pacientes"]) as any[];
+          for (const row of patientRows) {
+            await supabase.from("patients").upsert({
+              project_id: selectedProject,
+              patient_code: row['Código do Paciente'],
+              site_id: row['Centro (ID)'],
+              status: row['Status'] as PatientStatus,
+              enrollment_date: row['Data de Inclusão'] || null,
+              notes: row['Notas'] || null
+            });
+          }
+        }
+
+        toast.success("Dados importados com sucesso");
         loadProjectData();
       } catch (err) {
         console.error(err);
-        toast.error("Error importing data. Please check the file format.");
+        toast.error("Erro ao importar Excel. Verifique o formato.");
       } finally {
         setLoading(false);
       }
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
   };
 
   return (
