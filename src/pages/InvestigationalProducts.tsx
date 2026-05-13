@@ -865,64 +865,66 @@ export default function InvestigationalProducts() {
         {/* ===== IP Dialog ===== */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader>
+            <DialogHeader className="p-6 pb-0">
               <DialogTitle>{editing ? "Edit IP" : "New IP"}</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Code *</Label>
-                <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Lot#</Label>
-                <Input value={form.lot_number} onChange={(e) => setForm({ ...form, lot_number: e.target.value })} />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label>Description</Label>
-                <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Expiration</Label>
-                <Input type="date" value={form.expiration_date} onChange={(e) => setForm({ ...form, expiration_date: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Quantity</Label>
-                <Input type="number" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Site</Label>
-                <Input value={form.site} onChange={(e) => setForm({ ...form, site: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Delivery date</Label>
-                <Input type="date" value={form.delivery_date} onChange={(e) => setForm({ ...form, delivery_date: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Invoice</Label>
-                <Input value={form.invoice} onChange={(e) => setForm({ ...form, invoice: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Correction Invoice</Label>
-                <Input value={form.correction_invoice} onChange={(e) => setForm({ ...form, correction_invoice: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Usage</Label>
-                <Input value={form.usage} onChange={(e) => setForm({ ...form, usage: e.target.value })} placeholder="e.g. implanted, discarded" />
-              </div>
-              <div className="space-y-2">
-                <Label>Usage date</Label>
-                <Input type="date" value={form.usage_date} onChange={(e) => setForm({ ...form, usage_date: e.target.value })} />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label>Return</Label>
-                <Input value={form.return_info} onChange={(e) => setForm({ ...form, return_info: e.target.value })} placeholder="Return info / date / reason" />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label>Note</Label>
-                <Textarea rows={3} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Code *</Label>
+                  <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Lot#</Label>
+                  <Input value={form.lot_number} onChange={(e) => setForm({ ...form, lot_number: e.target.value })} />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Description</Label>
+                  <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Expiration</Label>
+                  <Input type="date" value={form.expiration_date} onChange={(e) => setForm({ ...form, expiration_date: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Quantity</Label>
+                  <Input type="number" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Site</Label>
+                  <Input value={form.site} onChange={(e) => setForm({ ...form, site: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Delivery date</Label>
+                  <Input type="date" value={form.delivery_date} onChange={(e) => setForm({ ...form, delivery_date: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Invoice</Label>
+                  <Input value={form.invoice} onChange={(e) => setForm({ ...form, invoice: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Correction Invoice</Label>
+                  <Input value={form.correction_invoice} onChange={(e) => setForm({ ...form, correction_invoice: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Usage</Label>
+                  <Input value={form.usage} onChange={(e) => setForm({ ...form, usage: e.target.value })} placeholder="e.g. implanted, discarded" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Usage date</Label>
+                  <Input type="date" value={form.usage_date} onChange={(e) => setForm({ ...form, usage_date: e.target.value })} />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Return</Label>
+                  <Input value={form.return_info} onChange={(e) => setForm({ ...form, return_info: e.target.value })} placeholder="Return info / date / reason" />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Note</Label>
+                  <Textarea rows={3} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+                </div>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="p-6 pt-0 border-t">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Button type="button" onClick={handleSave}>{editing ? "Update" : "Create"}</Button>
             </DialogFooter>
