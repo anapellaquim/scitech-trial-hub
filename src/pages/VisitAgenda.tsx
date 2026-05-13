@@ -320,7 +320,7 @@ export default function VisitAgenda() {
   const deleteFinding = async (id: string) => {
     await supabase.from("site_monitoring_oversight" as any).delete().eq("id", id);
     const { data } = await supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", editing?.id);
-    setFindings(data || []);
+    setFindings((data as any) || []);
   };
 
   const cancelNoteEdit = () => { setEditingNote(null); setNoteForm(emptyNote); };
