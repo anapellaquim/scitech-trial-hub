@@ -137,8 +137,10 @@ const SUPPLY_IMPORT_COLUMNS: ColumnMapping[] = [
 ];
 
 export default function InvestigationalProducts() {
+  const { projectId: selectedProject } = usePersistedFilters();
   const [records, setRecords] = useState<IPRecord[]>([]);
   const [supplies, setSupplies] = useState<SupplyRecord[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -152,20 +154,26 @@ export default function InvestigationalProducts() {
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
-    const [ip, sup] = await Promise.all([
+    const [ip, sup, siteData] = await Promise.all([
       supabase.from("investigational_products").select("*").order("created_at", { ascending: false }),
       supabase.from("ip_supply").select("*").order("date", { ascending: false }),
+      selectedProject 
+        ? supabase.from("sites").select("id, name, code").eq("project_id", selectedProject)
+        : Promise.resolve({ data: [], error: null })
     ]);
     if (ip.error) toast.error("Failed to load IP: " + ip.error.message);
     else setRecords((ip.data || []) as IPRecord[]);
     if (sup.error) toast.error("Failed to load Supply: " + sup.error.message);
     else setSupplies((sup.data || []) as SupplyRecord[]);
+    if (siteData.error) console.error("Failed to load sites:", siteData.error);
+    else setSites((siteData.data || []) as Site[]);
     setLoading(false);
-  }, []);
+  }, [selectedProject]);
 
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
+
 
   // ===== IP CRUD =====
   const openNew = () => { setEditing(null); setForm(emptyForm()); setDialogOpen(true); };
