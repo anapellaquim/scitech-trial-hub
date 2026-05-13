@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, AlertTriangle, HeartPulse, Hourglass, History } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, AlertTriangle, HeartPulse, Hourglass, History, ShieldCheck, StickyNote, FileQuestion } from "lucide-react";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { AuditTrail } from "@/components/shared/AuditTrail";
 import { Checkbox } from "@/components/ui/checkbox";
