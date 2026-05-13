@@ -783,7 +783,7 @@ export default function VisitAgenda() {
                 {upcomingVisits.map((visit) => (
                   <div
                     key={visit.id}
-                    onClick={() => navigate(`/site-monitoring?visitId=${visit.id}&edit=true`)}
+                    onClick={() => openEdit(visit)}
                     className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
