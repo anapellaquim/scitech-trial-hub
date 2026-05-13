@@ -31,7 +31,7 @@ interface MonitoringVisit {
   actual_date: string | null; actual_date_end: string | null;
   monitor_name: string | null; purpose: string | null; summary: string | null;
   follow_up_actions: string | null; report_link: string | null; report_date: string | null;
-  checklist?: Record<string, boolean>;
+  checklist?: Record<string, { checked: boolean; link?: string }>;
 }
 interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
@@ -162,7 +162,7 @@ const emptyForm = {
   actual_date: "", actual_date_end: "",
   monitor_name: "", summary: "", 
   report_link: "", report_date: "",
-  checklist: {} as Record<string, boolean>,
+  checklist: {} as Record<string, { checked: boolean; link?: string }>,
 };
 
 const emptyFinding = {
@@ -936,13 +936,11 @@ export default function VisitAgenda() {
                   size="sm" 
                   className="h-8 gap-1"
                   onClick={() => {
-                    const newItem = prompt("Enter new checklist item:");
-                    if (newItem && newItem.trim()) {
-                      setForm({
-                        ...form,
-                        checklist: { ...form.checklist, [newItem.trim()]: false }
-                      });
-                    }
+                    const tempId = `New Item ${Object.keys(form.checklist).length + 1}`;
+                    setForm({
+                      ...form,
+                      checklist: { ...form.checklist, [tempId]: { checked: false, link: "" } }
+                    });
                   }}
                 >
                   <Plus className="h-3 w-3" />
@@ -959,8 +957,8 @@ export default function VisitAgenda() {
                       onClick={() => {
                         const newChecklist = { ...form.checklist };
                         DEFAULT_CHECKLIST_ITEMS.forEach(item => {
-                          if (newChecklist[item] === undefined) {
-                            newChecklist[item] = false;
+                          if (!newChecklist[item]) {
+                            newChecklist[item] = { checked: false, link: "" };
                           }
                         });
                         setForm({ ...form, checklist: newChecklist });
@@ -970,38 +968,72 @@ export default function VisitAgenda() {
                     </Button>
                   </div>
                 ) : (
-                  Object.entries(form.checklist).map(([item, checked]) => (
-                    <div key={item} className="flex items-center justify-between group py-1">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`chk-${item}`} 
-                          checked={!!checked} 
-                          onCheckedChange={(val) => {
+                  Object.entries(form.checklist).map(([itemText, data]) => (
+                    <div key={itemText} className="space-y-2 py-2 border-b last:border-0 border-muted-foreground/10 group">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center space-x-2 flex-1">
+                          <Checkbox 
+                            id={`chk-${itemText}`} 
+                            checked={!!data.checked} 
+                            onCheckedChange={(val) => {
+                              setForm({
+                                ...form,
+                                checklist: { 
+                                  ...form.checklist, 
+                                  [itemText]: { ...data, checked: !!val } 
+                                }
+                              });
+                            }}
+                          />
+                          <Input
+                            className="h-8 text-sm font-medium border-transparent bg-transparent hover:border-muted focus:bg-background transition-colors"
+                            value={itemText}
+                            onChange={(e) => {
+                              const newText = e.target.value;
+                              if (newText === itemText) return;
+                              const newChecklist = { ...form.checklist };
+                              delete newChecklist[itemText];
+                              newChecklist[newText] = data;
+                              setForm({ ...form, checklist: newChecklist });
+                            }}
+                          />
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => {
+                            const newChecklist = { ...form.checklist };
+                            delete newChecklist[itemText];
+                            setForm({ ...form, checklist: newChecklist });
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
+                      <div className="pl-6 flex items-center gap-2">
+                        <Input
+                          placeholder="Add link (URL)..."
+                          className="h-7 text-xs"
+                          value={data.link || ""}
+                          onChange={(e) => {
                             setForm({
                               ...form,
-                              checklist: { ...form.checklist, [item]: !!val }
+                              checklist: { 
+                                ...form.checklist, 
+                                [itemText]: { ...data, link: e.target.value } 
+                              }
                             });
                           }}
                         />
-                        <label 
-                          htmlFor={`chk-${item}`} 
-                          className="text-sm font-medium leading-none cursor-pointer"
-                        >
-                          {item}
-                        </label>
+                        {data.link && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                            <a href={data.link.startsWith('http') ? data.link : `https://${data.link}`} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </Button>
+                        )}
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => {
-                          const newChecklist = { ...form.checklist };
-                          delete newChecklist[item];
-                          setForm({ ...form, checklist: newChecklist });
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
                     </div>
                   ))
                 )}
