@@ -147,11 +147,12 @@ const Dashboard = () => {
       if (selectedProject !== "all") {
         tasksQuery = tasksQuery.eq("project_id", selectedProject);
         visitsQuery = visitsQuery.eq("project_id", selectedProject);
+        patientsQuery = patientsQuery.eq("project_id", selectedProject);
       }
 
-      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes] = await Promise.all([
+      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes] = await Promise.all([
         supabase.from("projects").select("id, status"),
-        tasksQuery, visitsQuery, findingsQuery, checklistQuery,
+        tasksQuery, visitsQuery, findingsQuery, checklistQuery, patientsQuery
       ]);
 
       let projectsData = projectsRes.data || [];
