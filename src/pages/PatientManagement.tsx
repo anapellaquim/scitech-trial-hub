@@ -684,7 +684,7 @@ export default function PatientManagement() {
                   </div>
                   <Button variant="outline" size="sm" onClick={() => {
                     setEditingSchedule(null);
-                    setScheduleForm({ visit_name: "", target_day: 0, window_minus: 0, window_plus: 0, payment_amount: 0, site_id: "" });
+                    setScheduleForm({ visit_name: "", target_day: 0, window_minus: 0, window_plus: 0, payment_amount: 0, site_ids: [] });
                     setScheduleDialogOpen(true);
                   }}>
                     <Plus className="h-4 w-4 mr-2" /> Add Visit Type
