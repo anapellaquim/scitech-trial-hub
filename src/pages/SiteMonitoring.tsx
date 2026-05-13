@@ -109,36 +109,27 @@ const importanceColors: Record<string, string> = {
 
 export default function SiteMonitoring() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
   const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
-  const [sites, setSites] = useState<Site[]>([]);
-  const [visits, setVisits] = useState<MonitoringVisit[]>([]);
-  const [findings, setFindings] = useState<OversightItem[]>([]);
-  const [notes, setNotes] = useState<MonitorNote[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const [search, setSearch] = useState("");
-  const [siteFilter, setSiteFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<MonitoringVisit | null>(null);
-  const [form, setForm] = useState(emptyForm);
-
-  const [findingDialogOpen, setFindingDialogOpen] = useState(false);
-  const [selectedVisit, setSelectedVisit] = useState<MonitoringVisit | null>(null);
-  const [editingFinding, setEditingFinding] = useState<OversightItem | null>(null);
-  const [findingForm, setFindingForm] = useState(emptyFinding);
-
-  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
-  const [notesVisit, setNotesVisit] = useState<MonitoringVisit | null>(null);
-  const [editingNote, setEditingNote] = useState<MonitorNote | null>(null);
-  const [noteForm, setNoteForm] = useState(emptyNote);
-
+// ... keep existing code
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
   const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const visitId = searchParams.get("visitId");
+    if (visitId) {
+      setExpandedVisitId(visitId);
+      // Wait for data to load then scroll to it
+      setTimeout(() => {
+        const element = document.getElementById(`visit-${visitId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const check = async () => {
