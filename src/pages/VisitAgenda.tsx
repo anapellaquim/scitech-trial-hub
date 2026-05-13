@@ -289,27 +289,38 @@ export default function VisitAgenda() {
   const saveVisit = async () => {
     if (!form.site_id || !editing) return;
     try {
-      const payload = {
-        site_id: form.site_id,
+      // Determine source based on context
+      const source = (editing as any).source || (editing as any).research_center_id ? 'study_visits' : 'site_monitoring';
+      const table = source === 'site_monitoring' ? 'site_monitoring_visits' : 'study_visits';
+      
+      const payload: any = {
         visit_code: form.visit_code.trim() || null,
         visit_type: form.visit_type,
         status: form.status,
-        planned_date: form.planned_date || null,
-        planned_date_end: form.planned_date_end || null,
-        actual_date: form.actual_date || null,
-        actual_date_end: form.actual_date_end || null,
-        monitor_name: form.monitor_name.trim() || null,
-        purpose: form.purpose.trim() || null,
-        summary: form.summary.trim() || null,
-        follow_up_actions: form.follow_up_actions.trim() || null,
-        report_link: form.report_link.trim() || null,
-        report_date: form.report_date || null,
       };
+
+      if (source === 'site_monitoring') {
+        payload.site_id = form.site_id;
+        payload.planned_date = form.planned_date || null;
+        payload.planned_date_end = form.planned_date_end || null;
+        payload.actual_date = form.actual_date || null;
+        payload.actual_date_end = form.actual_date_end || null;
+        payload.monitor_name = form.monitor_name.trim() || null;
+        payload.purpose = form.purpose.trim() || null;
+        payload.summary = form.summary.trim() || null;
+        payload.follow_up_actions = form.follow_up_actions.trim() || null;
+        payload.report_link = form.report_link.trim() || null;
+        payload.report_date = form.report_date || null;
+      } else {
+        payload.research_center_id = form.site_id;
+        payload.scheduled_date = form.planned_date || null;
+        payload.scheduled_date_end = form.planned_date_end || null;
+      }
       
-      const { error } = await supabase.from("site_monitoring_visits" as any).update(payload).eq("id", editing.id);
+      const { error } = await supabase.from(table as any).update(payload).eq("id", editing.id);
       if (error) throw error;
       
-      toast.success("Monitoring visit updated");
+      toast.success("Visit updated successfully");
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
