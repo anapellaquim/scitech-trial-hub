@@ -299,6 +299,7 @@ export default function ChangeControl() {
     "Change Reason": r.change_reason || "",
     "Affected Documents/Processes": r.affected_documents || r.impact_assessment || "",
     "Impact Areas": (r.impact_areas || []).join(", "),
+    "Impact Areas (Other)": r.impact_areas_other || "",
     "Requires Training": r.requires_training ? "Yes" : "No",
     "Requires Communication": r.requires_communication ? "Yes" : "No",
     Status: r.status,
