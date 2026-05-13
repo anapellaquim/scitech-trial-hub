@@ -893,6 +893,26 @@ export default function Payments() {
     loadPaymentHistory();
   };
 
+  const toggleVisitPaymentStatus = async (visitId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "paid" ? "Pending" : "Paid";
+    
+    // Update newer patient visits table
+    const { error } = await supabase
+      .from("patient_visits")
+      .update({ payment_status: newStatus })
+      .eq("id", visitId);
+
+    if (error) {
+      toast.error("Erro ao atualizar status do pagamento");
+      console.error(error);
+      return;
+    }
+
+    toast.success(`Pagamento marcado como ${newStatus === "Paid" ? "Realizado" : "Pendente"}`);
+    loadProjectData();
+    loadPaymentHistory();
+  };
+
   const exportToCSV = () => {
     const dataToExport = filterCenter 
       ? participantPayments.filter(p => p.research_center === filterCenter)
@@ -1726,19 +1746,30 @@ export default function Payments() {
                               <TableCell className="text-right font-medium">{formatCurrency(p.total_earned)}</TableCell>
                               <TableCell className="text-right text-success">{formatCurrency(p.total_paid)}</TableCell>
                               <TableCell className="text-right text-warning font-bold">{formatCurrency(p.pending_payment)}</TableCell>
-                              <TableCell className="text-center">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedCenterTab(p.research_center);
-                                    // Tabs switch automatically if we had a way to trigger value change, 
-                                    // but since it's an uncontrolled component or we need to manage state:
-                                  }}
-                                >
-                                  Ver no Centro
-                                </Button>
-                              </TableCell>
+                                  <TableCell className="text-center">
+                                    <div className="flex justify-center gap-2">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                          setEditingParticipant(p);
+                                          setEditParticipantPaymentsOpen(true);
+                                        }}
+                                      >
+                                        <DollarSign className="h-4 w-4 mr-1" />
+                                        Gerenciar Pagamentos
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedCenterTab(p.research_center);
+                                        }}
+                                      >
+                                        Ver no Centro
+                                      </Button>
+                                    </div>
+                                  </TableCell>
                             </TableRow>
                           ))}
                           {participantPayments.length === 0 && (
