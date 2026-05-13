@@ -381,40 +381,35 @@ export default function VisitAgenda() {
                                     <div
                                       key={day.toISOString()}
                                       className={cn(
-                                        "bg-background p-1 h-12 md:h-16 flex flex-col items-center",
-                                        isToday(day) && "ring-1 ring-primary ring-inset bg-primary/5"
+                                        "bg-background p-1 h-20 md:h-24 flex flex-col items-start border-t border-l",
+                                        isToday(day) && "bg-primary/5"
                                       )}
                                     >
                                       <span className={cn(
-                                        "text-[10px] font-medium mb-0.5",
-                                        isToday(day) ? "text-primary" : "text-muted-foreground"
+                                        "text-[9px] font-bold px-1 mb-1 rounded-sm",
+                                        isToday(day) ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                                       )}>
                                         {format(day, "d")}
                                       </span>
-                                      <div className="flex flex-wrap justify-center gap-0.5 w-full">
-                                        {dayVisits.slice(0, 3).map((visit) => (
-                                          <Tooltip key={visit.id} delayDuration={0}>
-                                            <TooltipTrigger asChild>
-                                              <div 
-                                                onClick={() => navigate(`/site-monitoring?visitId=${visit.id}`)}
-                                                className={cn(
-                                                  "w-1.5 h-1.5 rounded-full cursor-pointer hover:scale-125 transition-transform",
-                                                  visit.visit_type === "SQV" && "bg-blue-500",
-                                                  visit.visit_type === "SIV" && "bg-green-500",
-                                                  visit.visit_type === "IMV" && "bg-primary",
-                                                  visit.visit_type === "COV" && "bg-orange-500",
-                                                  !["SQV", "SIV", "IMV", "COV"].includes(visit.visit_type) && "bg-slate-400"
-                                                )}
-                                              />
-                                            </TooltipTrigger>
-                                            <TooltipContent className="text-[10px] p-2">
-                                              <p className="font-bold">{visit.visit_type} - {visit.research_center?.code}</p>
-                                              <p>{visit.project?.title}</p>
-                                            </TooltipContent>
-                                          </Tooltip>
+                                      <div className="flex flex-col gap-0.5 w-full overflow-hidden">
+                                        {dayVisits.slice(0, 4).map((visit) => (
+                                          <div 
+                                            key={visit.id}
+                                            onClick={() => navigate(`/site-monitoring?visitId=${visit.id}`)}
+                                            className={cn(
+                                              "text-[8px] leading-tight px-1 py-0.5 rounded-sm cursor-pointer truncate font-medium border",
+                                              visit.visit_type === "SQV" && "bg-blue-100 text-blue-800 border-blue-200",
+                                              visit.visit_type === "SIV" && "bg-green-100 text-green-800 border-green-200",
+                                              visit.visit_type === "IMV" && "bg-primary/10 text-primary border-primary/20",
+                                              visit.visit_type === "COV" && "bg-orange-100 text-orange-800 border-orange-200",
+                                              !["SQV", "SIV", "IMV", "COV"].includes(visit.visit_type) && "bg-slate-100 text-slate-800 border-slate-200"
+                                            )}
+                                          >
+                                            {visit.visit_type}: {visit.research_center?.code}
+                                          </div>
                                         ))}
-                                        {dayVisits.length > 3 && (
-                                          <span className="text-[8px] font-bold text-muted-foreground">+{dayVisits.length - 3}</span>
+                                        {dayVisits.length > 4 && (
+                                          <span className="text-[7px] font-bold text-muted-foreground pl-1">+{dayVisits.length - 4}</span>
                                         )}
                                       </div>
                                     </div>
