@@ -109,7 +109,6 @@ const importanceColors: Record<string, string> = {
 };
 
 export default function SiteMonitoring() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
   const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
