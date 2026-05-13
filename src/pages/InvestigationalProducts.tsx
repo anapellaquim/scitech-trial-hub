@@ -319,6 +319,17 @@ export default function InvestigationalProducts() {
     Site: r.site, "Value (R$)": r.value, Note: r.note,
   })), [supplies]);
 
+  // Unique items (description) from Acquisition operations for predefined list
+  const uniqueItems = useMemo(() => {
+    const set = new Set<string>();
+    supplies.forEach(s => {
+      if (s.operation === "Acquisition" && s.description) {
+        set.add(s.description);
+      }
+    });
+    return Array.from(set).sort();
+  }, [supplies]);
+
   // KPIs by description + lot#
   const stockByItem = useMemo(() => {
     const map = new Map<string, {
@@ -328,6 +339,7 @@ export default function InvestigationalProducts() {
     }>();
     supplies.forEach((s) => {
       const desc = (s.description || "—").trim();
+
       const lot = (s.lot_number || "—").trim();
       const invoice = (s.invoice || "—").trim();
       const key = `${desc}||${lot}||${invoice}`;
