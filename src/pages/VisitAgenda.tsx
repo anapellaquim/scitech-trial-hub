@@ -218,8 +218,8 @@ export default function VisitAgenda() {
       
       if (error) throw error;
       
-      const monVisit = v as MonitoringVisit;
-      setEditing(monVisit);
+      const monVisit = v as any;
+      setEditing(monVisit as MonitoringVisit);
       setForm({
         site_id: monVisit.site_id || "", 
         visit_code: monVisit.visit_code || "", 
