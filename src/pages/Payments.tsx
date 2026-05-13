@@ -56,6 +56,7 @@ interface Participant {
   participant_code: string;
   name: string;
   research_center: string | null;
+  site_id?: string | null;
 }
 
 interface ResearchCenter {
@@ -481,7 +482,8 @@ export default function Payments() {
         id: p.id,
         participant_code: p.patient_code,
         name: `Patient ${p.patient_code}`,
-        research_center: site?.code || null
+        research_center: site?.code || null,
+        site_id: p.site_id
       };
     });
 
@@ -2579,12 +2581,14 @@ export default function Payments() {
           participantId={editingParticipant.participant_id}
           participantCode={editingParticipant.participant_code}
           visits={visits}
-          visitTypes={protocolSchedules.map(ps => ({
-            id: ps.id,
-            visit_number: ps.target_day,
-            name: ps.visit_name,
-            value: ps.payment_amount
-          }))}
+          visitTypes={protocolSchedules
+            .filter(ps => !ps.site_id || ps.site_id === participants.find(p => p.id === editingParticipant.participant_id)?.site_id)
+            .map(ps => ({
+              id: ps.id,
+              visit_number: ps.target_day,
+              name: ps.visit_name,
+              value: ps.payment_amount
+            }))}
           onSave={() => {
             loadProjectData();
             loadPaymentHistory();
