@@ -1246,8 +1246,6 @@ export default function Payments() {
         ) : (
           <div className="space-y-6">
             {/* Date Filter for Indicators */}
-          <div className="space-y-6">
-            {/* Date Filter for Indicators */}
             <Card>
               <CardContent className="pt-6">
                 <div className="flex flex-wrap items-end gap-4">
