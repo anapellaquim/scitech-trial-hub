@@ -504,17 +504,22 @@ export default function PatientManagement() {
                   <CardDescription>Track recruitment and study progress</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Patient Code</TableHead>
-                        <TableHead>Site</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Enrollment Date</TableHead>
-                        <TableHead className="text-center">Visits</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                  <ScrollArea className="w-full">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="min-w-[120px]">Patient Code</TableHead>
+                          <TableHead className="min-w-[150px]">Site</TableHead>
+                          <TableHead className="min-w-[120px]">Status</TableHead>
+                          {protocolVisits.map(pv => (
+                            <TableHead key={pv.id} className="text-center min-w-[150px]">
+                              {pv.visit_name}
+                            </TableHead>
+                          ))}
+                          <TableHead className="text-center min-w-[100px]">Visits</TableHead>
+                          <TableHead className="text-right min-w-[120px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
                     <TableBody>
                       {loading ? (
                         <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
