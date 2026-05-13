@@ -316,7 +316,13 @@ export default function VisitAgenda() {
                           {dayVisits.slice(0, showTasks ? 2 : 3).map((visit) => (
                             <div
                               key={visit.id}
-                              onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
+                              onClick={() => {
+                                if (visit.source === 'site_monitoring') {
+                                  navigate(`/site-monitoring?visitId=${visit.id}`);
+                                } else {
+                                  navigate(`/visits/${visit.id}`);
+                                }
+                              }}
                               className={`text-xs p-1 rounded cursor-pointer truncate ${visitTypeColors[visit.visit_type] || "bg-muted"}`}
                             >
                               {visit.visit_type} - {visit.research_center?.code || "N/A"}
