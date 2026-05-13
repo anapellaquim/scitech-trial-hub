@@ -10,8 +10,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import VisitAgenda from "./pages/VisitAgenda";
-import VisitReport from "./pages/VisitReport";
-import Visits from "./pages/Visits";
+
 import Payments from "./pages/Payments";
 import Budget from "./pages/Budget";
 
@@ -62,8 +61,8 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/settings/users" element={<AdminUsers />} />
             <Route path="/settings/audit" element={<AdminAudit />} />
-            <Route path="/visits" element={<Visits />} />
-            <Route path="/visits/:id" element={<VisitReport />} />
+            <Route path="/visits" element={<SiteMonitoring />} />
+            <Route path="/visits/:id" element={<SiteMonitoring />} />
 
             {/* New CTMS Modules */}
             <Route path="/qualifications" element={<Qualifications />} />
