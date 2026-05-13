@@ -803,17 +803,6 @@ export default function PatientManagement() {
                 </SelectContent>
               </Select>
             </div>
-                  <div className="grid gap-2">
-                    <Label>Visit Status</Label>
-                    <Select value={visitForm.status} onValueChange={v => setVisitForm({...visitForm, status: v})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Completed">Completed</SelectItem>
-                        <SelectItem value="Lost Visit">Lost Visit</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setScheduleDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveSchedule}>Save Schedule</Button>
