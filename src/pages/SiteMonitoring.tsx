@@ -585,6 +585,7 @@ export default function SiteMonitoring() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[30px]"></TableHead>
                             <TableHead>Site</TableHead>
                             <TableHead>Visit</TableHead>
                             <TableHead>Category</TableHead>
@@ -612,45 +613,60 @@ export default function SiteMonitoring() {
                                 ? Math.round((new Date(f.due_date).getTime() - Date.now()) / 86400000)
                                 : null;
                               const isOpen = f.status === "open" || f.status === "in_progress";
+                              const isExpanded = expandedFindingId === f.id;
                               return (
-                                <TableRow key={f.id}>
-                                  <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
-                                  <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
-                                  <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
-                                  <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
-                                  <TableCell className="max-w-[260px] text-sm whitespace-pre-wrap">{f.description}</TableCell>
-                                  <TableCell className="max-w-[200px] text-sm whitespace-pre-wrap">{f.action_required || "—"}</TableCell>
-                                  <TableCell>{f.due_date || "—"}</TableCell>
-                                  <TableCell className={isOpen && daysLeft !== null && daysLeft < 0 ? "text-destructive font-semibold" : ""}>
-                                    {daysLeft === null ? "—" : `${daysLeft}d`}
-                                  </TableCell>
-                                   <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
-                                   <TableCell>{f.resolved_date || "—"}</TableCell>
-                                   <TableCell>
-                                     <div className="flex gap-1">
-                                       <Button
-                                         variant="ghost"
-                                         size="icon"
-                                         title="Edit"
-                                         onClick={() => {
-                                           setSelectedVisit(v || null);
-                                           editFinding(f);
-                                           setFindingDialogOpen(true);
-                                         }}
-                                       >
-                                         <Pencil className="h-4 w-4" />
-                                       </Button>
-                                       <Button
-                                         variant="ghost"
-                                         size="icon"
-                                         title="Delete"
-                                         onClick={() => deleteFinding(f.id)}
-                                       >
-                                         <Trash2 className="h-4 w-4 text-destructive" />
-                                       </Button>
-                                     </div>
-                                   </TableCell>
-                                </TableRow>
+                                <>
+                                  <TableRow key={f.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}>
+                                    <TableCell>
+                                      <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
+                                    </TableCell>
+                                    <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
+                                    <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
+                                    <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
+                                    <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
+                                    <TableCell className="max-w-[260px] text-sm whitespace-pre-wrap">{f.description}</TableCell>
+                                    <TableCell className="max-w-[200px] text-sm whitespace-pre-wrap">{f.action_required || "—"}</TableCell>
+                                    <TableCell>{f.due_date || "—"}</TableCell>
+                                    <TableCell className={isOpen && daysLeft !== null && daysLeft < 0 ? "text-destructive font-semibold" : ""}>
+                                      {daysLeft === null ? "—" : `${daysLeft}d`}
+                                    </TableCell>
+                                    <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
+                                    <TableCell>{f.resolved_date || "—"}</TableCell>
+                                    <TableCell>
+                                      <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          title="Edit"
+                                          onClick={() => {
+                                            setSelectedVisit(v || null);
+                                            editFinding(f);
+                                            setFindingDialogOpen(true);
+                                          }}
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          title="Delete"
+                                          onClick={() => deleteFinding(f.id)}
+                                        >
+                                          <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                  {isExpanded && (
+                                    <TableRow className="bg-muted/30">
+                                      <TableCell colSpan={12} className="p-4">
+                                        <div className="max-w-4xl mx-auto">
+                                          <AuditTrail entityId={f.id} />
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </>
                               );
                             })}
                         </TableBody>
