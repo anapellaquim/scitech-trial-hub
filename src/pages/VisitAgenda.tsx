@@ -390,6 +390,17 @@ export default function VisitAgenda() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    const visitId = searchParams.get("visitId");
+    const editMode = searchParams.get("edit") === "true";
+    if (visitId && editMode && visits.length > 0) {
+      const visitToEdit = visits.find(v => v.id === visitId);
+      if (visitToEdit) {
+        openEdit(visitToEdit);
+      }
+    }
+  }, [searchParams, visits, openEdit]);
+
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
