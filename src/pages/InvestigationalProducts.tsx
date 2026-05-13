@@ -963,31 +963,24 @@ export default function InvestigationalProducts() {
               </div>
               <div className="col-span-2 space-y-2">
                 <Label>Item (Description) *</Label>
-                {supplyForm.operation === "Acquisition" ? (
-                  <Input 
-                    value={supplyForm.description || ""} 
-                    onChange={(e) => setSupplyForm({ ...supplyForm, description: e.target.value })} 
-                    placeholder="Enter item description"
-                  />
-                ) : (
-                  <Select
-                    value={supplyForm.description || ""}
-                    onValueChange={(v) => setSupplyForm({ ...supplyForm, description: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select item" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {uniqueItems.length === 0 ? (
-                        <SelectItem value="_none" disabled>No items available from acquisitions</SelectItem>
-                      ) : (
-                        uniqueItems.map((item) => (
-                          <SelectItem key={item} value={item}>{item}</SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
+                <Select
+                  value={supplyForm.description || ""}
+                  onValueChange={(v) => setSupplyForm({ ...supplyForm, description: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select item" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {uniqueItems.length === 0 ? (
+                      <SelectItem value="_none" disabled>No items configured or available</SelectItem>
+                    ) : (
+                      uniqueItems.map((item) => (
+                        <SelectItem key={item} value={item}>{item}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+
               </div>
               <div className="space-y-2">
                 <Label>Expiration</Label>
