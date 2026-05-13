@@ -15,7 +15,7 @@ export type ModuleAction = "view" | "create";
 
 export const MODULE_KEYS: ModuleKey[] = [
   "dashboard", "communications", "projects", "agenda", "tasks",
-  "visits", "site_monitoring", "pmcf_survey", "ip",
+  "visits", "site_monitoring", "pmcf_survey", "ip", "patients",
   "qualifications", "trainings", "change_control", "risks",
   "committees", "steering", "regulatory", "clinical_evaluation", "payments",
 ];
