@@ -98,6 +98,47 @@ export default function Regulatory() {
   const [showEditReport, setShowEditReport] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
+  const [importOpen, setImportOpen] = useState(false);
+  const [importType, setImportType] = useState<"submission" | "report">("submission");
+
+  const submissionImportColumns: ColumnMapping[] = [
+    { excelHeader: "Type", dbColumn: "submission_type", required: true },
+    { excelHeader: "Status", dbColumn: "status", required: true },
+    { excelHeader: "Planned Date", dbColumn: "planned_date" },
+    { excelHeader: "Submission Date", dbColumn: "submission_date" },
+    { excelHeader: "Notes", dbColumn: "notes" },
+    { excelHeader: "Compliance Response", dbColumn: "compliance_response" },
+  ];
+
+  const reportImportColumns: ColumnMapping[] = [
+    { excelHeader: "Type", dbColumn: "report_type", required: true },
+    { excelHeader: "Status", dbColumn: "status", required: true },
+    { excelHeader: "Due Date", dbColumn: "due_date", required: true },
+    { excelHeader: "Submitted Date", dbColumn: "submitted_date" },
+    { excelHeader: "Notes", dbColumn: "notes" },
+  ];
+
+  const submissionExportData = useMemo(() => filteredSubmissions.map(s => ({
+    Study: s.project?.title || "",
+    Site: s.site ? `${s.site.code} - ${s.site.name}` : "",
+    Type: s.submission_type,
+    Status: statusLabels[s.status] || s.status,
+    "Planned Date": s.planned_date || "",
+    "Submission Date": s.submission_date || "",
+    Notes: s.notes || "",
+    "Compliance Response": s.compliance_response || "",
+  })), [filteredSubmissions]);
+
+  const reportExportData = useMemo(() => filteredReports.map(r => ({
+    Study: r.project?.title || "",
+    Type: r.report_type,
+    Status: statusLabels[r.status] || r.status,
+    "Due Date": r.due_date || "",
+    "Submitted Date": r.submitted_date || "",
+    Notes: r.notes || "",
+  })), [filteredReports]);
+
+
   useEffect(() => {
     checkAuthAndFetch();
   }, []);
