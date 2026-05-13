@@ -1102,3 +1102,6 @@ export default function VisitAgenda() {
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
