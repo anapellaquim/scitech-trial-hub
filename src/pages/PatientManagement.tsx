@@ -718,14 +718,14 @@ export default function PatientManagement() {
                             <TableCell className="text-right">
                               <Button variant="ghost" size="icon" onClick={() => {
                                 setEditingSchedule(v);
-                                setScheduleForm({
-                                  visit_name: v.visit_name,
-                                  target_day: v.target_day,
-                                  window_minus: v.window_minus,
-                                  window_plus: v.window_plus,
-                                  payment_amount: v.payment_amount,
-                                  site_id: v.site_id || ""
-                                });
+                                  setScheduleForm({
+                                    visit_name: v.visit_name,
+                                    target_day: v.target_day,
+                                    window_minus: v.window_minus,
+                                    window_plus: v.window_plus,
+                                    payment_amount: v.payment_amount,
+                                    site_ids: v.site_id ? [v.site_id] : []
+                                  });
                                 setScheduleDialogOpen(true);
                               }}><Pencil className="h-4 w-4" /></Button>
                             </TableCell>
