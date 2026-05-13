@@ -202,6 +202,7 @@ export default function ChangeControl() {
       affected_documents: form.affected_documents.trim() || null,
       impact_assessment: form.affected_documents.trim() || null, // keep legacy field in sync
       impact_areas: form.impact_areas,
+      impact_areas_other: form.impact_areas.includes("other") ? form.impact_areas_other.trim() || null : null,
       requires_training: form.requires_training,
       requires_communication: form.requires_communication,
       status: form.status,
