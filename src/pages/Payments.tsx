@@ -130,6 +130,7 @@ export default function Payments() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [visitTypes, setVisitTypes] = useState<VisitType[]>([]);
+  const [protocolSchedules, setProtocolSchedules] = useState<any[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [participantPayments, setParticipantPayments] = useState<ParticipantPayment[]>([]);
@@ -454,6 +455,7 @@ export default function Payments() {
       .order("visit_number");
 
     setVisitTypes(types || []);
+    setProtocolSchedules(types || []);
 
     // Load research centers
     const { data: centers } = await supabase
@@ -485,11 +487,11 @@ export default function Payments() {
     }
 
     // Load patient visits from the Patient Management module
-    const { data: patientVisitsRes } = await supabase
-      .from("patient_visits")
-      .select("*, protocol_visit:protocol_visit_schedules(*)")
-      .eq("status", "Completed")
-      .order("actual_date");
+      // Load ALL patient visits (not just completed) from the Patient Management module
+      const { data: patientVisitsRes } = await supabase
+        .from("patient_visits")
+        .select("*, protocol_visit:protocol_visit_schedules(*)")
+        .order("actual_date");
 
     const visitsData = (patientVisitsRes || []).map(pv => ({
       id: pv.id,
@@ -2581,7 +2583,12 @@ export default function Payments() {
           participantId={editingParticipant.participant_id}
           participantCode={editingParticipant.participant_code}
           visits={visits}
-          visitTypes={visitTypes}
+          visitTypes={protocolSchedules.map(ps => ({
+            id: ps.id,
+            visit_number: ps.target_day,
+            name: ps.visit_name,
+            value: ps.payment_amount
+          }))}
           onSave={() => {
             loadProjectData();
             loadPaymentHistory();
