@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Package, Upload, TrendingUp, TrendingDown, Boxes, Settings2 } from "lucide-react";
 import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface IPRecord {
   id: string;
