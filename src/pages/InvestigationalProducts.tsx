@@ -14,9 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Package, Upload, TrendingUp, TrendingDown, Boxes } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Upload, TrendingUp, TrendingDown, Boxes, Settings2 } from "lucide-react";
 import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface IPRecord {
   id: string;
@@ -141,6 +143,7 @@ export default function InvestigationalProducts() {
   const [records, setRecords] = useState<IPRecord[]>([]);
   const [supplies, setSupplies] = useState<SupplyRecord[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
+  const [predefinedItems, setPredefinedItems] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -152,14 +155,18 @@ export default function InvestigationalProducts() {
   const [editingSupply, setEditingSupply] = useState<SupplyRecord | null>(null);
   const [supplyForm, setSupplyForm] = useState(emptySupply());
 
+  const [itemsDialogOpen, setItemsDialogOpen] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+
   const loadRecords = useCallback(async () => {
     setLoading(true);
-    const [ip, sup, siteData] = await Promise.all([
+    const [ip, sup, siteData, itemsData] = await Promise.all([
       supabase.from("investigational_products").select("*").order("created_at", { ascending: false }),
       supabase.from("ip_supply").select("*").order("date", { ascending: false }),
       selectedProject 
         ? supabase.from("study_sites").select("id, name, code").eq("project_id", selectedProject)
-        : Promise.resolve({ data: [], error: null })
+        : Promise.resolve({ data: [], error: null }),
+      supabase.from("investigational_product_items").select("id, name").order("name")
     ]);
     if (ip.error) toast.error("Failed to load IP: " + ip.error.message);
     else setRecords((ip.data || []) as IPRecord[]);
@@ -167,8 +174,11 @@ export default function InvestigationalProducts() {
     else setSupplies((sup.data || []) as SupplyRecord[]);
     if (siteData.error) console.error("Failed to load sites:", siteData.error);
     else setSites((siteData.data || []) as Site[]);
+    if (itemsData.error) console.error("Failed to load items:", itemsData.error);
+    else setPredefinedItems((itemsData.data || []) as { id: string; name: string }[]);
     setLoading(false);
   }, [selectedProject]);
+
 
 
   useEffect(() => {
@@ -321,16 +331,20 @@ export default function InvestigationalProducts() {
     Site: r.site, "Value (R$)": r.value, Note: r.note,
   })), [supplies]);
 
-  // Unique items (description) from Acquisition operations for predefined list
+  // Unique items (description) from predefined list AND Acquisition operations
   const uniqueItems = useMemo(() => {
     const set = new Set<string>();
+    // Add predefined items
+    predefinedItems.forEach(i => set.add(i.name));
+    // Add items from acquisitions (historical)
     supplies.forEach(s => {
       if (s.operation === "Acquisition" && s.description) {
         set.add(s.description);
       }
     });
     return Array.from(set).sort();
-  }, [supplies]);
+  }, [supplies, predefinedItems]);
+
 
   // KPIs by description + lot#
   const stockByItem = useMemo(() => {
@@ -440,10 +454,14 @@ export default function InvestigationalProducts() {
               <Button variant="outline" onClick={() => setImportOpen(true)}>
                 <Upload className="h-4 w-4 mr-1" /> Import
               </Button>
+              <Button variant="outline" onClick={() => setItemsDialogOpen(true)}>
+                <Settings2 className="h-4 w-4 mr-1" /> Configure Items
+              </Button>
               <Button onClick={openNew}>
                 <Plus className="h-4 w-4 mr-1" /> New IP
               </Button>
             </div>
+
 
             {/* Inventory KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1032,6 +1050,59 @@ export default function InvestigationalProducts() {
           columns={SUPPLY_IMPORT_COLUMNS}
           onSuccess={loadRecords}
         />
+
+        {/* ===== Predefined Items Configuration Dialog ===== */}
+        <Dialog open={itemsDialogOpen} onOpenChange={setItemsDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Configure Predefined Items</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="New item name..." 
+                  value={newItemName} 
+                  onChange={(e) => setNewItemName(e.target.value)}
+                />
+                <Button onClick={async () => {
+                  if (!newItemName.trim()) return;
+                  const { error } = await supabase.from("investigational_product_items").insert({ name: newItemName.trim() });
+                  if (error) {
+                    if (error.code === '23505') toast.error("Item already exists");
+                    else toast.error("Error adding item");
+                  } else {
+                    toast.success("Item added");
+                    setNewItemName("");
+                    loadRecords();
+                  }
+                }}>Add</Button>
+              </div>
+              <ScrollArea className="h-64 border rounded-md p-2">
+                <div className="space-y-2">
+                  {predefinedItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between p-2 hover:bg-muted rounded-md group">
+                      <span>{item.name}</span>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={async () => {
+                        const { error } = await supabase.from("investigational_product_items").delete().eq("id", item.id);
+                        if (error) toast.error("Error deleting item");
+                        else {
+                          toast.success("Item deleted");
+                          loadRecords();
+                        }
+                      }}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  {predefinedItems.length === 0 && (
+                    <p className="text-sm text-center text-muted-foreground py-8">No predefined items yet.</p>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </DialogContent>
+        </Dialog>
+
       </main>
     </div>
   );
