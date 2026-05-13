@@ -20,7 +20,7 @@ import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 // --- Types ---
-type PatientStatus = 'Screening' | 'Screen Failure' | 'Randomized' | 'Completed' | 'Lost to Follow-up' | 'Early Exit' | 'Withdrawn';
+type PatientStatus = 'Screening' | 'Screen failure' | 'Included' | 'Complete' | 'Lost to FUP' | 'Early exit' | 'Withdrawn';
 
 interface Patient {
   id: string;
@@ -234,11 +234,11 @@ export default function PatientManagement() {
   const getStatusBadge = (status: PatientStatus) => {
     const variants: Record<PatientStatus, string> = {
       'Screening': 'bg-blue-100 text-blue-800',
-      'Screen Failure': 'bg-red-100 text-red-800',
-      'Randomized': 'bg-green-100 text-green-800',
-      'Completed': 'bg-purple-100 text-purple-800',
-      'Lost to Follow-up': 'bg-orange-100 text-orange-800',
-      'Early Exit': 'bg-gray-100 text-gray-800',
+      'Screen failure': 'bg-red-100 text-red-800',
+      'Included': 'bg-green-100 text-green-800',
+      'Complete': 'bg-purple-100 text-purple-800',
+      'Lost to FUP': 'bg-orange-100 text-orange-800',
+      'Early exit': 'bg-gray-100 text-gray-800',
       'Withdrawn': 'bg-slate-100 text-slate-800'
     };
     return <Badge className={variants[status]}>{status}</Badge>;
