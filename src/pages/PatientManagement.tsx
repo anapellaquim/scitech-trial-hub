@@ -311,7 +311,7 @@ export default function PatientManagement() {
                         <TableHead>Site</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Enrollment Date</TableHead>
-                        <TableHead>Notes</TableHead>
+                        <TableHead className="text-center">Visits</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
