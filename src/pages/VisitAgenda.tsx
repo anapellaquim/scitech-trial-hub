@@ -115,20 +115,44 @@ export default function VisitAgenda() {
         tasksQuery = tasksQuery.eq("assigned_to", authUser.id);
       }
 
-      const [visitsRes, projectsRes, tasksRes] = await Promise.all([
+      const [visitsRes, projectsRes, tasksRes, monitoringRes] = await Promise.all([
         supabase
           .from("study_visits")
           .select("*, project:projects(id, title), research_center:research_centers(id, code, name)")
           .order("scheduled_date", { ascending: true }),
         supabase.from("projects").select("id, title").order("title"),
         tasksQuery.order("end_date", { ascending: true }),
+        supabase
+          .from("site_monitoring_agenda")
+          .select("*")
+          .order("scheduled_date", { ascending: true }),
       ]);
 
       if (visitsRes.error) throw visitsRes.error;
       if (projectsRes.error) throw projectsRes.error;
       if (tasksRes.error) throw tasksRes.error;
+      if (monitoringRes.error) throw monitoringRes.error;
 
-      setVisits(visitsRes.data as Visit[] || []);
+      // Unify visits from both sources
+      const studyVisits = (visitsRes.data as any[] || []).map(v => ({
+        ...v,
+        source: 'study_visits'
+      }));
+
+      const siteMonitoringVisits = (monitoringRes.data as any[] || []).map(v => ({
+        id: v.id,
+        visit_type: v.visit_type,
+        visit_number: null,
+        scheduled_date: v.scheduled_date,
+        scheduled_time: null,
+        status: v.status,
+        notes: null,
+        project: { id: v.project_id, title: v.project_title },
+        research_center: { id: v.site_id, code: v.site_code, name: v.site_name },
+        source: 'site_monitoring'
+      }));
+
+      setVisits([...studyVisits, ...siteMonitoringVisits] as Visit[]);
       setProjects(projectsRes.data || []);
       setTasks(tasksRes.data as Task[] || []);
     } catch (error: any) {
@@ -281,8 +305,8 @@ export default function VisitAgenda() {
                           {dayVisits.slice(0, showTasks ? 2 : 3).map((visit) => (
                             <div
                               key={visit.id}
-                              onClick={() => navigate(`/visits/${visit.id}`)}
-                              className={`text-xs p-1 rounded cursor-pointer truncate ${visitTypeColors[visit.visit_type]}`}
+                              onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
+                              className={`text-xs p-1 rounded cursor-pointer truncate ${visitTypeColors[visit.visit_type] || "bg-muted"}`}
                             >
                               {visit.visit_type} - {visit.research_center?.code || "N/A"}
                             </div>
@@ -383,7 +407,7 @@ export default function VisitAgenda() {
                 {upcomingVisits.map((visit) => (
                   <div
                     key={visit.id}
-                    onClick={() => navigate(`/visits/${visit.id}`)}
+                    onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
                     className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">

@@ -76,7 +76,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Planning",
     items: [
       { to: "/projects", icon: Briefcase, label: "Studies", module: "projects" },
-      { to: "/agenda", icon: Calendar, label: "Agenda", module: "agenda" },
       { to: "/tasks", icon: ListTodo, label: "Tasks", module: "tasks" },
       { to: "/budget", icon: DollarSign, label: "Budget", module: "payments" },
     ],
@@ -84,6 +83,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Execution",
     items: [
+      { to: "/agenda", icon: Calendar, label: "Agenda", module: "agenda" },
       { to: "/visits", icon: CalendarCheck, label: "Visits", module: "visits" },
       { to: "/site-monitoring", icon: Eye, label: "Site Monitoring", module: "site_monitoring" },
       { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey", module: "pmcf_survey" },
