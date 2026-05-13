@@ -690,7 +690,7 @@ export default function VisitAgenda() {
                                 ))}
                                 
                                 {Array.from({ length: startOfMonth(month).getDay() }).map((_, i) => (
-                                  <div key={`empty-${i}`} className="bg-background/20 p-1 h-24 md:h-28 border-t border-l border-muted/20" />
+                                  <div key={`empty-${i}`} className="bg-muted/10 p-1 h-24 md:h-28 border-t border-l border-muted/20" />
                                 ))}
                                 
                                 {monthDays.map((day) => {
