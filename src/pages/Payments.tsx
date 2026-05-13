@@ -522,8 +522,8 @@ export default function Payments() {
       let paidCount = 0;
 
       participantVisits.forEach((visit) => {
-        const visitType = types?.find(vt => vt.visit_number === visit.visit_number);
-        const visitValue = visit.payment_amount ?? visitType?.value ?? 0;
+        const visitType = protocolSchedulesData?.find(vt => vt.target_day === visit.visit_number);
+        const visitValue = visit.payment_amount ?? visitType?.payment_amount ?? 0;
 
         if (visit.status === "completed") {
           completedCount++;
