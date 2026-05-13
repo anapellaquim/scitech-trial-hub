@@ -1550,39 +1550,6 @@ export default function Payments() {
                               </a>
                             </Button>
                           )}
-                          <Button 
-                            variant="outline"
-                            onClick={() => setIndividualPaymentDialogOpen(true)}
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Pagamento Avulso
-                          </Button>
-                          <Button 
-                            variant="default"
-                            onClick={() => {
-                              const center = centerSummaries.find(c => c.code === selectedCenterTab);
-                              const centerParticipants = participantPayments.filter(p => p.research_center === selectedCenterTab);
-                              const selectedInCenter = centerParticipants.filter(p => selectedParticipantIds.has(p.participant_id));
-                              const totalSelected = selectedInCenter.reduce((sum, p) => sum + p.pending_payment, 0);
-                              
-                              if (center && selectedInCenter.length > 0) {
-                                setSelectedCenter({
-                                  ...center,
-                                  pending_payment: totalSelected,
-                                  participants: selectedInCenter.length
-                                });
-                                setSelectedParticipant(null);
-                                setRegisterDialogOpen(true);
-                              }
-                            }}
-                            disabled={(() => {
-                              const centerParticipants = participantPayments.filter(p => p.research_center === selectedCenterTab);
-                              const selectedInCenter = centerParticipants.filter(p => selectedParticipantIds.has(p.participant_id) && p.pending_payment > 0);
-                              return selectedInCenter.length === 0;
-                            })()}
-                          >
-                            Pagamento dos Selecionados
-                          </Button>
                         </>
                       )}
                     </div>
