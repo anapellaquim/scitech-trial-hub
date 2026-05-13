@@ -224,7 +224,7 @@ export default function VisitAgenda() {
           </div>
           <div className="flex items-center gap-3">
             <Select value={selectedProject} onValueChange={setSelectedProject}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filtrar por projeto" />
               </SelectTrigger>
               <SelectContent>
@@ -232,6 +232,19 @@ export default function VisitAgenda() {
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedSite} onValueChange={setSelectedSite}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filtrar por centro" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os centros</SelectItem>
+                {availableSites.map((site) => (
+                  <SelectItem key={site.id} value={site.id}>
+                    {site.code} - {site.name}
                   </SelectItem>
                 ))}
               </SelectContent>
