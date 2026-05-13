@@ -170,6 +170,7 @@ const importanceColors: Record<string, string> = {
 
 export default function VisitAgenda() {
   const navigate = useNavigate();
+  
   const [visits, setVisits] = useState<Visit[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -388,6 +389,7 @@ export default function VisitAgenda() {
   useEffect(() => {
     checkAuth();
   }, []);
+
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
