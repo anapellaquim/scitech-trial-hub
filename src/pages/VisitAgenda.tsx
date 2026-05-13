@@ -369,7 +369,13 @@ export default function VisitAgenda() {
                   <Card
                     key={visit.id}
                     className="cursor-pointer hover:shadow-elevated transition-smooth"
-                    onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
+                    onClick={() => {
+                      if (visit.source === 'site_monitoring') {
+                        navigate(`/site-monitoring?visitId=${visit.id}`);
+                      } else {
+                        navigate(`/visits/${visit.id}`);
+                      }
+                    }}
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
