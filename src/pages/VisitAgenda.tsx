@@ -25,6 +25,7 @@ interface Visit {
   notes: string | null;
   project: { id: string; title: string } | null;
   research_center: { id: string; code: string; name: string | null } | null;
+  source: 'study_visits' | 'site_monitoring';
 }
 
 interface Task {
@@ -352,7 +353,7 @@ export default function VisitAgenda() {
                   <Card
                     key={visit.id}
                     className="cursor-pointer hover:shadow-elevated transition-smooth"
-                    onClick={() => navigate(`/visits/${visit.id}`)}
+                    onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
