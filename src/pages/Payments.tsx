@@ -447,15 +447,20 @@ export default function Payments() {
   };
 
   const loadProjectData = useCallback(async () => {
-    // Load visit types
-    const { data: types } = await supabase
-      .from("visit_types")
-      .select("id, visit_number, name, value")
+    // Load protocol visit schedules from Patient Management module
+    const { data: protocolSchedulesData } = await supabase
+      .from("protocol_visit_schedules")
+      .select("id, visit_name, target_day, payment_amount")
       .eq("project_id", selectedProject)
-      .order("visit_number");
+      .order("target_day");
 
-    setVisitTypes(types || []);
-    setProtocolSchedules(types || []);
+    setProtocolSchedules(protocolSchedulesData || []);
+    setVisitTypes((protocolSchedulesData || []).map(ps => ({
+      id: ps.id,
+      visit_number: ps.target_day,
+      name: ps.visit_name,
+      value: ps.payment_amount
+    })));
 
     // Load research centers
     const { data: centers } = await supabase
