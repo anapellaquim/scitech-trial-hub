@@ -67,19 +67,39 @@ export function EditParticipantPaymentsDialog({
   const handleSave = async () => {
     setLoading(true);
     try {
-      const updates = participantVisits.map((visit) => {
-          const isPaid = paymentStatus[visit.id];
-          const newStatus = isPaid ? "Paid" : "Pending";
-          
+      // First, update existing visit payment statuses
+      const visitUpdates = participantVisits.map((visit) => {
+        const isPaid = paymentStatus[visit.id];
+        const newStatus = isPaid ? "Paid" : "Pending";
+        
+        return supabase
+          .from("patient_visits")
+          .update({
+            payment_status: newStatus,
+          })
+          .eq("id", visit.id);
+      });
+
+      // Then, handle unscheduled/random visits that don't have a record yet but are marked as paid
+      const unscheduledVisitsToCreate = visitTypes
+        .filter(vt => {
+          const isUnscheduled = vt.visit_number === 99 || vt.name.toLowerCase().includes("random") || vt.name.toLowerCase().includes("unscheduled");
+          const hasNoRecord = !participantVisits.some(v => v.visit_number === vt.visit_number);
+          return isUnscheduled && hasNoRecord && paymentStatus[`type-${vt.id}`];
+        })
+        .map(vt => {
           return supabase
             .from("patient_visits")
-            .update({
-              payment_status: newStatus,
-            })
-            .eq("id", visit.id);
+            .insert({
+              participant_id: participantId,
+              visit_number: vt.visit_number,
+              status: "Completed",
+              payment_status: "Paid",
+              payment_amount: vt.value
+            });
         });
 
-      const results = await Promise.all(updates);
+      const results = await Promise.all([...visitUpdates, ...unscheduledVisitsToCreate]);
       const hasError = results.some((r) => r.error);
 
       if (hasError) {
