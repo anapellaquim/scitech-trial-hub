@@ -1736,62 +1736,95 @@ export default function Payments() {
                         />
                       </div>
                     </div>
-                    <ScrollArea className="w-full">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Código do Paciente</TableHead>
-                            <TableHead>Centro</TableHead>
-                            <TableHead className="text-center">Visitas Completas</TableHead>
-                            <TableHead className="text-right">Total Acumulado</TableHead>
-                            <TableHead className="text-right">Total Pago</TableHead>
-                            <TableHead className="text-right">Valor Pendente</TableHead>
-                            <TableHead className="text-center">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {participantPayments
-                            .filter(p => 
-                              !filterCenter || 
-                              p.participant_code.toLowerCase().includes(filterCenter.toLowerCase()) ||
-                              p.research_center.toLowerCase().includes(filterCenter.toLowerCase())
-                            )
-                            .map((p) => (
-                            <TableRow key={p.participant_id}>
-                              <TableCell className="font-bold">{p.participant_code}</TableCell>
-                              <TableCell>{p.research_center}</TableCell>
-                              <TableCell className="text-center">
-                                <Badge variant="outline">{p.completed_visits}</Badge>
-                              </TableCell>
-                              <TableCell className="text-right font-medium">{formatCurrency(p.total_earned)}</TableCell>
-                              <TableCell className="text-right text-success">{formatCurrency(p.total_paid)}</TableCell>
-                              <TableCell className="text-right text-warning font-bold">{formatCurrency(p.pending_payment)}</TableCell>
-                              <TableCell className="text-center">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => {
-                                    setEditingParticipant(p);
-                                    setEditParticipantPaymentsOpen(true);
-                                  }}
-                                  title="Registrar pagamento"
-                                >
-                                  <DollarSign className="h-4 w-4" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                          {participantPayments.length === 0 && (
+                    <TooltipProvider>
+                      <ScrollArea className="w-full">
+                        <Table>
+                          <TableHeader>
                             <TableRow>
-                              <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                                Nenhum paciente encontrado.
-                              </TableCell>
+                              <TableHead>Código do Paciente</TableHead>
+                              <TableHead>Centro</TableHead>
+                              <TableHead className="text-center">Visitas Completas</TableHead>
+                              <TableHead className="text-right">Total Acumulado</TableHead>
+                              <TableHead className="text-right">Total Pago</TableHead>
+                              <TableHead className="text-right">Valor Pendente</TableHead>
+                              <TableHead className="text-center">Ações</TableHead>
                             </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                      <ScrollBar orientation="horizontal" />
-                    </ScrollArea>
+                          </TableHeader>
+                          <TableBody>
+                            {participantPayments
+                              .filter(p => 
+                                !filterCenter || 
+                                p.participant_code.toLowerCase().includes(filterCenter.toLowerCase()) ||
+                                p.research_center.toLowerCase().includes(filterCenter.toLowerCase())
+                              )
+                              .map((p) => {
+                                // Find protocol visits for this participant's site
+                                const participantSiteId = participants.find(part => part.id === p.participant_id)?.site_id;
+                                const participantProtocolVisits = protocolSchedules.filter(ps => !ps.site_id || ps.site_id === participantSiteId);
+                                
+                                return (
+                                  <TableRow key={p.participant_id}>
+                                    <TableCell className="font-bold">{p.participant_code}</TableCell>
+                                    <TableCell>{p.research_center}</TableCell>
+                                    <TableCell className="text-center">
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <div className="cursor-default inline-block">
+                                            <Badge variant="outline">{p.completed_visits}</Badge>
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="p-0">
+                                          <div className="p-3 space-y-2 min-w-[200px]">
+                                            <p className="font-semibold text-xs border-bottom pb-1 mb-1">Janela de Visitas (Protocolo)</p>
+                                            {participantProtocolVisits.length > 0 ? (
+                                              <div className="space-y-1">
+                                                {participantProtocolVisits.map(pv => (
+                                                  <div key={pv.id} className="flex justify-between text-[10px] gap-4">
+                                                    <span className="text-muted-foreground">{pv.visit_name}:</span>
+                                                    <span className="font-medium">
+                                                      D{pv.target_day} ({pv.window_minus || 0}/{pv.window_plus || 0})
+                                                    </span>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <p className="text-[10px] text-muted-foreground italic">Nenhuma visita configurada</p>
+                                            )}
+                                          </div>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">{formatCurrency(p.total_earned)}</TableCell>
+                                    <TableCell className="text-right text-success">{formatCurrency(p.total_paid)}</TableCell>
+                                    <TableCell className="text-right text-warning font-bold">{formatCurrency(p.pending_payment)}</TableCell>
+                                    <TableCell className="text-center">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => {
+                                          setEditingParticipant(p);
+                                          setEditParticipantPaymentsOpen(true);
+                                        }}
+                                        title="Registrar pagamento"
+                                      >
+                                        <DollarSign className="h-4 w-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            {participantPayments.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                                  Nenhum paciente encontrado.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                        <ScrollBar orientation="horizontal" />
+                      </ScrollArea>
+                    </TooltipProvider>
                   </CardContent>
                 </Card>
               </TabsContent>
