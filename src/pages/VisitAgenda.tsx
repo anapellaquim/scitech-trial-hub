@@ -649,7 +649,7 @@ export default function VisitAgenda() {
                     Previous
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
-                    Hoje
+                    Today
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => {
                     if (timeRange === "month") setCurrentDate(addMonths(currentDate, 1));
