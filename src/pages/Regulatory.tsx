@@ -401,7 +401,7 @@ export default function Regulatory() {
         </div>
 
         {/* Tabs for Submissions and Reports */}
-        <Tabs defaultValue="submissions" className="space-y-4">
+        <Tabs defaultValue="submissions" className="space-y-4" onValueChange={(v) => setImportType(v === "submissions" ? "submission" : "report")}>
           <TabsList>
             <TabsTrigger value="submissions">Submissions ({filteredSubmissions.length})</TabsTrigger>
             <TabsTrigger value="reports">Reports ({filteredReports.length})</TabsTrigger>
