@@ -67,15 +67,14 @@ export function EditParticipantPaymentsDialog({
   const handleSave = async () => {
     setLoading(true);
     try {
-      const updates = visits
-        .filter((v) => v.participant_id === participantId)
-        .map((visit) => {
+      const updates = participantVisits.map((visit) => {
           const isPaid = paymentStatus[visit.id];
+          const newStatus = isPaid ? "Paid" : "Pending";
+          
           return supabase
-            .from("visits")
+            .from("patient_visits")
             .update({
-              payment_status: isPaid ? "paid" : "pending",
-              paid_at: isPaid ? new Date().toISOString() : null,
+              payment_status: newStatus,
             })
             .eq("id", visit.id);
         });
