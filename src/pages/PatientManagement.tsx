@@ -822,9 +822,9 @@ export default function PatientManagement() {
                 <div className="flex items-center gap-2 col-span-2 pb-2 border-b mb-1">
                   <Checkbox 
                     id="site-global" 
-                    checked={scheduleForm.site_ids.length === 0}
+                    checked={(scheduleForm as any).site_ids.length === 0}
                     onCheckedChange={(checked) => {
-                      if (checked) setScheduleForm({...scheduleForm, site_ids: []});
+                      if (checked) setScheduleForm({...scheduleForm, site_ids: []} as any);
                     }}
                   />
                   <Label htmlFor="site-global" className="font-bold">Global Study-wide</Label>
@@ -833,12 +833,13 @@ export default function PatientManagement() {
                   <div key={s.id} className="flex items-center gap-2">
                     <Checkbox 
                       id={`site-${s.id}`} 
-                      checked={scheduleForm.site_ids.includes(s.id)}
+                      checked={(scheduleForm as any).site_ids.includes(s.id)}
                       onCheckedChange={(checked) => {
+                        const currentSites = (scheduleForm as any).site_ids;
                         const newSites = checked 
-                          ? [...scheduleForm.site_ids, s.id]
-                          : scheduleForm.site_ids.filter(id => id !== s.id);
-                        setScheduleForm({...scheduleForm, site_ids: newSites});
+                          ? [...currentSites, s.id]
+                          : currentSites.filter((id: string) => id !== s.id);
+                        setScheduleForm({...scheduleForm, site_ids: newSites} as any);
                       }}
                     />
                     <Label htmlFor={`site-${s.id}`} className="text-xs">{s.code}</Label>
