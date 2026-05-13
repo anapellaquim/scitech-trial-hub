@@ -285,7 +285,6 @@ export default function PatientManagement() {
     const patientsData = patients.map(p => {
       const row: any = {
         'Código do Paciente': p.patient_code,
-        'Centro (ID)': p.site_id,
         'Centro (Código)': p.site?.code || '',
         'Status': p.status,
         'Notas': p.notes
@@ -305,14 +304,17 @@ export default function PatientManagement() {
     XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes e Visitas");
 
     // Protocol Visits Sheet (Configuration)
-    const protocolData = protocolVisits.map(v => ({
-      'Nome da Visita': v.visit_name,
-      'Dia Alvo': v.target_day,
-      'Janela Negativa': v.window_minus,
-      'Janela Positiva': v.window_plus,
-      'Valor do Pagamento': v.payment_amount,
-      'Centro (ID)': v.site_id || 'Global'
-    }));
+    const protocolData = protocolVisits.map(v => {
+      const site = sites.find(s => s.id === v.site_id);
+      return {
+        'Nome da Visita': v.visit_name,
+        'Dia Alvo': v.target_day,
+        'Janela Negativa': v.window_minus,
+        'Janela Positiva': v.window_plus,
+        'Valor do Pagamento': v.payment_amount,
+        'Centro (Código)': site?.code || 'Global'
+      };
+    });
     const protocolSheet = XLSX.utils.json_to_sheet(protocolData);
     XLSX.utils.book_append_sheet(workbook, protocolSheet, "Configuracao Protocolo");
 
@@ -326,7 +328,7 @@ export default function PatientManagement() {
     // Create combined data for template
     const templateRow: any = {
       'Código do Paciente': 'PAC-001',
-      'Centro (ID)': sites[0]?.id || 'ID_DO_CENTRO',
+      'Centro (Código)': sites[0]?.code || 'CODIGO_DO_CENTRO',
       'Status': 'Screening',
       'Notas': 'Exemplo'
     };
@@ -372,6 +374,7 @@ export default function PatientManagement() {
         if (workbook.SheetNames.includes("Configuracao Protocolo")) {
           const protocolRows = XLSX.utils.sheet_to_json(workbook.Sheets["Configuracao Protocolo"]) as any[];
           for (const row of protocolRows) {
+            const site = sites.find(s => s.code === row['Centro (Código)']);
             await supabase.from("protocol_visit_schedules").upsert({
               project_id: selectedProject,
               visit_name: row['Nome da Visita'],
@@ -379,7 +382,7 @@ export default function PatientManagement() {
               window_minus: Number(row['Janela Negativa']),
               window_plus: Number(row['Janela Positiva']),
               payment_amount: Number(row['Valor do Pagamento']),
-              site_id: row['Centro (ID)'] === 'Global' ? null : row['Centro (ID)']
+              site_id: row['Centro (Código)'] === 'Global' ? null : (site?.id || row['Centro (ID)'])
             });
           }
         }
@@ -393,11 +396,15 @@ export default function PatientManagement() {
         if (workbook.SheetNames.includes("Pacientes e Visitas")) {
           const rows = XLSX.utils.sheet_to_json(workbook.Sheets["Pacientes e Visitas"]) as any[];
           for (const row of rows) {
+            // Find site by code if ID is not present
+            const site = sites.find(s => s.code === row['Centro (Código)']);
+            const siteId = site?.id || row['Centro (ID)'];
+
             // 1. Upsert Patient
             const { data: pData } = await supabase.from("patients").upsert({
               project_id: selectedProject,
               patient_code: row['Código do Paciente'],
-              site_id: row['Centro (ID)'],
+              site_id: siteId,
               status: (row['Status'] === 'Complete' ? 'Completed' : 
                        row['Status'] === 'Included' ? 'Randomized' : 
                        row['Status'] === 'Screen failure' ? 'Screen Failure' :
