@@ -192,8 +192,8 @@ export default function VisitAgenda() {
   }, [selectedProject]);
 
   const daysInMonth = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
+    start: startOfMonth(currentDate),
+    end: endOfMonth(currentDate),
   });
 
   const getVisitsForDay = (day: Date) => 
