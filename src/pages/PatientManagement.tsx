@@ -242,6 +242,77 @@ export default function PatientManagement() {
     return <Badge className={variants[status]}>{status}</Badge>;
   };
 
+  const exportData = () => {
+    const data = {
+      patients,
+      protocolVisits,
+      patientVisits,
+      exportDate: new Date().toISOString(),
+      projectId: selectedProject
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `patient-management-export-${format(new Date(), 'yyyy-MM-dd')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Data exported successfully");
+  };
+
+  const importData = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        const data = JSON.parse(content);
+        
+        if (!data.patients || !data.protocolVisits) {
+          throw new Error("Invalid format");
+        }
+
+        setLoading(true);
+
+        // Import Protocol Visits
+        for (const pv of data.protocolVisits) {
+          const { id, site, ...pvData } = pv;
+          await supabase.from("protocol_visit_schedules").upsert({
+            ...pvData,
+            project_id: selectedProject
+          });
+        }
+
+        // Import Patients
+        for (const p of data.patients) {
+          const { id, site, ...pData } = p;
+          await supabase.from("patients").upsert({
+            ...pData,
+            project_id: selectedProject
+          });
+        }
+
+        // Import Patient Visits
+        if (data.patientVisits) {
+          for (const v of data.patientVisits) {
+            const { id, protocol_visit, ...vData } = v;
+            await supabase.from("patient_visits").upsert(vData);
+          }
+        }
+
+        toast.success("Data imported successfully");
+        loadProjectData();
+      } catch (err) {
+        console.error(err);
+        toast.error("Error importing data. Please check the file format.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <CTMSNav />
