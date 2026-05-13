@@ -124,9 +124,23 @@ export function EditParticipantPaymentsDialog({
                       <p className="font-medium">{vt.name}</p>
                       <p className="text-sm text-muted-foreground">{formatCurrency(vt.value)}</p>
                     </div>
-                    <Badge variant="outline" className="text-muted-foreground">
-                      {notPerformed ? "Não realizada" : "Não agendada"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {isUnscheduled && (
+                        <Checkbox
+                          id={`vt-${vt.id}`}
+                          checked={paymentStatus[`type-${vt.id}`] || false}
+                          onCheckedChange={(checked) =>
+                            setPaymentStatus((prev) => ({
+                              ...prev,
+                              [`type-${vt.id}`]: checked === true,
+                            }))
+                          }
+                        />
+                      )}
+                      <Badge variant="outline" className="text-muted-foreground">
+                        {notPerformed ? "Não realizada" : "Não agendada"}
+                      </Badge>
+                    </div>
                   </div>
                 );
               }
@@ -141,9 +155,23 @@ export function EditParticipantPaymentsDialog({
                       <p className="font-medium">{vt.name}</p>
                       <p className="text-sm text-muted-foreground">{formatCurrency(vt.value)}</p>
                     </div>
-                    <Badge variant="outline" className={isLostVisit ? "bg-slate-200 text-slate-700" : "text-muted-foreground"}>
-                      {isLostVisit ? "Lost Visit" : "Pendente"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {isUnscheduled && (
+                        <Checkbox
+                          id={`vt-${vt.id}`}
+                          checked={paymentStatus[`type-${vt.id}`] || false}
+                          onCheckedChange={(checked) =>
+                            setPaymentStatus((prev) => ({
+                              ...prev,
+                              [`type-${vt.id}`]: checked === true,
+                            }))
+                          }
+                        />
+                      )}
+                      <Badge variant="outline" className={isLostVisit ? "bg-slate-200 text-slate-700" : "text-muted-foreground"}>
+                        {isLostVisit ? "Lost Visit" : "Pendente"}
+                      </Badge>
+                    </div>
                   </div>
                 );
               }
