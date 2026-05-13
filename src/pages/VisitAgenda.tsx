@@ -320,8 +320,8 @@ export default function VisitAgenda() {
                   
                   {daysInMonth.map((day) => {
                     const dayVisits = getVisitsForDay(day);
-                    const dayTasks = showTasks ? getTasksForDay(day) : [];
-                    const totalItems = dayVisits.length + dayTasks.length;
+                    const dayTasks: any[] = [];
+                    const totalItems = dayVisits.length;
                     
                     return (
                       <div
