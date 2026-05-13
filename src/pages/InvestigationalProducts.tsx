@@ -305,18 +305,19 @@ export default function InvestigationalProducts() {
   // KPIs by description + lot#
   const stockByItem = useMemo(() => {
     const map = new Map<string, {
-      description: string; lot_number: string;
+      description: string; lot_number: string; invoice: string;
       acquisition: number; shipping: number; balance: number;
       acquisitionValue: number;
     }>();
     supplies.forEach((s) => {
       const desc = (s.description || "—").trim();
       const lot = (s.lot_number || "—").trim();
-      const key = `${desc}||${lot}`;
+      const invoice = (s.invoice || "—").trim();
+      const key = `${desc}||${lot}||${invoice}`;
       const qty = Number(s.quantity || 0);
       const val = Number(s.value || 0);
       const cur = map.get(key) || {
-        description: desc, lot_number: lot,
+        description: desc, lot_number: lot, invoice: invoice,
         acquisition: 0, shipping: 0, balance: 0, acquisitionValue: 0,
       };
       if (s.operation === "Acquisition") {
@@ -329,7 +330,9 @@ export default function InvestigationalProducts() {
       map.set(key, cur);
     });
     return Array.from(map.values()).sort((a, b) =>
-      a.description.localeCompare(b.description) || a.lot_number.localeCompare(b.lot_number)
+      a.description.localeCompare(b.description) || 
+      a.lot_number.localeCompare(b.lot_number) ||
+      a.invoice.localeCompare(b.invoice)
     );
   }, [supplies]);
 
