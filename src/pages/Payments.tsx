@@ -516,10 +516,10 @@ export default function Payments() {
     const payments: ParticipantPayment[] = participants.map((participant) => {
       const participantVisits = visitsData?.filter((v) => v.participant_id === participant.id) || [];
       
-      let totalEarned = 0;
       let totalPaid = 0;
       let completedCount = 0;
       let paidCount = 0;
+      let pendingValue = 0;
 
       participantVisits.forEach((visit) => {
         const visitType = protocolSchedulesData?.find(vt => vt.target_day === visit.visit_number);
@@ -528,6 +528,9 @@ export default function Payments() {
         if (visit.payment_status === "paid") {
           paidCount++;
           totalPaid += Number(visitValue);
+        } else {
+          // All visits not marked as "paid" contribute to pending value
+          pendingValue += Number(visitValue);
         }
 
         if (visit.status === "completed") {
@@ -535,27 +538,14 @@ export default function Payments() {
         }
       });
 
-      // Based on instructions: 
-      // "Valor Pendente" = all visits with status "a pagar" (which I infer as NOT paid)
-      // "Total Pago" = visits with status "Pago"
-      // "Total Acumulado" = Total Pago + Valor Pendente
-      
-      // I'll calculate total possible value (all visits associated with patient)
-      const totalVisitsValue = participantVisits.reduce((sum, v) => {
-        const vt = protocolSchedulesData?.find(schedule => schedule.target_day === v.visit_number);
-        return sum + (v.payment_amount ?? vt?.payment_amount ?? 0);
-      }, 0);
-
-      const pendingPayment = totalVisitsValue - totalPaid;
-
       return {
         participant_id: participant.id,
         participant_code: participant.participant_code,
         research_center: participant.research_center || "Sem Centro",
         completed_visits: completedCount,
         paid_visits: paidCount,
-        pending_payment: pendingPayment,
-        total_earned: totalPaid + pendingPayment,
+        pending_payment: pendingValue,
+        total_earned: totalPaid + pendingValue, // Total Acumulado
         total_paid: totalPaid,
       };
     });
