@@ -451,7 +451,7 @@ export default function Payments() {
     // Load protocol visit schedules from Patient Management module
     const { data: protocolSchedulesData } = await supabase
       .from("protocol_visit_schedules")
-      .select("id, visit_name, target_day, payment_amount")
+      .select("id, visit_name, target_day, payment_amount, site_id")
       .eq("project_id", selectedProject)
       .order("target_day");
 
