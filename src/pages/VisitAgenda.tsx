@@ -646,7 +646,7 @@ export default function VisitAgenda() {
                     else if (timeRange === "semester") setCurrentDate(subMonths(currentDate, 6));
                     else setCurrentDate(subYears(currentDate, 1));
                   }}>
-                    Anterior
+                    Previous
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
                     Hoje
