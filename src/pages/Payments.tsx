@@ -130,6 +130,7 @@ export default function Payments() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [visitTypes, setVisitTypes] = useState<VisitType[]>([]);
+  const [protocolSchedules, setProtocolSchedules] = useState<any[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [participantPayments, setParticipantPayments] = useState<ParticipantPayment[]>([]);
