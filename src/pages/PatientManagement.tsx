@@ -522,9 +522,82 @@ export default function PatientManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
+      {/* Evolution Dialog */}
+      <Dialog open={visitDialogOpen} onOpenChange={setVisitDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Patient Evolution - {selectedPatientForVisits?.patient_code}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid gap-6 py-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Record New Visit</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Protocol Visit</Label>
+                    <Select value={visitForm.protocol_visit_id} onValueChange={v => setVisitForm({...visitForm, protocol_visit_id: v})}>
+                      <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>
+                      <SelectContent>
+                        {protocolVisits.map(pv => (
+                          <SelectItem key={pv.id} value={pv.id}>{pv.visit_name} (Target Day {pv.target_day})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Date Performed</Label>
+                    <Input type="date" value={visitForm.actual_date} onChange={e => setVisitForm({...visitForm, actual_date: e.target.value})} />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Notes</Label>
+                  <Textarea value={visitForm.notes} onChange={e => setVisitForm({...visitForm, notes: e.target.value})} placeholder="Observations during visit..." />
+                </div>
+                <Button className="w-full" onClick={handleSaveVisit}>
+                  <ClipboardCheck className="h-4 w-4 mr-2" />
+                  Record Visit Completion
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Visit History
+              </h4>
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Visit</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Payment</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {patientVisits.filter(v => v.patient_id === selectedPatientForVisits?.id).length === 0 ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-6 text-muted-foreground text-xs">No visits recorded yet.</TableCell></TableRow>
+                    ) : (
+                      patientVisits.filter(v => v.patient_id === selectedPatientForVisits?.id).map(v => (
+                        <TableRow key={v.id}>
+                          <TableCell className="text-xs font-medium">{v.protocol_visit?.visit_name}</TableCell>
+                          <TableCell className="text-xs">{v.actual_date ? format(new Date(v.actual_date), "dd/MM/yyyy") : "—"}</TableCell>
+                          <TableCell><Badge variant="outline" className="text-[10px] h-5">{v.status}</Badge></TableCell>
+                          <TableCell><Badge className="text-[10px] h-5 bg-green-100 text-green-800">{v.payment_status}</Badge></TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
 const Users = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M10.25 3.13a4 4 0 0 1 7.75 0"/></svg>
