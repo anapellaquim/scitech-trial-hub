@@ -56,6 +56,7 @@ interface Participant {
   participant_code: string;
   name: string;
   research_center: string | null;
+  site_id?: string | null;
 }
 
 interface ResearchCenter {
