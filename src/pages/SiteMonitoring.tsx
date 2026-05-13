@@ -867,21 +867,41 @@ export default function SiteMonitoring() {
                       <TableHead>Status</TableHead><TableHead>Due</TableHead><TableHead className="w-[100px]">Actions</TableHead>
                     </TableRow></TableHeader>
                     <TableBody>
-                      {visitFindings(selectedVisit.id).map(f => (
-                        <TableRow key={f.id}>
-                          <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
-                          <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
-                          <TableCell className="text-sm max-w-xs truncate" title={f.description}>{f.description}</TableCell>
-                          <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
-                          <TableCell>{f.due_date || "—"}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button variant="ghost" size="icon" onClick={() => editFinding(f)}><Pencil className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => deleteFinding(f.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {visitFindings(selectedVisit.id).map(f => {
+                        const isExpanded = expandedFindingId === f.id;
+                        return (
+                          <>
+                            <TableRow key={f.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}>
+                              <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
+                              <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
+                              <TableCell className="text-sm max-w-xs truncate" title={f.description}>{f.description}</TableCell>
+                              <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
+                              <TableCell>{f.due_date || "—"}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}
+                                    title="View History"
+                                  >
+                                    <History className={`h-4 w-4 ${isExpanded ? "text-primary" : ""}`} />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" onClick={() => editFinding(f)}><Pencil className="h-4 w-4" /></Button>
+                                  <Button variant="ghost" size="icon" onClick={() => deleteFinding(f.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            {isExpanded && (
+                              <TableRow className="bg-muted/30">
+                                <TableCell colSpan={6} className="p-4">
+                                  <AuditTrail entityId={f.id} />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 )}
