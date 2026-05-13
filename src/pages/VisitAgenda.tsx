@@ -222,20 +222,19 @@ export default function VisitAgenda() {
         {(() => {
           const today = new Date(); today.setHours(0,0,0,0);
           const total = filteredVisits.length;
-          const scheduled = filteredVisits.filter(v => v.status === "scheduled").length;
+          const scheduled = filteredVisits.filter(v => v.status === "scheduled" || v.status === "planned").length;
           const completed = filteredVisits.filter(v => v.status === "completed").length;
-          const upcoming = filteredVisits.filter(v => v.status === "scheduled" && v.scheduled_date && new Date(v.scheduled_date) >= today).length;
-          const overdue = filteredVisits.filter(v => v.status === "scheduled" && v.scheduled_date && new Date(v.scheduled_date) < today).length;
-          const openTasks = (selectedProject === "all" ? tasks : tasks.filter(t => t.project?.title && filteredVisits.some(v => v.project?.title === t.project?.title))).filter(t => t.status !== "completed").length;
+          const upcoming = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) >= today).length;
+          const overdue = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) < today).length;
+          
           return (
             <div className="mb-6">
-              <KpiCards cols={6} items={[
+              <KpiCards cols={5} items={[
                 { label: "Total Visits", value: total, icon: CalendarIcon, accent: "primary" },
-                { label: "Scheduled", value: scheduled, icon: Clock, accent: "primary" },
+                { label: "Scheduled/Planned", value: scheduled, icon: Clock, accent: "primary" },
                 { label: "Upcoming", value: upcoming, icon: CalendarIcon, accent: "primary" },
                 { label: "Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
                 { label: "Completed", value: completed, icon: CheckCircle2, accent: "success" },
-                { label: "Open Tasks", value: openTasks, icon: CheckSquare, accent: "warning" },
               ]} />
             </div>
           );
