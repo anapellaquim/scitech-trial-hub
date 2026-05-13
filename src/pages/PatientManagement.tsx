@@ -346,17 +346,50 @@ export default function PatientManagement() {
         }
 
         // Import Patients (Aba Pacientes)
+        let importedPatientsMap = new Map<string, string>(); // Code to ID
         if (workbook.SheetNames.includes("Pacientes")) {
           const patientRows = XLSX.utils.sheet_to_json(workbook.Sheets["Pacientes"]) as any[];
           for (const row of patientRows) {
-            await supabase.from("patients").upsert({
+            const { data, error } = await supabase.from("patients").upsert({
               project_id: selectedProject,
               patient_code: row['Código do Paciente'],
               site_id: row['Centro (ID)'],
               status: row['Status'] as PatientStatus,
-              enrollment_date: row['Data de Inclusão'] || null,
               notes: row['Notas'] || null
-            });
+            }).select('id').single();
+            
+            if (data) {
+              importedPatientsMap.set(row['Código do Paciente'], data.id);
+            }
+          }
+        }
+
+        // Import Visits (Aba Visitas)
+        if (workbook.SheetNames.includes("Visitas")) {
+          const visitRows = XLSX.utils.sheet_to_json(workbook.Sheets["Visitas"]) as any[];
+          // Reload protocol visits to have IDs
+          const { data: pvSchedules } = await supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject);
+          
+          for (const row of visitRows) {
+            const patientCode = row['Código do Paciente'];
+            const patientId = importedPatientsMap.get(patientCode) || patients.find(p => p.patient_code === patientCode)?.id;
+            
+            if (!patientId) continue;
+
+            for (const pv of (pvSchedules || [])) {
+              const dateKey = `${pv.visit_name} (Data)`;
+              const statusKey = `${pv.visit_name} (Status)`;
+              
+              if (row[dateKey] || row[statusKey]) {
+                await supabase.from("patient_visits").upsert({
+                  patient_id: patientId,
+                  protocol_visit_id: pv.id,
+                  actual_date: row[dateKey] || null,
+                  status: row[statusKey] || 'Completed',
+                  payment_status: 'Pending'
+                });
+              }
+            }
           }
         }
 
