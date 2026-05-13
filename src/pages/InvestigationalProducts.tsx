@@ -864,7 +864,7 @@ export default function InvestigationalProducts() {
 
         {/* ===== IP Dialog ===== */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader>
               <DialogTitle>{editing ? "Edit IP" : "New IP"}</DialogTitle>
             </DialogHeader>
