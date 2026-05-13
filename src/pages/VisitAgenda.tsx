@@ -842,7 +842,7 @@ export default function VisitAgenda() {
         {viewMode === "calendar" && upcomingVisits.length > 0 && (
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle className="text-lg">Próximas Visitas</CardTitle>
+              <CardTitle className="text-lg">Upcoming Visits</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
