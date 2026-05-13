@@ -136,6 +136,10 @@ export default function SiteMonitoring() {
   const [editingNote, setEditingNote] = useState<MonitorNote | null>(null);
   const [noteForm, setNoteForm] = useState(emptyNote);
 
+  const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
+  const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+
   useEffect(() => {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
