@@ -227,6 +227,7 @@ export default function InvestigationalProducts() {
   };
   const handleSaveSupply = async () => {
     if (!supplyForm.operation) { toast.error("Operation is required"); return; }
+    if (!supplyForm.description) { toast.error("Item (Description) is required"); return; }
     const payload = {
       operation: supplyForm.operation,
       date: supplyForm.date || null,
@@ -239,6 +240,7 @@ export default function InvestigationalProducts() {
       value: supplyForm.value === "" ? null : Number(supplyForm.value),
       note: supplyForm.note || null,
     };
+
     const { error } = editingSupply
       ? await supabase.from("ip_supply").update(payload).eq("id", editingSupply.id)
       : await supabase.from("ip_supply").insert(payload);
