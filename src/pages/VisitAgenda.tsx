@@ -117,9 +117,6 @@ const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
 const OVERSIGHT_CATEGORIES = [
   { value: "pending", label: "Pending Item" },
-  { value: "ecrf_query", label: "eCRF Query" },
-  { value: "protocol_deviation", label: "Protocol Deviation" },
-  { value: "ae_deviation", label: "AE Deviation" },
   { value: "other", label: "Other" },
 ];
 const categoryLabel = (c: string | null) =>

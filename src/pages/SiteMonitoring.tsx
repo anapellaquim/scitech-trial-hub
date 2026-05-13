@@ -57,9 +57,6 @@ const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
 const OVERSIGHT_CATEGORIES = [
   { value: "pending", label: "Pending Item" },
-  { value: "ecrf_query", label: "eCRF Query" },
-  { value: "protocol_deviation", label: "Protocol Deviation" },
-  { value: "ae_deviation", label: "AE Deviation" },
   { value: "other", label: "Other" },
 ];
 const categoryLabel = (c: string | null) =>
@@ -526,7 +523,7 @@ export default function SiteMonitoring() {
   return (
     <ModulePageLayout
       title="Site Monitoring"
-      subtitle="Plan visits and supervise pending items, eCRF queries, protocol and AE deviations"
+      subtitle="Plan visits and supervise pending items"
       selectedProject={selectedProject}
       onProjectChange={setSelectedProject}
       exportData={exportData}
@@ -554,11 +551,8 @@ export default function SiteMonitoring() {
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-red-600" /><div><p className="text-xs text-muted-foreground">Overdue</p><p className="text-2xl font-semibold">{overdue.length}</p></div></div></CardContent></Card>
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">Total Visits</p><p className="text-2xl font-semibold">{filtered.length}</p></div></div></CardContent></Card>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><ClipboardList className="h-5 w-5 text-amber-600" /><div><p className="text-xs text-muted-foreground">Pending Items</p><p className="text-2xl font-semibold">{byCat("pending")}</p></div></div></CardContent></Card>
-                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><FileQuestion className="h-5 w-5 text-purple-600" /><div><p className="text-xs text-muted-foreground">eCRF Queries</p><p className="text-2xl font-semibold">{byCat("ecrf_query")}</p></div></div></CardContent></Card>
-                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-red-600" /><div><p className="text-xs text-muted-foreground">Protocol Deviations</p><p className="text-2xl font-semibold">{byCat("protocol_deviation")}</p></div></div></CardContent></Card>
-                  <Card><CardContent className="py-4"><div className="flex items-center gap-3"><HeartPulse className="h-5 w-5 text-pink-600" /><div><p className="text-xs text-muted-foreground">AE Deviations</p><p className="text-2xl font-semibold">{byCat("ae_deviation")}</p></div></div></CardContent></Card>
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-700" /><div><p className="text-xs text-muted-foreground">Critical Open</p><p className="text-2xl font-semibold">{criticalOpen}</p></div></div></CardContent></Card>
                   <Card><CardContent className="py-4"><div className="flex items-center gap-3"><Hourglass className="h-5 w-5 text-blue-600" /><div><p className="text-xs text-muted-foreground">Avg Days to Due</p><p className="text-2xl font-semibold">{avgDays === null ? "—" : avgDays}</p></div></div></CardContent></Card>
                 </div>
