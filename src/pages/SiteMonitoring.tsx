@@ -386,7 +386,7 @@ export default function SiteMonitoring() {
   const filtered = useMemo(() => visits.filter(v => {
     const matchSearch = !search || (v.monitor_name || "").toLowerCase().includes(search.toLowerCase())
       || (v.visit_code || "").toLowerCase().includes(search.toLowerCase())
-      || (v.purpose || "").toLowerCase().includes(search.toLowerCase());
+      || (v.summary || "").toLowerCase().includes(search.toLowerCase());
     const matchSite = siteFilter === "all" || v.site_id === siteFilter;
     const matchStatus = statusFilter === "all" || v.status === statusFilter;
     const matchType = typeFilter === "all" || v.visit_type === typeFilter;
