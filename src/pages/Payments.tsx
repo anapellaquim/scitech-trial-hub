@@ -1490,6 +1490,7 @@ export default function Payments() {
             <Tabs defaultValue="centers" className="space-y-4">
               <TabsList>
                 <TabsTrigger value="centers">Por Centro</TabsTrigger>
+                <TabsTrigger value="patients">Pacientes</TabsTrigger>
                 <TabsTrigger value="vendors">Vendors</TabsTrigger>
                 <TabsTrigger value="history">Histórico</TabsTrigger>
               </TabsList>
