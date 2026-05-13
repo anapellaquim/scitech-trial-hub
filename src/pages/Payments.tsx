@@ -524,7 +524,15 @@ export default function Payments() {
       let pendingValue = 0;
 
       participantVisits.forEach((visit) => {
-        const visitType = protocolSchedulesData?.find(vt => vt.target_day === visit.visit_number);
+        // Find protocol visit schedule, considering site_id if it exists
+        const visitType = protocolSchedulesData?.find(vt => 
+          vt.target_day === visit.visit_number && 
+          (!vt.site_id || vt.site_id === participant.site_id)
+        );
+        
+        // If the visit is not in the protocol for this participant's site, ignore it
+        if (!visitType) return;
+
         const visitValue = visit.payment_amount ?? visitType?.payment_amount ?? 0;
 
         if (visit.payment_status === "paid") {
