@@ -218,7 +218,28 @@ export default function Regulatory() {
     return matchesSearch && matchesStatus && matchesProject;
   });
 
+  const submissionExportData = useMemo(() => filteredSubmissions.map(s => ({
+    Study: s.project?.title || "",
+    Site: s.site ? `${s.site.code} - ${s.site.name}` : "",
+    Type: s.submission_type,
+    Status: statusLabels[s.status] || s.status,
+    "Planned Date": s.planned_date || "",
+    "Submission Date": s.submission_date || "",
+    Notes: s.notes || "",
+    "Compliance Response": s.compliance_response || "",
+  })), [filteredSubmissions]);
+
+  const reportExportData = useMemo(() => filteredReports.map(r => ({
+    Study: r.project?.title || "",
+    Type: r.report_type,
+    Status: statusLabels[r.status] || r.status,
+    "Due Date": r.due_date || "",
+    "Submitted Date": r.submitted_date || "",
+    Notes: r.notes || "",
+  })), [filteredReports]);
+
   // Stats
+
   const pendingSubmissions = submissions.filter(s => s.status === "pending").length;
   const overdueReports = reports.filter(r => r.status === "pending" && r.due_date && isPast(parseLocalDate(r.due_date))).length;
   const approvedSubmissions = submissions.filter(s => s.status === "approved").length;
