@@ -1735,6 +1735,7 @@ export default function Payments() {
                             <TableHead className="text-right">Total Acumulado</TableHead>
                             <TableHead className="text-right">Total Pago</TableHead>
                             <TableHead className="text-right">Valor Pendente</TableHead>
+                            <TableHead className="text-center">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1754,11 +1755,24 @@ export default function Payments() {
                               <TableCell className="text-right font-medium">{formatCurrency(p.total_earned)}</TableCell>
                               <TableCell className="text-right text-success">{formatCurrency(p.total_paid)}</TableCell>
                               <TableCell className="text-right text-warning font-bold">{formatCurrency(p.pending_payment)}</TableCell>
+                              <TableCell className="text-center">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingParticipant(p);
+                                    setEditParticipantPaymentsOpen(true);
+                                  }}
+                                  title="Registrar pagamento"
+                                >
+                                  <DollarSign className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
                             </TableRow>
                           ))}
                           {participantPayments.length === 0 && (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                              <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
                                 Nenhum paciente encontrado.
                               </TableCell>
                             </TableRow>
