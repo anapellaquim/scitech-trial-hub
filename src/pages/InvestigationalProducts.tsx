@@ -452,10 +452,14 @@ export default function InvestigationalProducts() {
               <Button variant="outline" onClick={() => setImportOpen(true)}>
                 <Upload className="h-4 w-4 mr-1" /> Import
               </Button>
+              <Button variant="outline" onClick={() => setItemsDialogOpen(true)}>
+                <Settings2 className="h-4 w-4 mr-1" /> Configure Items
+              </Button>
               <Button onClick={openNew}>
                 <Plus className="h-4 w-4 mr-1" /> New IP
               </Button>
             </div>
+
 
             {/* Inventory KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
