@@ -20,7 +20,8 @@ interface Site { id: string; project_id: string | null; site_code: string; name:
 interface MonitoringVisit {
   id: string; project_id: string; site_id: string | null;
   visit_code: string | null; visit_type: string; status: string;
-  planned_date: string | null; actual_date: string | null;
+  planned_date: string | null; planned_date_end: string | null;
+  actual_date: string | null; actual_date_end: string | null;
   monitor_name: string | null; purpose: string | null; summary: string | null;
   follow_up_actions: string | null; report_link: string | null; report_date: string | null;
 }
@@ -84,7 +85,9 @@ const findingStatusColors: Record<string, string> = {
 
 const emptyForm = {
   site_id: "", visit_code: "", visit_type: "IMV", status: "planned",
-  planned_date: "", actual_date: "", monitor_name: "", purpose: "",
+  planned_date: "", planned_date_end: "",
+  actual_date: "", actual_date_end: "",
+  monitor_name: "", purpose: "",
   summary: "", follow_up_actions: "", report_link: "", report_date: "",
 };
 
@@ -210,7 +213,9 @@ export default function SiteMonitoring() {
     setEditing(v);
     setForm({
       site_id: v.site_id || "", visit_code: v.visit_code || "", visit_type: v.visit_type,
-      status: v.status, planned_date: v.planned_date || "", actual_date: v.actual_date || "",
+      status: v.status, 
+      planned_date: v.planned_date || "", planned_date_end: v.planned_date_end || "",
+      actual_date: v.actual_date || "", actual_date_end: v.actual_date_end || "",
       monitor_name: v.monitor_name || "", purpose: v.purpose || "", summary: v.summary || "",
       follow_up_actions: v.follow_up_actions || "", report_link: v.report_link || "", report_date: v.report_date || "",
     });
@@ -227,7 +232,9 @@ export default function SiteMonitoring() {
       visit_type: form.visit_type,
       status: form.status,
       planned_date: form.planned_date || null,
+      planned_date_end: form.planned_date_end || null,
       actual_date: form.actual_date || null,
+      actual_date_end: form.actual_date_end || null,
       monitor_name: form.monitor_name.trim() || null,
       purpose: form.purpose.trim() || null,
       summary: form.summary.trim() || null,
@@ -402,8 +409,14 @@ export default function SiteMonitoring() {
                 <TableCell className="font-mono text-xs">{v.visit_code || "—"}</TableCell>
                 <TableCell><Badge variant="outline">{v.visit_type}</Badge></TableCell>
                 <TableCell><Badge className={statusColors[v.status] || ""}>{v.status.replace("_", " ")}</Badge></TableCell>
-                <TableCell>{v.planned_date || "—"}</TableCell>
-                <TableCell>{v.actual_date || "—"}</TableCell>
+                <TableCell>
+                  {v.planned_date || "—"}
+                  {v.planned_date_end && v.planned_date_end !== v.planned_date && ` to ${v.planned_date_end}`}
+                </TableCell>
+                <TableCell>
+                  {v.actual_date || "—"}
+                  {v.actual_date_end && v.actual_date_end !== v.actual_date && ` to ${v.actual_date_end}`}
+                </TableCell>
                 <TableCell>{v.monitor_name || "—"}</TableCell>
                 <TableCell>
                   {fs.length === 0 ? "—" : (
@@ -722,8 +735,12 @@ export default function SiteMonitoring() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Planned Date</Label><Input type="date" value={form.planned_date} onChange={e => setForm({...form, planned_date: e.target.value})} /></div>
-              <div><Label>Actual Date</Label><Input type="date" value={form.actual_date} onChange={e => setForm({...form, actual_date: e.target.value})} /></div>
+              <div><Label>Planned Date (Start)</Label><Input type="date" value={form.planned_date} onChange={e => setForm({...form, planned_date: e.target.value})} /></div>
+              <div><Label>Planned Date (End)</Label><Input type="date" value={form.planned_date_end} onChange={e => setForm({...form, planned_date_end: e.target.value})} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Actual Date (Start)</Label><Input type="date" value={form.actual_date} onChange={e => setForm({...form, actual_date: e.target.value})} /></div>
+              <div><Label>Actual Date (End)</Label><Input type="date" value={form.actual_date_end} onChange={e => setForm({...form, actual_date_end: e.target.value})} /></div>
             </div>
             <div><Label>Monitor (CRA)</Label><Input value={form.monitor_name} onChange={e => setForm({...form, monitor_name: e.target.value})} /></div>
             <div><Label>Purpose / Objective</Label><Textarea rows={2} value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} /></div>
