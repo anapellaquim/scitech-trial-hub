@@ -701,6 +701,7 @@ export default function InvestigationalProducts() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Description</TableHead>
+                          <TableHead>Invoice</TableHead>
                           <TableHead>Lot#</TableHead>
                           <TableHead className="text-right">Acquisition</TableHead>
                           <TableHead className="text-right">Shipping</TableHead>
@@ -711,6 +712,7 @@ export default function InvestigationalProducts() {
                         {stockByItem.map((s, i) => (
                           <TableRow key={i}>
                             <TableCell className="font-medium">{s.description}</TableCell>
+                            <TableCell>{s.invoice}</TableCell>
                             <TableCell>{s.lot_number}</TableCell>
                             <TableCell className="text-right text-green-600">
                               {s.acquisition.toLocaleString("pt-BR")}
