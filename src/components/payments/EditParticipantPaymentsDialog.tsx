@@ -91,11 +91,10 @@ export function EditParticipantPaymentsDialog({
           return supabase
             .from("patient_visits")
             .insert({
-              participant_id: participantId,
-              visit_number: vt.visit_number,
+              patient_id: participantId,
+              protocol_visit_id: vt.id,
               status: "Completed",
-              payment_status: "Paid",
-              payment_amount: vt.value
+              payment_status: "Paid"
             });
         });
 
