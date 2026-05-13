@@ -573,7 +573,7 @@ export default function VisitAgenda() {
             </Select>
             <Select value={selectedSite} onValueChange={setSelectedSite}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filtrar por centro" />
+                <SelectValue placeholder="Filter by center" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os centros</SelectItem>
