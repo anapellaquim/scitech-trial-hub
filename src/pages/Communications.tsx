@@ -222,11 +222,16 @@ export default function Communications() {
           </div>
           
           <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" onClick={handleSyncData} disabled={syncing}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
+              Sincronizar
+            </Button>
             <ExcelExportButton data={exportData} fileName="communications" />
             <Button variant="outline" onClick={() => setImportOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Import
             </Button>
+
             <GlobalStudySelector
               value={selectedProject === 'all' ? '' : selectedProject}
               onChange={(v) => setSelectedProject(v || 'all')}
