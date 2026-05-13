@@ -209,13 +209,17 @@ export default function PatientManagement() {
   };
 
   const handleSaveVisit = async () => {
+    handleSaveVisitExplicit(visitForm.status);
+  };
+
+  const handleSaveVisitExplicit = async (statusOverride: string) => {
     if (!selectedPatientForVisits || !visitForm.protocol_visit_id) return;
 
     const payload = {
       patient_id: selectedPatientForVisits.id,
       protocol_visit_id: visitForm.protocol_visit_id,
       actual_date: visitForm.actual_date || null,
-      status: visitForm.status,
+      status: statusOverride,
       notes: visitForm.notes
     };
 
