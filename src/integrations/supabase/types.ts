@@ -1620,6 +1620,13 @@ export type Database = {
             foreignKeyName: "monitor_notes_monitoring_visit_id_fkey"
             columns: ["monitoring_visit_id"]
             isOneToOne: false
+            referencedRelation: "site_monitoring_agenda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitor_notes_monitoring_visit_id_fkey"
+            columns: ["monitoring_visit_id"]
+            isOneToOne: false
             referencedRelation: "site_monitoring_visits"
             referencedColumns: ["id"]
           },
@@ -3176,6 +3183,13 @@ export type Database = {
             foreignKeyName: "site_monitoring_findings_monitoring_visit_id_fkey"
             columns: ["monitoring_visit_id"]
             isOneToOne: false
+            referencedRelation: "site_monitoring_agenda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_monitoring_findings_monitoring_visit_id_fkey"
+            columns: ["monitoring_visit_id"]
+            isOneToOne: false
             referencedRelation: "site_monitoring_visits"
             referencedColumns: ["id"]
           },
@@ -3650,6 +3664,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          monitoring_visit_id: string | null
           notes: string | null
           project_id: string | null
           report_notes: string | null
@@ -3671,6 +3686,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          monitoring_visit_id?: string | null
           notes?: string | null
           project_id?: string | null
           report_notes?: string | null
@@ -3692,6 +3708,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          monitoring_visit_id?: string | null
           notes?: string | null
           project_id?: string | null
           report_notes?: string | null
@@ -3709,6 +3726,20 @@ export type Database = {
           visit_type?: Database["public"]["Enums"]["visit_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "study_visits_monitoring_visit_id_fkey"
+            columns: ["monitoring_visit_id"]
+            isOneToOne: false
+            referencedRelation: "site_monitoring_agenda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_visits_monitoring_visit_id_fkey"
+            columns: ["monitoring_visit_id"]
+            isOneToOne: false
+            referencedRelation: "site_monitoring_visits"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "study_visits_project_id_fkey"
             columns: ["project_id"]
@@ -5119,7 +5150,31 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      site_monitoring_agenda: {
+        Row: {
+          id: string | null
+          monitor: string | null
+          project_id: string | null
+          project_title: string | null
+          scheduled_date: string | null
+          site_code: string | null
+          site_id: string | null
+          site_name: string | null
+          source: string | null
+          status: string | null
+          visit_code: string | null
+          visit_type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_monitoring_visits_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "study_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       generate_communication_occurrences: {
