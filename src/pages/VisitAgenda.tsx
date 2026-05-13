@@ -656,7 +656,7 @@ export default function VisitAgenda() {
                     else if (timeRange === "semester") setCurrentDate(addMonths(currentDate, 6));
                     else setCurrentDate(addYears(currentDate, 1));
                   }}>
-                    Próximo
+                    Next
                   </Button>
                 </div>
               </CardHeader>
