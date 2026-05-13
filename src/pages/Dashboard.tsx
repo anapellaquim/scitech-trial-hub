@@ -142,6 +142,7 @@ const Dashboard = () => {
       let visitsQuery = supabase.from("study_visits").select("*, site:study_sites(id, site_code, name), project:projects(id, title, protocol_number)");
       let findingsQuery = supabase.from("visit_findings").select("*, visit:study_visits(id, site_id, project_id)");
       let checklistQuery = supabase.from("visit_checklist_items").select("*, visit:study_visits(site_id, project_id)");
+      let patientsQuery = supabase.from("patients").select("*");
 
       if (selectedProject !== "all") {
         tasksQuery = tasksQuery.eq("project_id", selectedProject);
