@@ -216,19 +216,6 @@ export default function VisitAgenda() {
                 ))}
               </SelectContent>
             </Select>
-            <Button 
-              variant={showTasks ? "default" : "outline"} 
-              size="sm"
-              onClick={() => setShowTasks(!showTasks)}
-              className="gap-2"
-            >
-              <CheckSquare className="h-4 w-4" />
-              Tarefas
-            </Button>
-            <Button onClick={() => setNewVisitOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Visita
-            </Button>
           </div>
         </div>
 
