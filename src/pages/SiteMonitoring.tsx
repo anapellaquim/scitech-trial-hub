@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ModulePageLayout from "@/components/shared/ModulePageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -109,6 +109,7 @@ const importanceColors: Record<string, string> = {
 
 export default function SiteMonitoring() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
   const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
   const [sites, setSites] = useState<Site[]>([]);
@@ -139,6 +140,20 @@ export default function SiteMonitoring() {
   const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
   const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const visitId = searchParams.get("visitId");
+    if (visitId) {
+      setExpandedVisitId(visitId);
+      // Wait for data to load then scroll to it
+      setTimeout(() => {
+        const element = document.getElementById(`visit-${visitId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const check = async () => {
@@ -412,7 +427,7 @@ export default function SiteMonitoring() {
             const isExpanded = expandedVisitId === v.id;
             return (
               <>
-                <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedVisitId(isExpanded ? null : v.id)}>
+                <TableRow key={v.id} id={`visit-${v.id}`} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedVisitId(isExpanded ? null : v.id)}>
                   <TableCell>
                     <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
                   </TableCell>

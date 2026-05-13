@@ -216,19 +216,6 @@ export default function VisitAgenda() {
                 ))}
               </SelectContent>
             </Select>
-            <Button 
-              variant={showTasks ? "default" : "outline"} 
-              size="sm"
-              onClick={() => setShowTasks(!showTasks)}
-              className="gap-2"
-            >
-              <CheckSquare className="h-4 w-4" />
-              Tarefas
-            </Button>
-            <Button onClick={() => setNewVisitOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Visita
-            </Button>
           </div>
         </div>
 
@@ -316,7 +303,13 @@ export default function VisitAgenda() {
                           {dayVisits.slice(0, showTasks ? 2 : 3).map((visit) => (
                             <div
                               key={visit.id}
-                              onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
+                              onClick={() => {
+                                if (visit.source === 'site_monitoring') {
+                                  navigate(`/site-monitoring?visitId=${visit.id}`);
+                                } else {
+                                  navigate(`/visits/${visit.id}`);
+                                }
+                              }}
                               className={`text-xs p-1 rounded cursor-pointer truncate ${visitTypeColors[visit.visit_type] || "bg-muted"}`}
                             >
                               {visit.visit_type} - {visit.research_center?.code || "N/A"}
@@ -363,7 +356,13 @@ export default function VisitAgenda() {
                   <Card
                     key={visit.id}
                     className="cursor-pointer hover:shadow-elevated transition-smooth"
-                    onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
+                    onClick={() => {
+                      if (visit.source === 'site_monitoring') {
+                        navigate(`/site-monitoring?visitId=${visit.id}`);
+                      } else {
+                        navigate(`/visits/${visit.id}`);
+                      }
+                    }}
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
