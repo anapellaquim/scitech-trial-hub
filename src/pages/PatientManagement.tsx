@@ -371,23 +371,38 @@ export default function PatientManagement() {
               <Button variant="outline" size="sm" onClick={() => exportData()} disabled={!selectedProject}>
                 <Download className="h-4 w-4 mr-2" /> Export
               </Button>
-              <div className="relative">
-                <Input
-                  type="file"
-                  accept=".json"
-                  className="hidden"
-                  id="import-data"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) importData(file);
-                  }}
-                />
-                <Button variant="outline" size="sm" asChild disabled={!selectedProject}>
-                  <label htmlFor="import-data" className="cursor-pointer">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={!selectedProject}>
                     <Upload className="h-4 w-4 mr-2" /> Import
-                  </label>
-                </Button>
-              </div>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Importar Dados (Excel)</DialogTitle>
+                    <DialogDescription>
+                      Baixe o template, preencha as abas e faça o upload abaixo.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <Button variant="outline" className="w-full justify-start" onClick={downloadTemplate}>
+                      <Download className="h-4 w-4 mr-2" /> Baixar Template (.xlsx)
+                    </Button>
+                    <div className="grid gap-2">
+                      <Label htmlFor="import-excel">Arquivo Excel</Label>
+                      <Input
+                        id="import-excel"
+                        type="file"
+                        accept=".xlsx, .xls"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) importData(file);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
             <Select value={selectedProject || ""} onValueChange={setSelectedProject}>
               <SelectTrigger className="w-[200px]">
