@@ -1,5 +1,5 @@
 import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -11,12 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar } from "lucide-react";
+import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar, Upload, Download } from "lucide-react";
 import { format, differenceInDays, isPast, isWithinInterval, addDays } from "date-fns";
 import { enUS } from "date-fns/locale";
 import NewSubmissionDialog from "@/components/regulatory/NewSubmissionDialog";
 import NewReportDialog from "@/components/regulatory/NewReportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
+import ExcelExportButton from "@/components/shared/ExcelExportButton";
 
 import EditSubmissionDialog from "@/components/regulatory/EditSubmissionDialog";
 import EditReportDialog from "@/components/regulatory/EditReportDialog";
