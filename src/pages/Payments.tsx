@@ -1587,7 +1587,7 @@ export default function Payments() {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-6">
                     {/* Manual center payments (created via "Novo Pagamento") */}
                     {(() => {
                       const manualCenterPayments = vendorPayments.filter(p => p.category === "center");
