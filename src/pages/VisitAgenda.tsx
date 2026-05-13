@@ -631,7 +631,7 @@ export default function VisitAgenda() {
                   </CardTitle>
                   <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
                     <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="Visualização" />
+                      <SelectValue placeholder="View" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="month">Mensal</SelectItem>
