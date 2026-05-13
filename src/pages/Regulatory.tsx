@@ -238,7 +238,22 @@ export default function Regulatory() {
     Notes: r.notes || "",
   })), [filteredReports]);
 
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncData = async () => {
+    setSyncing(true);
+    try {
+      await fetchData();
+      toast({ title: "Sincronização concluída", description: "Todos os dados importados foram sincronizados com os registros dos módulos." });
+    } catch (err: any) {
+      toast({ title: "Erro na sincronização", description: err.message, variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // Stats
+
 
   const pendingSubmissions = submissions.filter(s => s.status === "pending").length;
   const overdueReports = reports.filter(r => r.status === "pending" && r.due_date && isPast(parseLocalDate(r.due_date))).length;
