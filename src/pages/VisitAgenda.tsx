@@ -170,6 +170,7 @@ const importanceColors: Record<string, string> = {
 
 export default function VisitAgenda() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
