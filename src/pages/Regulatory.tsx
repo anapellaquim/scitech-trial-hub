@@ -555,6 +555,16 @@ export default function Regulatory() {
           projects={projects}
           onSuccess={fetchData}
         />
+
+        <BulkImportDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          tableName={importType === "submission" ? "regulatory_submissions" : "regulatory_reports"}
+          projectId={projectFilter === "all" ? undefined : projectFilter}
+          columns={importType === "submission" ? submissionImportColumns : reportImportColumns}
+          onSuccess={fetchData}
+        />
+
         <NewReportDialog
           open={showNewReport}
           onOpenChange={setShowNewReport}
