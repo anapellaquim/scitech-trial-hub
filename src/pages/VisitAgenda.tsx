@@ -783,7 +783,7 @@ export default function VisitAgenda() {
                   <p className="text-muted-foreground mb-4">Start by scheduling your first visit</p>
                   <Button onClick={() => setNewVisitOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Agendar Visita
+                    Schedule Visit
                   </Button>
                 </Card>
               ) : (
