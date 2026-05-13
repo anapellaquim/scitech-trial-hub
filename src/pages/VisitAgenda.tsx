@@ -334,7 +334,7 @@ export default function VisitAgenda() {
                           {format(day, "d")}
                         </span>
                         <div className="mt-1 space-y-1">
-                          {dayVisits.slice(0, showTasks ? 2 : 3).map((visit) => (
+                          {dayVisits.slice(0, 3).map((visit) => (
                             <div
                               key={visit.id}
                               onClick={() => {
