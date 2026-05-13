@@ -90,7 +90,8 @@ const Dashboard = () => {
     totalProjects: 0, activeProjects: 0, totalTasks: 0, overdueTasks: 0,
     tasksNext7Days: 0, tasksNext30Days: 0, totalVisits: 0, overdueVisits: 0,
     visitsNext7Days: 0, visitsNext30Days: 0, completedVisits: 0,
-    openFindings: 0, criticalFindings: 0, findingsAging: [], siteChecklistCompletion: [],
+    openFindings: 0, criticalFindings: 0, totalPatients: 0, randomizedPatients: 0,
+    findingsAging: [], siteChecklistCompletion: [],
   });
   const [upcomingItems, setUpcomingItems] = useState<UpcomingItem[]>([]);
 
