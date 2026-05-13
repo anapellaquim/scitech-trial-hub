@@ -803,7 +803,6 @@ export default function SiteMonitoring() {
               <div><Label>Report Date</Label><Input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} /></div>
               <div><Label>Report Link</Label><Input type="url" value={form.report_link} onChange={e => setForm({...form, report_link: e.target.value})} placeholder="https://..." /></div>
             </div>
-            </div>
             {editing && <AuditTrail entityId={editing.id} />}
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={saveVisit}>{editing ? "Update" : "Create"}</Button></DialogFooter>
