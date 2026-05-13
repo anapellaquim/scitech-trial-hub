@@ -39,6 +39,20 @@ export default function Communications() {
   const [selectedSeverity, setSelectedSeverity] = useState('all');
   const [onlyUnread, setOnlyUnread] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncData = async () => {
+    setSyncing(true);
+    try {
+      await refresh();
+      toast.success('Sincronização concluída!');
+    } catch (error) {
+      toast.error('Erro na sincronização');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const [importOpen, setImportOpen] = useState(false);
 
   const { 
