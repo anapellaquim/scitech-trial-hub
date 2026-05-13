@@ -281,11 +281,29 @@ export default function PatientManagement() {
       'Código do Paciente': 'PAC-001',
       'Centro (ID)': sites[0]?.id || 'ID_DO_CENTRO',
       'Status': 'Screening',
-      'Data de Inclusão': format(new Date(), 'yyyy-MM-dd'),
       'Notas': 'Exemplo'
     }];
+    
+    // Create a visits sample row based on protocol setup
+    const visitsTemplate: any = {
+      'Código do Paciente': 'PAC-001'
+    };
+    
+    protocolVisits.forEach(v => {
+      visitsTemplate[`${v.visit_name} (Data)`] = format(new Date(), 'yyyy-MM-dd');
+      visitsTemplate[`${v.visit_name} (Status)`] = 'Completed';
+    });
+    
+    if (protocolVisits.length === 0) {
+      visitsTemplate['Visita Exemplo (Data)'] = format(new Date(), 'yyyy-MM-dd');
+      visitsTemplate['Visita Exemplo (Status)'] = 'Completed';
+    }
+
     const patientsSheet = XLSX.utils.json_to_sheet(patientsTemplate);
     XLSX.utils.book_append_sheet(workbook, patientsSheet, "Pacientes");
+
+    const visitsSheet = XLSX.utils.json_to_sheet([visitsTemplate]);
+    XLSX.utils.book_append_sheet(workbook, visitsSheet, "Visitas");
 
     const protocolTemplate = [{
       'Nome da Visita': 'V1 - Screening',
