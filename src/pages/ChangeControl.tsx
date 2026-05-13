@@ -36,6 +36,7 @@ interface ChangeControlRecord {
   responsible: string | null;
   opened_at: string;
   resolved_at: string | null;
+  impact_areas_other: string | null;
 }
 
 interface Approval {
@@ -102,6 +103,7 @@ const emptyForm = {
   responsible: "",
   opened_at: todayDateOnly(),
   resolved_at: "",
+  impact_areas_other: "",
 };
 
 export default function ChangeControl() {
@@ -200,6 +202,7 @@ export default function ChangeControl() {
       affected_documents: form.affected_documents.trim() || null,
       impact_assessment: form.affected_documents.trim() || null, // keep legacy field in sync
       impact_areas: form.impact_areas,
+      impact_areas_other: form.impact_areas.includes("other") ? form.impact_areas_other.trim() || null : null,
       requires_training: form.requires_training,
       requires_communication: form.requires_communication,
       status: form.status,
@@ -270,6 +273,7 @@ export default function ChangeControl() {
       change_reason: r.change_reason || "",
       affected_documents: r.affected_documents || r.impact_assessment || "",
       impact_areas: r.impact_areas || [],
+      impact_areas_other: r.impact_areas_other || "",
       requires_training: r.requires_training || false,
       requires_communication: r.requires_communication || false,
       status: r.status,
@@ -295,6 +299,7 @@ export default function ChangeControl() {
     "Change Reason": r.change_reason || "",
     "Affected Documents/Processes": r.affected_documents || r.impact_assessment || "",
     "Impact Areas": (r.impact_areas || []).join(", "),
+    "Impact Areas (Other)": r.impact_areas_other || "",
     "Requires Training": r.requires_training ? "Yes" : "No",
     "Requires Communication": r.requires_communication ? "Yes" : "No",
     Status: r.status,
@@ -443,6 +448,17 @@ export default function ChangeControl() {
                   </label>
                 ))}
               </div>
+              {form.impact_areas.includes("other") && (
+                <div className="mt-2">
+                  <Label className="text-xs">Descreva "Outros" Impactos</Label>
+                  <Input 
+                    value={form.impact_areas_other} 
+                    onChange={e => setForm({...form, impact_areas_other: e.target.value})}
+                    placeholder="Especifique os outros impactos..."
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 p-3 border rounded-md">
