@@ -668,7 +668,7 @@ export default function VisitAgenda() {
                     return (
                       <div className={cn(
                         "grid gap-8",
-                        timeRange === "month" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                        timeRange === "month" ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"
                       )}>
                         {months.map((month) => {
                           const monthDays = eachDayOfInterval({
