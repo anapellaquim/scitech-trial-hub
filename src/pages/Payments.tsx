@@ -653,6 +653,16 @@ export default function Payments() {
       )
       .on(
         "postgres_changes",
+        { event: "*", schema: "public", table: "patients", filter: `project_id=eq.${selectedProject}` },
+        () => loadProjectData()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "patient_visits" },
+        () => loadProjectData()
+      )
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "payment_history", filter: `project_id=eq.${selectedProject}` },
         () => loadPaymentHistory()
       )
@@ -670,6 +680,7 @@ export default function Payments() {
       return;
     }
 
+    // Identify visits from standard 'visits' table
     const { data: unpaidVisits, error: fetchError } = await supabase
       .from("visits")
       .select("id")
@@ -677,26 +688,57 @@ export default function Payments() {
       .eq("status", "completed")
       .eq("payment_status", "pending");
 
-    if (fetchError) {
+    // Identify visits from newer 'patient_visits' table
+    const { data: unpaidPatientVisits, error: fetchPatientError } = await supabase
+      .from("patient_visits")
+      .select("id")
+      .eq("patient_id", participantId)
+      .eq("status", "Completed")
+      .eq("payment_status", "Pending");
+
+    if (fetchError || fetchPatientError) {
       toast.error("Erro ao buscar visitas");
       return;
     }
 
-    if (!unpaidVisits || unpaidVisits.length === 0) {
+    const totalUnpaid = (unpaidVisits?.length || 0) + (unpaidPatientVisits?.length || 0);
+
+    if (totalUnpaid === 0) {
       toast.info("Não há pagamentos pendentes para este participante");
       return;
     }
 
-    // Update visits
-    const { error } = await supabase
-      .from("visits")
-      .update({
-        payment_status: "paid",
-        paid_at: new Date().toISOString(),
-      })
-      .in("id", unpaidVisits.map((v) => v.id));
+    const updatePromises = [];
 
-    if (error) {
+    // Update standard visits
+    if (unpaidVisits && unpaidVisits.length > 0) {
+      updatePromises.push(
+        supabase
+          .from("visits")
+          .update({
+            payment_status: "paid",
+            paid_at: new Date().toISOString(),
+          })
+          .in("id", unpaidVisits.map((v) => v.id))
+      );
+    }
+
+    // Update newer patient visits
+    if (unpaidPatientVisits && unpaidPatientVisits.length > 0) {
+      updatePromises.push(
+        supabase
+          .from("patient_visits")
+          .update({
+            payment_status: "Paid",
+          })
+          .in("id", unpaidPatientVisits.map((v) => v.id))
+      );
+    }
+
+    const results = await Promise.all(updatePromises);
+    const hasError = results.some(r => r.error);
+
+    if (hasError) {
       toast.error("Erro ao registrar pagamento");
       return;
     }
@@ -733,6 +775,7 @@ export default function Payments() {
 
     const participantIds = centerParticipants.map(p => p.participant_id);
 
+    // standard table
     const { data: unpaidVisits, error: fetchError } = await supabase
       .from("visits")
       .select("id")
@@ -740,26 +783,57 @@ export default function Payments() {
       .eq("status", "completed")
       .eq("payment_status", "pending");
 
-    if (fetchError) {
+    // newer table
+    const { data: unpaidPatientVisits, error: fetchPatientError } = await supabase
+      .from("patient_visits")
+      .select("id")
+      .in("patient_id", participantIds)
+      .eq("status", "Completed")
+      .eq("payment_status", "Pending");
+
+    if (fetchError || fetchPatientError) {
       toast.error("Erro ao buscar visitas");
       return;
     }
 
-    if (!unpaidVisits || unpaidVisits.length === 0) {
+    const totalUnpaid = (unpaidVisits?.length || 0) + (unpaidPatientVisits?.length || 0);
+
+    if (totalUnpaid === 0) {
       toast.info("Não há pagamentos pendentes para os participantes selecionados");
       return;
     }
 
-    // Update visits
-    const { error } = await supabase
-      .from("visits")
-      .update({
-        payment_status: "paid",
-        paid_at: new Date().toISOString(),
-      })
-      .in("id", unpaidVisits.map((v) => v.id));
+    const updatePromises = [];
 
-    if (error) {
+    // standard table
+    if (unpaidVisits && unpaidVisits.length > 0) {
+      updatePromises.push(
+        supabase
+          .from("visits")
+          .update({
+            payment_status: "paid",
+            paid_at: new Date().toISOString(),
+          })
+          .in("id", unpaidVisits.map((v) => v.id))
+      );
+    }
+
+    // newer table
+    if (unpaidPatientVisits && unpaidPatientVisits.length > 0) {
+      updatePromises.push(
+        supabase
+          .from("patient_visits")
+          .update({
+            payment_status: "Paid",
+          })
+          .in("id", unpaidPatientVisits.map((v) => v.id))
+      );
+    }
+
+    const results = await Promise.all(updatePromises);
+    const hasError = results.some(r => r.error);
+
+    if (hasError) {
       toast.error("Erro ao registrar pagamentos");
       return;
     }
