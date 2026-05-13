@@ -41,7 +41,7 @@ interface MonitorNote {
 }
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
-const CHECKLIST_ITEMS = [
+const DEFAULT_CHECKLIST_ITEMS = [
   "Confirm availability of PI and study staff",
   "Review Subject Enrollment and Screening logs",
   "Verify Source Documentation (SDV)",
@@ -273,9 +273,8 @@ export default function SiteMonitoring() {
       actual_date: form.actual_date || null,
       actual_date_end: form.actual_date_end || null,
       monitor_name: form.monitor_name.trim() || null,
-      purpose: form.purpose.trim() || null,
       summary: form.summary.trim() || null,
-      follow_up_actions: form.follow_up_actions.trim() || null,
+      checklist: form.checklist,
       report_link: form.report_link.trim() || null,
       report_date: form.report_date || null,
     };
@@ -832,28 +831,82 @@ export default function SiteMonitoring() {
             <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
             
             <div className="space-y-3">
-              <Label className="text-base font-semibold">Monitoring Checklist</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Monitoring Checklist</Label>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 gap-1"
+                  onClick={() => {
+                    const newItem = prompt("Enter new checklist item:");
+                    if (newItem && newItem.trim()) {
+                      setForm({
+                        ...form,
+                        checklist: { ...form.checklist, [newItem.trim()]: false }
+                      });
+                    }
+                  }}
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Item
+                </Button>
+              </div>
               <div className="grid gap-2 border rounded-md p-3 bg-muted/20">
-                {CHECKLIST_ITEMS.map((item) => (
-                  <div key={item} className="flex items-center space-x-2 py-1">
-                    <Checkbox 
-                      id={`sm-${item}`} 
-                      checked={!!form.checklist[item]} 
-                      onCheckedChange={(checked) => {
-                        setForm({
-                          ...form,
-                          checklist: { ...form.checklist, [item]: !!checked }
+                {Object.keys(form.checklist).length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-xs text-muted-foreground mb-2">No items in checklist.</p>
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      onClick={() => {
+                        const newChecklist = { ...form.checklist };
+                        DEFAULT_CHECKLIST_ITEMS.forEach(item => {
+                          if (newChecklist[item] === undefined) {
+                            newChecklist[item] = false;
+                          }
                         });
+                        setForm({ ...form, checklist: newChecklist });
                       }}
-                    />
-                    <label 
-                      htmlFor={`sm-${item}`} 
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
-                      {item}
-                    </label>
+                      Load Default Items
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  Object.entries(form.checklist).map(([item, checked]) => (
+                    <div key={item} className="flex items-center justify-between group py-1">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`sm-chk-${item}`} 
+                          checked={!!checked} 
+                          onCheckedChange={(val) => {
+                            setForm({
+                              ...form,
+                              checklist: { ...form.checklist, [item]: !!val }
+                            });
+                          }}
+                        />
+                        <label 
+                          htmlFor={`sm-chk-${item}`} 
+                          className="text-sm font-medium leading-none cursor-pointer"
+                        >
+                          {item}
+                        </label>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          const newChecklist = { ...form.checklist };
+                          delete newChecklist[item];
+                          setForm({ ...form, checklist: newChecklist });
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
