@@ -482,7 +482,8 @@ export default function Payments() {
         id: p.id,
         participant_code: p.patient_code,
         name: `Patient ${p.patient_code}`,
-        research_center: site?.code || null
+        research_center: site?.code || null,
+        site_id: p.site_id
       };
     });
 
