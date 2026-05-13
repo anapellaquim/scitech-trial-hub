@@ -36,6 +36,7 @@ interface ChangeControlRecord {
   responsible: string | null;
   opened_at: string;
   resolved_at: string | null;
+  impact_areas_other: string | null;
 }
 
 interface Approval {
