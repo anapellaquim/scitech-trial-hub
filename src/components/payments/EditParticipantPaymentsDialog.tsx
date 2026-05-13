@@ -110,6 +110,7 @@ export function EditParticipantPaymentsDialog({
             {visitTypes.map((vt) => {
               const visit = participantVisits.find((v) => v.visit_number === vt.visit_number);
               const isCompleted = visit?.status?.toLowerCase() === "completed";
+              const isLostVisit = visit?.status?.toLowerCase() === "lost visit";
               const notPerformed = visit?.status?.toLowerCase() === "not_performed";
 
               if (!visit || notPerformed) {
@@ -139,8 +140,8 @@ export function EditParticipantPaymentsDialog({
                       <p className="font-medium">{vt.name}</p>
                       <p className="text-sm text-muted-foreground">{formatCurrency(vt.value)}</p>
                     </div>
-                    <Badge variant="outline" className="text-muted-foreground">
-                      Pendente
+                    <Badge variant="outline" className={isLostVisit ? "bg-slate-200 text-slate-700" : "text-muted-foreground"}>
+                      {isLostVisit ? "Lost Visit" : "Pendente"}
                     </Badge>
                   </div>
                 );
