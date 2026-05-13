@@ -7,7 +7,7 @@ export type AppRole = "admin" | "collaborator";
 // Module-level permission system (matches DB enum module_key)
 export type ModuleKey =
   | "dashboard" | "communications" | "projects" | "agenda" | "tasks"
-  | "visits" | "site_monitoring" | "pmcf_survey" | "ip"
+  | "visits" | "site_monitoring" | "pmcf_survey" | "ip" | "patients"
   | "qualifications" | "trainings" | "change_control" | "risks"
   | "committees" | "steering" | "regulatory" | "clinical_evaluation" | "payments";
 
