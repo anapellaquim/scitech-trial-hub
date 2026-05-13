@@ -933,7 +933,7 @@ export default function InvestigationalProducts() {
 
         {/* ===== Supply Dialog ===== */}
         <Dialog open={supplyDialogOpen} onOpenChange={setSupplyDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
             <DialogHeader>
               <DialogTitle>{editingSupply ? "Edit Movement" : "New Movement"}</DialogTitle>
             </DialogHeader>
