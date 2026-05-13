@@ -934,97 +934,97 @@ export default function InvestigationalProducts() {
         {/* ===== Supply Dialog ===== */}
         <Dialog open={supplyDialogOpen} onOpenChange={setSupplyDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader>
+            <DialogHeader className="p-6 pb-0">
               <DialogTitle>{editingSupply ? "Edit Movement" : "New Movement"}</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Operation *</Label>
-                <Select
-                  value={supplyForm.operation}
-                  onValueChange={(v) => setSupplyForm({ ...supplyForm, operation: v as "Acquisition" | "Shipping" })}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Acquisition">Acquisition</SelectItem>
-                    <SelectItem value="Shipping">Shipping</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Date</Label>
-                <Input type="date" value={supplyForm.date} onChange={(e) => setSupplyForm({ ...supplyForm, date: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Invoice</Label>
-                <Input value={supplyForm.invoice} onChange={(e) => setSupplyForm({ ...supplyForm, invoice: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Lot#</Label>
-                <Input value={supplyForm.lot_number} onChange={(e) => setSupplyForm({ ...supplyForm, lot_number: e.target.value })} />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label>Item (Description) *</Label>
-                <Select
-                  value={supplyForm.description || ""}
-                  onValueChange={(v) => setSupplyForm({ ...supplyForm, description: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select item" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {uniqueItems.length === 0 ? (
-                      <SelectItem value="_none" disabled>No items configured or available</SelectItem>
-                    ) : (
-                      uniqueItems.map((item) => (
-                        <SelectItem key={item} value={item}>{item}</SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-
-              </div>
-              <div className="space-y-2">
-                <Label>Expiration</Label>
-                <Input type="date" value={supplyForm.expiration_date} onChange={(e) => setSupplyForm({ ...supplyForm, expiration_date: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Quantity</Label>
-                <Input type="number" value={supplyForm.quantity} onChange={(e) => setSupplyForm({ ...supplyForm, quantity: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Site</Label>
-                <Select
-                  value={supplyForm.site || ""}
-                  onValueChange={(v) => setSupplyForm({ ...supplyForm, site: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select site" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sites.length === 0 ? (
-                      <SelectItem value="_none" disabled>No sites found for this project</SelectItem>
-                    ) : (
-                      sites.map((s) => (
-                        <SelectItem key={s.id} value={`${s.code} - ${s.name}`}>
-                          {s.code} - {s.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Value (R$)</Label>
-                <Input type="number" step="0.01" value={supplyForm.value} onChange={(e) => setSupplyForm({ ...supplyForm, value: e.target.value })} />
-              </div>
-
-              <div className="col-span-2 space-y-2">
-                <Label>Note</Label>
-                <Textarea rows={3} value={supplyForm.note} onChange={(e) => setSupplyForm({ ...supplyForm, note: e.target.value })} />
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Operation *</Label>
+                  <Select
+                    value={supplyForm.operation}
+                    onValueChange={(v) => setSupplyForm({ ...supplyForm, operation: v as "Acquisition" | "Shipping" })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Acquisition">Acquisition</SelectItem>
+                      <SelectItem value="Shipping">Shipping</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Date</Label>
+                  <Input type="date" value={supplyForm.date} onChange={(e) => setSupplyForm({ ...supplyForm, date: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Invoice</Label>
+                  <Input value={supplyForm.invoice} onChange={(e) => setSupplyForm({ ...supplyForm, invoice: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Lot#</Label>
+                  <Input value={supplyForm.lot_number} onChange={(e) => setSupplyForm({ ...supplyForm, lot_number: e.target.value })} />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Item (Description) *</Label>
+                  <Select
+                    value={supplyForm.description || ""}
+                    onValueChange={(v) => setSupplyForm({ ...supplyForm, description: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {uniqueItems.length === 0 ? (
+                        <SelectItem value="_none" disabled>No items configured or available</SelectItem>
+                      ) : (
+                        uniqueItems.map((item) => (
+                          <SelectItem key={item} value={item}>{item}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Expiration</Label>
+                  <Input type="date" value={supplyForm.expiration_date} onChange={(e) => setSupplyForm({ ...supplyForm, expiration_date: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Quantity</Label>
+                  <Input type="number" value={supplyForm.quantity} onChange={(e) => setSupplyForm({ ...supplyForm, quantity: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Site</Label>
+                  <Select
+                    value={supplyForm.site || ""}
+                    onValueChange={(v) => setSupplyForm({ ...supplyForm, site: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select site" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sites.length === 0 ? (
+                        <SelectItem value="_none" disabled>No sites found for this project</SelectItem>
+                      ) : (
+                        sites.map((s) => (
+                          <SelectItem key={s.id} value={`${s.code} - ${s.name}`}>
+                            {s.code} - {s.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Value (R$)</Label>
+                  <Input type="number" step="0.01" value={supplyForm.value} onChange={(e) => setSupplyForm({ ...supplyForm, value: e.target.value })} />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Note</Label>
+                  <Textarea rows={3} value={supplyForm.note} onChange={(e) => setSupplyForm({ ...supplyForm, note: e.target.value })} />
+                </div>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="p-6 pt-0 border-t">
               <Button type="button" variant="outline" onClick={() => setSupplyDialogOpen(false)}>Cancel</Button>
               <Button type="button" onClick={handleSaveSupply}>{editingSupply ? "Update" : "Create"}</Button>
             </DialogFooter>
