@@ -141,6 +141,19 @@ export default function SiteMonitoring() {
   const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
   const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
+  const openEdit = useCallback((v: MonitoringVisit) => {
+    setEditing(v);
+    setForm({
+      site_id: v.site_id || "", visit_code: v.visit_code || "", visit_type: v.visit_type,
+      status: v.status, 
+      planned_date: v.planned_date || "", planned_date_end: v.planned_date_end || "",
+      actual_date: v.actual_date || "", actual_date_end: v.actual_date_end || "",
+      monitor_name: v.monitor_name || "", purpose: v.purpose || "", summary: v.summary || "",
+      follow_up_actions: v.follow_up_actions || "", report_link: v.report_link || "", report_date: v.report_date || "",
+    });
+    setDialogOpen(true);
+  }, []);
+
   useEffect(() => {
     const visitId = searchParams.get("visitId");
     const editMode = searchParams.get("edit") === "true";
