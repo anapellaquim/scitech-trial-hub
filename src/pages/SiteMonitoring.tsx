@@ -13,8 +13,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, StickyNote, ShieldCheck, FileQuestion, AlertTriangle, HeartPulse, Hourglass } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ExternalLink, ClipboardList, AlertCircle, CalendarClock, CheckCircle2, StickyNote, ShieldCheck, FileQuestion, AlertTriangle, HeartPulse, Hourglass, History } from "lucide-react";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+import { AuditTrail } from "@/components/shared/AuditTrail";
 
 interface Site { id: string; project_id: string | null; site_code: string; name: string; }
 interface MonitoringVisit {
@@ -134,6 +135,10 @@ export default function SiteMonitoring() {
   const [notesVisit, setNotesVisit] = useState<MonitoringVisit | null>(null);
   const [editingNote, setEditingNote] = useState<MonitorNote | null>(null);
   const [noteForm, setNoteForm] = useState(emptyNote);
+
+  const [expandedVisitId, setExpandedVisitId] = useState<string | null>(null);
+  const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
   useEffect(() => {
     const check = async () => {
@@ -394,6 +399,7 @@ export default function SiteMonitoring() {
     rows.length === 0 ? <p className="text-muted-foreground text-center py-8">No monitoring visits found.</p> : (
       <Table>
         <TableHeader><TableRow>
+          <TableHead className="w-[30px]"></TableHead>
           <TableHead>Site</TableHead><TableHead>Code</TableHead><TableHead>Type</TableHead>
           <TableHead>Status</TableHead><TableHead>Planned</TableHead><TableHead>Actual</TableHead>
           <TableHead>Monitor</TableHead><TableHead>Oversight</TableHead><TableHead>Report</TableHead>
@@ -403,67 +409,82 @@ export default function SiteMonitoring() {
           {rows.map(v => {
             const fs = visitFindings(v.id);
             const open = fs.filter(f => f.status === "open" || f.status === "in_progress").length;
+            const isExpanded = expandedVisitId === v.id;
             return (
-              <TableRow key={v.id}>
-                <TableCell className="text-sm">{siteName(v.site_id)}</TableCell>
-                <TableCell className="font-mono text-xs">{v.visit_code || "—"}</TableCell>
-                <TableCell><Badge variant="outline">{v.visit_type}</Badge></TableCell>
-                <TableCell><Badge className={statusColors[v.status] || ""}>{v.status.replace("_", " ")}</Badge></TableCell>
-                <TableCell>
-                  {v.planned_date || "—"}
-                  {v.planned_date_end && v.planned_date_end !== v.planned_date && ` to ${v.planned_date_end}`}
-                </TableCell>
-                <TableCell>
-                  {v.actual_date || "—"}
-                  {v.actual_date_end && v.actual_date_end !== v.actual_date && ` to ${v.actual_date_end}`}
-                </TableCell>
-                <TableCell>{v.monitor_name || "—"}</TableCell>
-                <TableCell>
-                  {fs.length === 0 ? "—" : (
-                    <span className="text-sm">{fs.length} <span className="text-muted-foreground">({open} open)</span></span>
-                  )}
-                </TableCell>
-                <TableCell>{v.report_link ? <a href={v.report_link} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline"><ExternalLink className="h-3.5 w-3.5" />Open</a> : "—"}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Oversight"
-                      onClick={() => {
-                        setSelectedVisit(v);
-                        setEditingFinding(null);
-                        setFindingForm(emptyFinding);
-                        setFindingDialogOpen(true);
-                      }}
-                    >
-                      <ShieldCheck className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Monitor Notes"
-                      onClick={() => {
-                        setNotesVisit(v);
-                        setEditingNote(null);
-                        setNoteForm(emptyNote);
-                        setNotesDialogOpen(true);
-                      }}
-                    >
-                      <span className="relative inline-flex">
-                        <StickyNote className="h-4 w-4" />
-                        {visitNotes(v.id).length > 0 && (
-                          <span className="absolute -top-1 -right-2 text-[9px] font-semibold bg-primary text-primary-foreground rounded-full px-1 leading-none py-[1px]">
-                            {visitNotes(v.id).length}
-                          </span>
-                        )}
-                      </span>
-                    </Button>
-                    <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(v)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteVisit(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </div>
-                </TableCell>
-              </TableRow>
+              <>
+                <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedVisitId(isExpanded ? null : v.id)}>
+                  <TableCell>
+                    <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
+                  </TableCell>
+                  <TableCell className="text-sm">{siteName(v.site_id)}</TableCell>
+                  <TableCell className="font-mono text-xs">{v.visit_code || "—"}</TableCell>
+                  <TableCell><Badge variant="outline">{v.visit_type}</Badge></TableCell>
+                  <TableCell><Badge className={statusColors[v.status] || ""}>{v.status.replace("_", " ")}</Badge></TableCell>
+                  <TableCell>
+                    {v.planned_date || "—"}
+                    {v.planned_date_end && v.planned_date_end !== v.planned_date && ` to ${v.planned_date_end}`}
+                  </TableCell>
+                  <TableCell>
+                    {v.actual_date || "—"}
+                    {v.actual_date_end && v.actual_date_end !== v.actual_date && ` to ${v.actual_date_end}`}
+                  </TableCell>
+                  <TableCell>{v.monitor_name || "—"}</TableCell>
+                  <TableCell>
+                    {fs.length === 0 ? "—" : (
+                      <span className="text-sm">{fs.length} <span className="text-muted-foreground">({open} open)</span></span>
+                    )}
+                  </TableCell>
+                  <TableCell>{v.report_link ? <a href={v.report_link} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline" onClick={e => e.stopPropagation()}><ExternalLink className="h-3.5 w-3.5" />Open</a> : "—"}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Oversight"
+                        onClick={() => {
+                          setSelectedVisit(v);
+                          setEditingFinding(null);
+                          setFindingForm(emptyFinding);
+                          setFindingDialogOpen(true);
+                        }}
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Monitor Notes"
+                        onClick={() => {
+                          setNotesVisit(v);
+                          setEditingNote(null);
+                          setNoteForm(emptyNote);
+                          setNotesDialogOpen(true);
+                        }}
+                      >
+                        <span className="relative inline-flex">
+                          <StickyNote className="h-4 w-4" />
+                          {visitNotes(v.id).length > 0 && (
+                            <span className="absolute -top-1 -right-2 text-[9px] font-semibold bg-primary text-primary-foreground rounded-full px-1 leading-none py-[1px]">
+                              {visitNotes(v.id).length}
+                            </span>
+                          )}
+                        </span>
+                      </Button>
+                      <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(v)}><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteVisit(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+                {isExpanded && (
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={11} className="p-4">
+                      <div className="max-w-4xl mx-auto">
+                        <AuditTrail entityId={v.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
             );
           })}
         </TableBody>
@@ -564,6 +585,7 @@ export default function SiteMonitoring() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[30px]"></TableHead>
                             <TableHead>Site</TableHead>
                             <TableHead>Visit</TableHead>
                             <TableHead>Category</TableHead>
@@ -591,45 +613,60 @@ export default function SiteMonitoring() {
                                 ? Math.round((new Date(f.due_date).getTime() - Date.now()) / 86400000)
                                 : null;
                               const isOpen = f.status === "open" || f.status === "in_progress";
+                              const isExpanded = expandedFindingId === f.id;
                               return (
-                                <TableRow key={f.id}>
-                                  <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
-                                  <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
-                                  <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
-                                  <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
-                                  <TableCell className="max-w-[260px] text-sm whitespace-pre-wrap">{f.description}</TableCell>
-                                  <TableCell className="max-w-[200px] text-sm whitespace-pre-wrap">{f.action_required || "—"}</TableCell>
-                                  <TableCell>{f.due_date || "—"}</TableCell>
-                                  <TableCell className={isOpen && daysLeft !== null && daysLeft < 0 ? "text-destructive font-semibold" : ""}>
-                                    {daysLeft === null ? "—" : `${daysLeft}d`}
-                                  </TableCell>
-                                   <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
-                                   <TableCell>{f.resolved_date || "—"}</TableCell>
-                                   <TableCell>
-                                     <div className="flex gap-1">
-                                       <Button
-                                         variant="ghost"
-                                         size="icon"
-                                         title="Edit"
-                                         onClick={() => {
-                                           setSelectedVisit(v || null);
-                                           editFinding(f);
-                                           setFindingDialogOpen(true);
-                                         }}
-                                       >
-                                         <Pencil className="h-4 w-4" />
-                                       </Button>
-                                       <Button
-                                         variant="ghost"
-                                         size="icon"
-                                         title="Delete"
-                                         onClick={() => deleteFinding(f.id)}
-                                       >
-                                         <Trash2 className="h-4 w-4 text-destructive" />
-                                       </Button>
-                                     </div>
-                                   </TableCell>
-                                </TableRow>
+                                <>
+                                  <TableRow key={f.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}>
+                                    <TableCell>
+                                      <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
+                                    </TableCell>
+                                    <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
+                                    <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
+                                    <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
+                                    <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
+                                    <TableCell className="max-w-[260px] text-sm whitespace-pre-wrap">{f.description}</TableCell>
+                                    <TableCell className="max-w-[200px] text-sm whitespace-pre-wrap">{f.action_required || "—"}</TableCell>
+                                    <TableCell>{f.due_date || "—"}</TableCell>
+                                    <TableCell className={isOpen && daysLeft !== null && daysLeft < 0 ? "text-destructive font-semibold" : ""}>
+                                      {daysLeft === null ? "—" : `${daysLeft}d`}
+                                    </TableCell>
+                                    <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
+                                    <TableCell>{f.resolved_date || "—"}</TableCell>
+                                    <TableCell>
+                                      <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          title="Edit"
+                                          onClick={() => {
+                                            setSelectedVisit(v || null);
+                                            editFinding(f);
+                                            setFindingDialogOpen(true);
+                                          }}
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          title="Delete"
+                                          onClick={() => deleteFinding(f.id)}
+                                        >
+                                          <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                  {isExpanded && (
+                                    <TableRow className="bg-muted/30">
+                                      <TableCell colSpan={12} className="p-4">
+                                        <div className="max-w-4xl mx-auto">
+                                          <AuditTrail entityId={f.id} />
+                                        </div>
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </>
                               );
                             })}
                         </TableBody>
@@ -644,6 +681,7 @@ export default function SiteMonitoring() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-[30px]"></TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Site</TableHead>
                             <TableHead>Visit</TableHead>
@@ -657,40 +695,55 @@ export default function SiteMonitoring() {
                         <TableBody>
                           {filteredNotes.map(n => {
                             const v = visits.find(x => x.id === n.monitoring_visit_id);
+                            const isExpanded = expandedNoteId === n.id;
                             return (
-                              <TableRow key={n.id}>
-                                <TableCell className="text-xs whitespace-nowrap">{new Date(n.created_at).toLocaleString("en-US")}</TableCell>
-                                <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
-                                <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
-                                <TableCell className="text-sm">{n.author_name || "—"}</TableCell>
-                                <TableCell>{n.category || "—"}</TableCell>
-                                <TableCell><Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge></TableCell>
-                                <TableCell className="max-w-[420px] text-sm whitespace-pre-wrap">{n.content}</TableCell>
-                                <TableCell>
-                                  <div className="flex gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      title="Edit"
-                                      onClick={() => {
-                                        setNotesVisit(v || null);
-                                        editNote(n);
-                                        setNotesDialogOpen(true);
-                                      }}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      title="Delete"
-                                      onClick={() => deleteNote(n.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
+                              <>
+                                <TableRow key={n.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedNoteId(isExpanded ? null : n.id)}>
+                                  <TableCell>
+                                    <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
+                                  </TableCell>
+                                  <TableCell className="text-xs whitespace-nowrap">{new Date(n.created_at).toLocaleString("en-US")}</TableCell>
+                                  <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
+                                  <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
+                                  <TableCell className="text-sm">{n.author_name || "—"}</TableCell>
+                                  <TableCell>{n.category || "—"}</TableCell>
+                                  <TableCell><Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge></TableCell>
+                                  <TableCell className="max-w-[420px] text-sm whitespace-pre-wrap">{n.content}</TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Edit"
+                                        onClick={() => {
+                                          setNotesVisit(v || null);
+                                          editNote(n);
+                                          setNotesDialogOpen(true);
+                                        }}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Delete"
+                                        onClick={() => deleteNote(n.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                                {isExpanded && (
+                                  <TableRow className="bg-muted/30">
+                                    <TableCell colSpan={9} className="p-4">
+                                      <div className="max-w-4xl mx-auto">
+                                        <AuditTrail entityId={n.id} />
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </>
                             );
                           })}
                         </TableBody>
@@ -750,6 +803,7 @@ export default function SiteMonitoring() {
               <div><Label>Report Date</Label><Input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} /></div>
               <div><Label>Report Link</Label><Input type="url" value={form.report_link} onChange={e => setForm({...form, report_link: e.target.value})} placeholder="https://..." /></div>
             </div>
+            {editing && <AuditTrail entityId={editing.id} />}
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={saveVisit}>{editing ? "Update" : "Create"}</Button></DialogFooter>
         </DialogContent>
@@ -813,21 +867,41 @@ export default function SiteMonitoring() {
                       <TableHead>Status</TableHead><TableHead>Due</TableHead><TableHead className="w-[100px]">Actions</TableHead>
                     </TableRow></TableHeader>
                     <TableBody>
-                      {visitFindings(selectedVisit.id).map(f => (
-                        <TableRow key={f.id}>
-                          <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
-                          <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
-                          <TableCell className="text-sm max-w-xs truncate" title={f.description}>{f.description}</TableCell>
-                          <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
-                          <TableCell>{f.due_date || "—"}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button variant="ghost" size="icon" onClick={() => editFinding(f)}><Pencil className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => deleteFinding(f.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {visitFindings(selectedVisit.id).map(f => {
+                        const isExpanded = expandedFindingId === f.id;
+                        return (
+                          <>
+                            <TableRow key={f.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}>
+                              <TableCell><Badge className={categoryColors[f.category || "other"] || ""}>{categoryLabel(f.category)}</Badge></TableCell>
+                              <TableCell><Badge className={severityColors[f.severity] || ""}>{f.severity}</Badge></TableCell>
+                              <TableCell className="text-sm max-w-xs truncate" title={f.description}>{f.description}</TableCell>
+                              <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
+                              <TableCell>{f.due_date || "—"}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => setExpandedFindingId(isExpanded ? null : f.id)}
+                                    title="View History"
+                                  >
+                                    <History className={`h-4 w-4 ${isExpanded ? "text-primary" : ""}`} />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" onClick={() => editFinding(f)}><Pencil className="h-4 w-4" /></Button>
+                                  <Button variant="ghost" size="icon" onClick={() => deleteFinding(f.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                            {isExpanded && (
+                              <TableRow className="bg-muted/30">
+                                <TableCell colSpan={6} className="p-4">
+                                  <AuditTrail entityId={f.id} />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 )}
@@ -899,33 +973,46 @@ export default function SiteMonitoring() {
                   <p className="text-sm text-muted-foreground py-4 text-center">No notes yet for this visit.</p>
                 ) : (
                   <div className="space-y-3">
-                    {visitNotes(notesVisit.id).map(n => (
-                      <Card key={n.id}>
-                        <CardContent className="py-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-2 mb-1">
-                                <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
-                                {n.category && <Badge variant="outline">{n.category}</Badge>}
-                                <span className="text-xs text-muted-foreground">
-                                  {n.author_name || "—"} · {new Date(n.created_at).toLocaleString("en-US")}
-                                  {n.updated_at !== n.created_at && " (edited)"}
-                                </span>
+                    {visitNotes(notesVisit.id).map(n => {
+                      const isExpanded = expandedNoteId === n.id;
+                      return (
+                        <Card key={n.id}>
+                          <CardContent className="py-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 mb-1">
+                                  <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
+                                  {n.category && <Badge variant="outline">{n.category}</Badge>}
+                                  <span className="text-xs text-muted-foreground">
+                                    {n.author_name || "—"} · {new Date(n.created_at).toLocaleString("en-US")}
+                                    {n.updated_at !== n.created_at && " (edited)"}
+                                  </span>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-6 px-1 text-muted-foreground"
+                                    onClick={() => setExpandedNoteId(isExpanded ? null : n.id)}
+                                  >
+                                    <History className={`h-3 w-3 mr-1 ${isExpanded ? "text-primary" : ""}`} />
+                                    {isExpanded ? "Hide History" : "Show History"}
+                                  </Button>
+                                </div>
+                                <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                                {isExpanded && <AuditTrail entityId={n.id} />}
                               </div>
-                              <p className="text-sm whitespace-pre-wrap">{n.content}</p>
+                              <div className="flex gap-1 shrink-0">
+                                <Button variant="ghost" size="icon" title="Edit" onClick={() => editNote(n)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteNote(n.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex gap-1 shrink-0">
-                              <Button variant="ghost" size="icon" title="Edit" onClick={() => editNote(n)}>
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteNote(n.id)}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </div>
