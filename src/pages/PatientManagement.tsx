@@ -79,13 +79,20 @@ export default function PatientManagement() {
 
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<ProtocolVisit | null>(null);
-  const [scheduleForm, setScheduleForm] = useState({
+  const [scheduleForm, setScheduleForm] = useState<{
+    visit_name: string;
+    target_day: number;
+    window_minus: number;
+    window_plus: number;
+    payment_amount: number;
+    site_ids: string[];
+  }>({
     visit_name: "",
     target_day: 0,
     window_minus: 0,
     window_plus: 0,
     payment_amount: 0,
-    site_id: "" // Can be empty for global study schedule
+    site_ids: [] // Can be empty for global study schedule
   });
 
   const [visitDialogOpen, setVisitDialogOpen] = useState(false);
