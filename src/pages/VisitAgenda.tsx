@@ -560,7 +560,7 @@ export default function VisitAgenda() {
           <div className="flex items-center gap-3">
             <Select value={selectedProject} onValueChange={setSelectedProject}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filtrar por projeto" />
+                <SelectValue placeholder="Filter by project" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os projetos</SelectItem>
