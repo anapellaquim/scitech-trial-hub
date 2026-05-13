@@ -288,7 +288,7 @@ export default function VisitAgenda() {
       setSites(rc || []);
       setDialogOpen(true);
     } catch (error: any) {
-      toast.error("Erro ao carregar monitoria: " + error.message);
+      toast.error("Error loading monitoring visit: " + error.message);
     } finally {
       setLoading(false);
     }
