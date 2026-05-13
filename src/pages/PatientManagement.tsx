@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import CTMSNav from "@/components/CTMSNav";
