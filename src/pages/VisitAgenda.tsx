@@ -222,15 +222,14 @@ export default function VisitAgenda() {
   };
 
   const openEdit = useCallback(async (visit: Visit) => {
-    if (visit.source !== 'site_monitoring') {
-      navigate(`/visits/${visit.id}`);
-      return;
-    }
-
     try {
       setLoading(true);
+      
+      // Determine target table based on source
+      const table = visit.source === 'site_monitoring' ? 'site_monitoring_visits' : 'study_visits';
+      
       const { data: v, error } = await supabase
-        .from("site_monitoring_visits" as any)
+        .from(table as any)
         .select("*")
         .eq("id", visit.id)
         .single();
@@ -239,13 +238,15 @@ export default function VisitAgenda() {
       
       const monVisit = v as any;
       setEditing(monVisit as MonitoringVisit);
+      
+      // Prepare form data - normalized for both sources
       setForm({
-        site_id: monVisit.site_id || "", 
+        site_id: visit.source === 'site_monitoring' ? monVisit.site_id : monVisit.research_center_id, 
         visit_code: monVisit.visit_code || "", 
         visit_type: monVisit.visit_type,
-        status: monVisit.status, 
-        planned_date: monVisit.planned_date || "", 
-        planned_date_end: monVisit.planned_date_end || "",
+        status: monVisit.status || "planned", 
+        planned_date: visit.source === 'site_monitoring' ? monVisit.planned_date : monVisit.scheduled_date, 
+        planned_date_end: monVisit.planned_date_end || monVisit.scheduled_date_end || "",
         actual_date: monVisit.actual_date || "", 
         actual_date_end: monVisit.actual_date_end || "",
         monitor_name: monVisit.monitor_name || "", 
@@ -256,15 +257,26 @@ export default function VisitAgenda() {
         report_date: monVisit.report_date || "",
       });
 
-      // Load related data
-      const [{ data: f }, { data: n }, { data: rc }] = await Promise.all([
-        supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", visit.id),
-        supabase.from("monitor_notes" as any).select("*").eq("monitoring_visit_id", visit.id).order("created_at", { ascending: false }),
-        supabase.from("research_centers").select("id, code, name").eq("project_id", monVisit.project_id)
-      ]);
+      // Load related data (findings and notes) only if available for site_monitoring
+      // For study_visits, we just show the base info for now as they use a different structure
+      if (visit.source === 'site_monitoring') {
+        const [{ data: f }, { data: n }] = await Promise.all([
+          supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", visit.id),
+          supabase.from("monitor_notes" as any).select("*").eq("monitoring_visit_id", visit.id).order("created_at", { ascending: false }),
+        ]);
+        setFindings((f as any) || []);
+        setNotes((n as any) || []);
+      } else {
+        setFindings([]);
+        setNotes([]);
+      }
 
-      setFindings((f as any) || []);
-      setNotes((n as any) || []);
+      // Load sites for the relevant project
+      const { data: rc } = await supabase
+        .from("research_centers")
+        .select("id, code, name")
+        .eq("project_id", monVisit.project_id);
+      
       setSites(rc || []);
       setDialogOpen(true);
     } catch (error: any) {
@@ -272,32 +284,43 @@ export default function VisitAgenda() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, []);
 
   const saveVisit = async () => {
     if (!form.site_id || !editing) return;
     try {
-      const payload = {
-        site_id: form.site_id,
+      // Determine source based on context
+      const source = (editing as any).source || (editing as any).research_center_id ? 'study_visits' : 'site_monitoring';
+      const table = source === 'site_monitoring' ? 'site_monitoring_visits' : 'study_visits';
+      
+      const payload: any = {
         visit_code: form.visit_code.trim() || null,
         visit_type: form.visit_type,
         status: form.status,
-        planned_date: form.planned_date || null,
-        planned_date_end: form.planned_date_end || null,
-        actual_date: form.actual_date || null,
-        actual_date_end: form.actual_date_end || null,
-        monitor_name: form.monitor_name.trim() || null,
-        purpose: form.purpose.trim() || null,
-        summary: form.summary.trim() || null,
-        follow_up_actions: form.follow_up_actions.trim() || null,
-        report_link: form.report_link.trim() || null,
-        report_date: form.report_date || null,
       };
+
+      if (source === 'site_monitoring') {
+        payload.site_id = form.site_id;
+        payload.planned_date = form.planned_date || null;
+        payload.planned_date_end = form.planned_date_end || null;
+        payload.actual_date = form.actual_date || null;
+        payload.actual_date_end = form.actual_date_end || null;
+        payload.monitor_name = form.monitor_name.trim() || null;
+        payload.purpose = form.purpose.trim() || null;
+        payload.summary = form.summary.trim() || null;
+        payload.follow_up_actions = form.follow_up_actions.trim() || null;
+        payload.report_link = form.report_link.trim() || null;
+        payload.report_date = form.report_date || null;
+      } else {
+        payload.research_center_id = form.site_id;
+        payload.scheduled_date = form.planned_date || null;
+        payload.scheduled_date_end = form.planned_date_end || null;
+      }
       
-      const { error } = await supabase.from("site_monitoring_visits" as any).update(payload).eq("id", editing.id);
+      const { error } = await supabase.from(table as any).update(payload).eq("id", editing.id);
       if (error) throw error;
       
-      toast.success("Monitoring visit updated");
+      toast.success("Visit updated successfully");
       setDialogOpen(false);
       fetchData();
     } catch (error: any) {
@@ -337,8 +360,9 @@ export default function VisitAgenda() {
   };
 
   const deleteFinding = async (id: string) => {
+    if (!editing) return;
     await supabase.from("site_monitoring_oversight" as any).delete().eq("id", id);
-    const { data } = await supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", editing?.id);
+    const { data } = await supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", editing.id);
     setFindings((data as any) || []);
   };
 
@@ -807,7 +831,7 @@ export default function VisitAgenda() {
                     className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <Badge className={visitTypeColors[visit.visit_type]}>{visit.visit_type}</Badge>
+                      <Badge className={visitTypeColors[visit.visit_type] || "bg-muted text-muted-foreground"}>{visit.visit_type}</Badge>
                       <div>
                         <p className="font-medium text-sm">{visit.research_center?.name || visit.research_center?.code}</p>
                         <p className="text-xs text-muted-foreground">{visit.project?.title}</p>

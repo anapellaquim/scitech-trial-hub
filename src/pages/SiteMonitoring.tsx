@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+// ... keep existing code
+import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ModulePageLayout from "@/components/shared/ModulePageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +109,7 @@ const importanceColors: Record<string, string> = {
 };
 
 export default function SiteMonitoring() {
-  const navigate = useNavigate();
+  const navigate = (path: string) => window.location.assign(path);
   const [searchParams] = useSearchParams();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
   const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
