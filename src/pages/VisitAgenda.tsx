@@ -880,7 +880,7 @@ export default function VisitAgenda() {
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Monitoring Visit</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} Visita de Monitoria / Estudo</DialogTitle></DialogHeader>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Site *</Label>
