@@ -807,6 +807,7 @@ export default function PatientManagement() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setScheduleDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveSchedule}>Save Schedule</Button>
