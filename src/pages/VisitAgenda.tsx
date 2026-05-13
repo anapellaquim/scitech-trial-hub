@@ -1011,29 +1011,6 @@ export default function VisitAgenda() {
                           <Trash2 className="h-3 w-3 text-destructive" />
                         </Button>
                       </div>
-                      <div className="pl-6 flex items-center gap-2">
-                        <Input
-                          placeholder="Add link (URL)..."
-                          className="h-7 text-xs"
-                          value={data.link || ""}
-                          onChange={(e) => {
-                            setForm({
-                              ...form,
-                              checklist: { 
-                                ...form.checklist, 
-                                [itemText]: { ...data, link: e.target.value } 
-                              }
-                            });
-                          }}
-                        />
-                        {data.link && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
-                            <a href={data.link.startsWith('http') ? data.link : `https://${data.link}`} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </Button>
-                        )}
-                      </div>
                     </div>
                   ))
                 )}
