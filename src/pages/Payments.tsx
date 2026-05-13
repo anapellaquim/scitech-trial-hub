@@ -2583,7 +2583,12 @@ export default function Payments() {
           participantId={editingParticipant.participant_id}
           participantCode={editingParticipant.participant_code}
           visits={visits}
-          visitTypes={visitTypes}
+          visitTypes={protocolSchedules.map(ps => ({
+            id: ps.id,
+            visit_number: ps.target_day,
+            name: ps.visit_name,
+            value: ps.payment_amount
+          }))}
           onSave={() => {
             loadProjectData();
             loadPaymentHistory();
