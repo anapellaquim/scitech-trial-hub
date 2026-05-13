@@ -244,8 +244,8 @@ export default function VisitAgenda() {
         supabase.from("research_centers").select("id, code, name").eq("project_id", monVisit.project_id)
       ]);
 
-      setFindings(f || []);
-      setNotes(n || []);
+      setFindings((f as any) || []);
+      setNotes((n as any) || []);
       setSites(rc || []);
       setDialogOpen(true);
     } catch (error: any) {
