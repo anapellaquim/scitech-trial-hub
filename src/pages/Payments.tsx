@@ -455,6 +455,7 @@ export default function Payments() {
       .order("visit_number");
 
     setVisitTypes(types || []);
+    setProtocolSchedules(types || []);
 
     // Load research centers
     const { data: centers } = await supabase
