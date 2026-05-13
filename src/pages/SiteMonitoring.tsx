@@ -427,7 +427,7 @@ export default function SiteMonitoring() {
             const isExpanded = expandedVisitId === v.id;
             return (
               <>
-                <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedVisitId(isExpanded ? null : v.id)}>
+                <TableRow key={v.id} id={`visit-${v.id}`} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedVisitId(isExpanded ? null : v.id)}>
                   <TableCell>
                     <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
                   </TableCell>
