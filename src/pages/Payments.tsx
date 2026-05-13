@@ -893,6 +893,26 @@ export default function Payments() {
     loadPaymentHistory();
   };
 
+  const toggleVisitPaymentStatus = async (visitId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "paid" ? "Pending" : "Paid";
+    
+    // Update newer patient visits table
+    const { error } = await supabase
+      .from("patient_visits")
+      .update({ payment_status: newStatus })
+      .eq("id", visitId);
+
+    if (error) {
+      toast.error("Erro ao atualizar status do pagamento");
+      console.error(error);
+      return;
+    }
+
+    toast.success(`Pagamento marcado como ${newStatus === "Paid" ? "Realizado" : "Pendente"}`);
+    loadProjectData();
+    loadPaymentHistory();
+  };
+
   const exportToCSV = () => {
     const dataToExport = filterCenter 
       ? participantPayments.filter(p => p.research_center === filterCenter)
