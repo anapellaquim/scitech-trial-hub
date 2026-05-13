@@ -625,8 +625,8 @@ export default function VisitAgenda() {
               <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-4 space-y-4 md:space-y-0">
                 <div className="flex flex-col md:flex-row items-center gap-4">
                   <CardTitle className="text-lg min-w-[150px]">
-                    {timeRange === "month" && format(currentDate, "MMMM yyyy", { locale: ptBR })}
-                    {timeRange === "semester" && `${format(currentDate, "yyyy")} - ${currentDate.getMonth() < 6 ? '1º Semestre' : '2º Semestre'}`}
+                    {timeRange === "month" && format(currentDate, "MMMM yyyy", { locale: enUS })}
+                    {timeRange === "semester" && `${format(currentDate, "yyyy")} - ${currentDate.getMonth() < 6 ? '1st Semester' : '2nd Semester'}`}
                     {timeRange === "year" && format(currentDate, "yyyy")}
                   </CardTitle>
                   <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
