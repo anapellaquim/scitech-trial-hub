@@ -101,7 +101,7 @@ const taskStatusColors: Record<string, string> = {
 };
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
-const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
+const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "pending_report"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
 const OVERSIGHT_CATEGORIES = [
