@@ -99,6 +99,75 @@ const taskStatusColors: Record<string, string> = {
   cancelled: "bg-gray-500/20 text-gray-600 border-gray-500/30",
 };
 
+const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
+const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
+const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
+const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
+const OVERSIGHT_CATEGORIES = [
+  { value: "pending", label: "Pending Item" },
+  { value: "ecrf_query", label: "eCRF Query" },
+  { value: "protocol_deviation", label: "Protocol Deviation" },
+  { value: "ae_deviation", label: "AE Deviation" },
+  { value: "other", label: "Other" },
+];
+const categoryLabel = (c: string | null) =>
+  OVERSIGHT_CATEGORIES.find(o => o.value === c)?.label || (c || "—");
+const categoryColors: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  ecrf_query: "bg-purple-100 text-purple-800",
+  protocol_deviation: "bg-red-100 text-red-800",
+  ae_deviation: "bg-pink-100 text-pink-800",
+  other: "bg-gray-100 text-gray-800",
+};
+const NOTE_CATEGORIES = ["General", "Site staff", "Subjects", "Documents", "Drug accountability", "Protocol deviation", "Action item", "Other"];
+const NOTE_IMPORTANCE = ["low", "medium", "high"];
+
+const monStatusColors: Record<string, string> = {
+  planned: "bg-blue-100 text-blue-800",
+  scheduled: "bg-cyan-100 text-cyan-800",
+  in_progress: "bg-yellow-100 text-yellow-800",
+  completed: "bg-green-100 text-green-800",
+  cancelled: "bg-gray-100 text-gray-800",
+  postponed: "bg-orange-100 text-orange-800",
+};
+
+const severityColors: Record<string, string> = {
+  low: "bg-blue-100 text-blue-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  high: "bg-orange-100 text-orange-800",
+  critical: "bg-red-100 text-red-800",
+};
+
+const findingStatusColors: Record<string, string> = {
+  open: "bg-red-100 text-red-800",
+  in_progress: "bg-yellow-100 text-yellow-800",
+  resolved: "bg-green-100 text-green-800",
+  closed: "bg-gray-100 text-gray-800",
+};
+
+const emptyForm = {
+  site_id: "", visit_code: "", visit_type: "IMV", status: "planned",
+  planned_date: "", planned_date_end: "",
+  actual_date: "", actual_date_end: "",
+  monitor_name: "", purpose: "",
+  summary: "", follow_up_actions: "", report_link: "", report_date: "",
+};
+
+const emptyFinding = {
+  category: "pending", severity: "medium", quantity: 1, description: "", action_required: "",
+  due_date: "", status: "open", resolved_date: "", resolution_notes: "",
+};
+
+const emptyNote = {
+  category: "General", importance: "medium", content: "",
+};
+
+const importanceColors: Record<string, string> = {
+  low: "bg-blue-100 text-blue-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  high: "bg-red-100 text-red-800",
+};
+
 export default function VisitAgenda() {
   const navigate = useNavigate();
   const [visits, setVisits] = useState<Visit[]>([]);
@@ -111,6 +180,192 @@ export default function VisitAgenda() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [timeRange, setTimeRange] = useState<"month" | "semester" | "year">("month");
+
+  // Monitoring Edit Dialog States
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<MonitoringVisit | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [sites, setSites] = useState<any[]>([]);
+  const [findings, setFindings] = useState<OversightItem[]>([]);
+  const [notes, setNotes] = useState<MonitorNote[]>([]);
+  const [expandedFindingId, setExpandedFindingId] = useState<string | null>(null);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+  const [findingDialogOpen, setFindingDialogOpen] = useState(false);
+  const [selectedVisit, setSelectedVisit] = useState<MonitoringVisit | null>(null);
+  const [editingFinding, setEditingFinding] = useState<OversightItem | null>(null);
+  const [findingForm, setFindingForm] = useState(emptyFinding);
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false);
+  const [notesVisit, setNotesVisit] = useState<MonitoringVisit | null>(null);
+  const [editingNote, setEditingNote] = useState<MonitorNote | null>(null);
+  const [noteForm, setNoteForm] = useState(emptyNote);
+
+  const visitFindings = (vid: string) => findings.filter(f => f.monitoring_visit_id === vid);
+  const visitNotes = (vid: string) => notes.filter(n => n.monitoring_visit_id === vid);
+
+  const openEdit = useCallback(async (visit: Visit) => {
+    if (visit.source !== 'site_monitoring') {
+      navigate(`/visits/${visit.id}`);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data: v, error } = await supabase
+        .from("site_monitoring_visits" as any)
+        .select("*")
+        .eq("id", visit.id)
+        .single();
+      
+      if (error) throw error;
+      
+      const monVisit = v as MonitoringVisit;
+      setEditing(monVisit);
+      setForm({
+        site_id: monVisit.site_id || "", 
+        visit_code: monVisit.visit_code || "", 
+        visit_type: monVisit.visit_type,
+        status: monVisit.status, 
+        planned_date: monVisit.planned_date || "", 
+        planned_date_end: monVisit.planned_date_end || "",
+        actual_date: monVisit.actual_date || "", 
+        actual_date_end: monVisit.actual_date_end || "",
+        monitor_name: monVisit.monitor_name || "", 
+        purpose: monVisit.purpose || "", 
+        summary: monVisit.summary || "",
+        follow_up_actions: monVisit.follow_up_actions || "", 
+        report_link: monVisit.report_link || "", 
+        report_date: monVisit.report_date || "",
+      });
+
+      // Load related data
+      const [{ data: f }, { data: n }, { data: rc }] = await Promise.all([
+        supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", visit.id),
+        supabase.from("monitor_notes" as any).select("*").eq("monitoring_visit_id", visit.id).order("created_at", { ascending: false }),
+        supabase.from("research_centers").select("id, code, name").eq("project_id", monVisit.project_id)
+      ]);
+
+      setFindings(f || []);
+      setNotes(n || []);
+      setSites(rc || []);
+      setDialogOpen(true);
+    } catch (error: any) {
+      toast.error("Erro ao carregar monitoria: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  const saveVisit = async () => {
+    if (!form.site_id || !editing) return;
+    try {
+      const payload = {
+        site_id: form.site_id,
+        visit_code: form.visit_code.trim() || null,
+        visit_type: form.visit_type,
+        status: form.status,
+        planned_date: form.planned_date || null,
+        planned_date_end: form.planned_date_end || null,
+        actual_date: form.actual_date || null,
+        actual_date_end: form.actual_date_end || null,
+        monitor_name: form.monitor_name.trim() || null,
+        purpose: form.purpose.trim() || null,
+        summary: form.summary.trim() || null,
+        follow_up_actions: form.follow_up_actions.trim() || null,
+        report_link: form.report_link.trim() || null,
+        report_date: form.report_date || null,
+      };
+      
+      const { error } = await supabase.from("site_monitoring_visits" as any).update(payload).eq("id", editing.id);
+      if (error) throw error;
+      
+      toast.success("Monitoring visit updated");
+      setDialogOpen(false);
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const cancelFindingEdit = () => { setEditingFinding(null); setFindingForm(emptyFinding); };
+  const saveFinding = async () => {
+    if (!editing || !findingForm.description.trim()) return;
+    try {
+      const payload = {
+        monitoring_visit_id: editing.id,
+        category: findingForm.category.trim() || null,
+        severity: findingForm.severity,
+        quantity: Math.max(1, Number(findingForm.quantity) || 1),
+        description: findingForm.description.trim(),
+        action_required: findingForm.action_required.trim() || null,
+        due_date: findingForm.due_date || null,
+        status: findingForm.status,
+        resolved_date: findingForm.resolved_date || null,
+        resolution_notes: findingForm.resolution_notes.trim() || null,
+      };
+      if (editingFinding) {
+        await supabase.from("site_monitoring_oversight" as any).update(payload).eq("id", editingFinding.id);
+      } else {
+        await supabase.from("site_monitoring_oversight" as any).insert(payload);
+      }
+      
+      // Refresh findings
+      const { data } = await supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", editing.id);
+      setFindings(data || []);
+      cancelFindingEdit();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const deleteFinding = async (id: string) => {
+    await supabase.from("site_monitoring_oversight" as any).delete().eq("id", id);
+    const { data } = await supabase.from("site_monitoring_oversight" as any).select("*").eq("monitoring_visit_id", editing?.id);
+    setFindings(data || []);
+  };
+
+  const cancelNoteEdit = () => { setEditingNote(null); setNoteForm(emptyNote); };
+  const saveNote = async () => {
+    if (!editing || !noteForm.content.trim()) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user?.id).maybeSingle();
+      
+      const payload = {
+        monitoring_visit_id: editing.id,
+        project_id: editing.project_id,
+        author_id: user?.id || null,
+        author_name: profile?.full_name || user?.email || null,
+        category: noteForm.category || null,
+        importance: noteForm.importance,
+        content: noteForm.content.trim(),
+      };
+      
+      if (editingNote) {
+        await supabase.from("monitor_notes" as any).update({ category: payload.category, importance: payload.importance, content: payload.content }).eq("id", editingNote.id);
+      } else {
+        await supabase.from("monitor_notes" as any).insert(payload);
+      }
+      
+      const { data } = await supabase.from("monitor_notes" as any).select("*").eq("monitoring_visit_id", editing.id).order("created_at", { ascending: false });
+      setNotes(data || []);
+      cancelNoteEdit();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const deleteNote = async (id: string) => {
+    if (!confirm("Delete this note?")) return;
+    await supabase.from("monitor_notes" as any).delete().eq("id", id);
+    const { data } = await supabase.from("monitor_notes" as any).select("*").eq("monitoring_visit_id", editing?.id).order("created_at", { ascending: false });
+    setNotes(data || []);
+  };
+
+  const siteName = (id: string | null) => {
+    if (!id) return "—";
+    const s = sites.find(x => x.id === id);
+    return s ? `${s.code} — ${s.name}` : "Unknown";
+  };
 
   useEffect(() => {
     checkAuth();
