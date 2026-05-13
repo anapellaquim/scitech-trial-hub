@@ -117,6 +117,9 @@ export function EditParticipantPaymentsDialog({
   };
 
   const participantVisits = visits.filter((v) => v.participant_id === participantId);
+  console.log("EditParticipantPaymentsDialog - Initial visits:", visits);
+  console.log("EditParticipantPaymentsDialog - Participant visits:", participantVisits);
+  console.log("EditParticipantPaymentsDialog - Payment status:", paymentStatus);
 
   return (
     <>
