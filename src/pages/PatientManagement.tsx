@@ -190,9 +190,9 @@ export default function PatientManagement() {
   const handleSaveSchedule = async () => {
     // If multiple sites are selected, we save one record for each.
     // If none are selected, it's global (site_id = null).
-    const siteIdsToSave = scheduleForm.site_ids.length > 0 ? scheduleForm.site_ids : [null];
+    const siteIdsToSave = (scheduleForm as any).site_ids.length > 0 ? (scheduleForm as any).site_ids : [null];
     
-    const updates = siteIdsToSave.map(siteId => ({
+    const updates = siteIdsToSave.map((siteId: string | null) => ({
       project_id: selectedProject,
       site_id: siteId,
       visit_name: scheduleForm.visit_name,
@@ -204,7 +204,6 @@ export default function PatientManagement() {
 
     let error;
     if (editingSchedule) {
-      // If editing, we update the specific record. We use updates[0] but with the original site_id logic
       const { error: err } = await supabase.from("protocol_visit_schedules").update({
         visit_name: scheduleForm.visit_name,
         target_day: scheduleForm.target_day,
