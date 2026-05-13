@@ -495,7 +495,7 @@ export default function VisitAgenda() {
       setProjects(projectsRes.data || []);
       setTasks(tasksRes.data as Task[] || []);
     } catch (error: any) {
-      toast.error("Erro ao carregar dados: " + error.message);
+      toast.error("Error loading data: " + error.message);
     } finally {
       setLoading(false);
     }
