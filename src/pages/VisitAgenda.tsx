@@ -1,5 +1,5 @@
 import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Calendar as CalendarIcon, List, MapPin, Clock, FileText, CheckSquare, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, List, MapPin, Clock, FileText, CheckSquare, CheckCircle2, AlertTriangle, Pencil, Trash2, ShieldCheck, StickyNote, History } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import KpiCards from "@/components/shared/KpiCards";
@@ -16,10 +16,36 @@ import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfYear, endOfYear, addYears, subYears, eachMonthOfInterval, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import NewVisitDialog from "@/components/visits/NewVisitDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AuditTrail } from "@/components/shared/AuditTrail";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+interface MonitoringVisit {
+  id: string; project_id: string; site_id: string | null;
+  visit_code: string | null; visit_type: string; status: string;
+  planned_date: string | null; planned_date_end: string | null;
+  actual_date: string | null; actual_date_end: string | null;
+  monitor_name: string | null; purpose: string | null; summary: string | null;
+  follow_up_actions: string | null; report_link: string | null; report_date: string | null;
+}
+interface OversightItem {
+  id: string; monitoring_visit_id: string; category: string | null; severity: string;
+  quantity: number; description: string; action_required: string | null; due_date: string | null;
+  status: string; resolved_date: string | null; resolution_notes: string | null;
+}
+interface MonitorNote {
+  id: string; monitoring_visit_id: string; project_id: string;
+  author_id: string | null; author_name: string | null;
+  category: string | null; importance: string; content: string;
+  created_at: string; updated_at: string;
+}
 
 interface Visit {
   id: string;
-  visit_type: "SQV" | "SIV" | "IMV" | "COV";
+  visit_type: string;
   visit_number: number | null;
   scheduled_date: string;
   scheduled_date_end: string | null;
