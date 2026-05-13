@@ -150,8 +150,9 @@ export default function SiteMonitoring() {
       status: v.status, 
       planned_date: v.planned_date || "", planned_date_end: v.planned_date_end || "",
       actual_date: v.actual_date || "", actual_date_end: v.actual_date_end || "",
-      monitor_name: v.monitor_name || "", purpose: v.purpose || "", summary: v.summary || "",
-      follow_up_actions: v.follow_up_actions || "", report_link: v.report_link || "", report_date: v.report_date || "",
+      monitor_name: v.monitor_name || "", summary: v.summary || "",
+      report_link: v.report_link || "", report_date: v.report_date || "",
+      checklist: v.checklist || {},
     });
     setDialogOpen(true);
   }, []);
