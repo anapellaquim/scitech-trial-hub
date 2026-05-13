@@ -1753,6 +1753,114 @@ export type Database = {
           },
         ]
       }
+      patient_visits: {
+        Row: {
+          actual_date: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string
+          payment_id: string | null
+          payment_status: string
+          protocol_visit_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actual_date?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          payment_id?: string | null
+          payment_status?: string
+          protocol_visit_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_date?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          payment_id?: string | null
+          payment_status?: string
+          protocol_visit_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_visits_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_visits_protocol_visit_id_fkey"
+            columns: ["protocol_visit_id"]
+            isOneToOne: false
+            referencedRelation: "protocol_visit_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          created_at: string
+          enrollment_date: string | null
+          id: string
+          notes: string | null
+          patient_code: string
+          project_id: string
+          randomization_date: string | null
+          site_id: string
+          status: Database["public"]["Enums"]["patient_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enrollment_date?: string | null
+          id?: string
+          notes?: string | null
+          patient_code: string
+          project_id: string
+          randomization_date?: string | null
+          site_id: string
+          status?: Database["public"]["Enums"]["patient_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enrollment_date?: string | null
+          id?: string
+          notes?: string | null
+          patient_code?: string
+          project_id?: string
+          randomization_date?: string | null
+          site_id?: string
+          status?: Database["public"]["Enums"]["patient_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patients_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "research_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_configs: {
         Row: {
           created_at: string
@@ -2326,6 +2434,66 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocol_visit_schedules: {
+        Row: {
+          created_at: string
+          currency: string | null
+          id: string
+          is_required: boolean | null
+          payment_amount: number | null
+          project_id: string
+          site_id: string | null
+          target_day: number
+          updated_at: string
+          visit_name: string
+          window_minus: number | null
+          window_plus: number | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          id?: string
+          is_required?: boolean | null
+          payment_amount?: number | null
+          project_id: string
+          site_id?: string | null
+          target_day: number
+          updated_at?: string
+          visit_name: string
+          window_minus?: number | null
+          window_plus?: number | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          id?: string
+          is_required?: boolean | null
+          payment_amount?: number | null
+          project_id?: string
+          site_id?: string | null
+          target_day?: number
+          updated_at?: string
+          visit_name?: string
+          window_minus?: number | null
+          window_plus?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_visit_schedules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocol_visit_schedules_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "research_centers"
             referencedColumns: ["id"]
           },
         ]
@@ -5331,6 +5499,14 @@ export type Database = {
         | "ip_supply_expiring"
         | "ip_supply_expired"
         | "data_query_open"
+      patient_status:
+        | "Screening"
+        | "Screen Failure"
+        | "Randomized"
+        | "Completed"
+        | "Lost to Follow-up"
+        | "Early Exit"
+        | "Withdrawn"
       priority_level: "low" | "medium" | "high" | "critical"
       regulatory_status:
         | "pending"
@@ -5580,6 +5756,15 @@ export const Constants = {
         "ip_supply_expiring",
         "ip_supply_expired",
         "data_query_open",
+      ],
+      patient_status: [
+        "Screening",
+        "Screen Failure",
+        "Randomized",
+        "Completed",
+        "Lost to Follow-up",
+        "Early Exit",
+        "Withdrawn",
       ],
       priority_level: ["low", "medium", "high", "critical"],
       regulatory_status: [

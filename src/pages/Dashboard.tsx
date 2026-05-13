@@ -24,6 +24,7 @@ import {
   MapPin,
   Filter,
   X,
+  UserCheck,
 } from "lucide-react";
 import { format, addDays, differenceInDays, isAfter, isBefore, startOfToday, subDays, isWithinInterval } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -49,6 +50,8 @@ interface DashboardStats {
   completedVisits: number;
   openFindings: number;
   criticalFindings: number;
+  totalPatients: number;
+  randomizedPatients: number;
   findingsAging: { range: string; count: number }[];
   siteChecklistCompletion: { siteCode: string; siteName: string; completion: number; total: number; completed: number }[];
 }
@@ -87,7 +90,8 @@ const Dashboard = () => {
     totalProjects: 0, activeProjects: 0, totalTasks: 0, overdueTasks: 0,
     tasksNext7Days: 0, tasksNext30Days: 0, totalVisits: 0, overdueVisits: 0,
     visitsNext7Days: 0, visitsNext30Days: 0, completedVisits: 0,
-    openFindings: 0, criticalFindings: 0, findingsAging: [], siteChecklistCompletion: [],
+    openFindings: 0, criticalFindings: 0, totalPatients: 0, randomizedPatients: 0,
+    findingsAging: [], siteChecklistCompletion: [],
   });
   const [upcomingItems, setUpcomingItems] = useState<UpcomingItem[]>([]);
 
@@ -138,15 +142,17 @@ const Dashboard = () => {
       let visitsQuery = supabase.from("study_visits").select("*, site:study_sites(id, site_code, name), project:projects(id, title, protocol_number)");
       let findingsQuery = supabase.from("visit_findings").select("*, visit:study_visits(id, site_id, project_id)");
       let checklistQuery = supabase.from("visit_checklist_items").select("*, visit:study_visits(site_id, project_id)");
+      let patientsQuery = supabase.from("patients").select("*");
 
       if (selectedProject !== "all") {
         tasksQuery = tasksQuery.eq("project_id", selectedProject);
         visitsQuery = visitsQuery.eq("project_id", selectedProject);
+        patientsQuery = patientsQuery.eq("project_id", selectedProject);
       }
 
-      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes] = await Promise.all([
+      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes] = await Promise.all([
         supabase.from("projects").select("id, status"),
-        tasksQuery, visitsQuery, findingsQuery, checklistQuery,
+        tasksQuery, visitsQuery, findingsQuery, checklistQuery, patientsQuery
       ]);
 
       let projectsData = projectsRes.data || [];
@@ -154,6 +160,7 @@ const Dashboard = () => {
       let visits = visitsRes.data || [];
       let findings = findingsRes.data || [];
       let checklistItems = checklistRes.data || [];
+      let patientsData = patientsRes.data || [];
 
       if (selectedProject !== "all") {
         findings = findings.filter(f => f.visit?.project_id === selectedProject);
@@ -222,6 +229,8 @@ const Dashboard = () => {
         totalVisits: visitsInRange.length, overdueVisits: overdueVisits.length,
         visitsNext7Days: visitsNext7Days.length, visitsNext30Days: visitsNext30Days.length,
         completedVisits, openFindings: openFindings.length, criticalFindings: criticalFindings.length,
+        totalPatients: patientsData.length,
+        randomizedPatients: patientsData.filter(p => p.status === 'Randomized').length,
         findingsAging, siteChecklistCompletion,
       });
       setUpcomingItems(upcoming.slice(0, 8));
@@ -388,7 +397,17 @@ const Dashboard = () => {
         )}
 
         {/* Main Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Patients</CardTitle>
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalPatients}</div>
+              <p className="text-xs text-muted-foreground">{stats.randomizedPatients} randomized</p>
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Studies</CardTitle>

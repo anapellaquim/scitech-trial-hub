@@ -1,0 +1,487 @@
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import CTMSNav from "@/components/CTMSNav";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { Plus, UserCheck, Calendar, DollarSign, Settings2, Trash2, Pencil, Search, Filter, AlertTriangle, CheckCircle2, X } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
+
+// --- Types ---
+type PatientStatus = 'Screening' | 'Screen Failure' | 'Randomized' | 'Completed' | 'Lost to Follow-up' | 'Early Exit' | 'Withdrawn';
+
+interface Patient {
+  id: string;
+  project_id: string;
+  site_id: string;
+  patient_code: string;
+  status: PatientStatus;
+  enrollment_date: string | null;
+  randomization_date: string | null;
+  notes: string | null;
+  site?: { code: string; name: string | null };
+}
+
+interface ProtocolVisit {
+  id: string;
+  project_id: string;
+  site_id: string | null;
+  visit_name: string;
+  target_day: number;
+  window_minus: number;
+  window_plus: number;
+  payment_amount: number;
+  currency: string;
+}
+
+interface PatientVisit {
+  id: string;
+  patient_id: string;
+  protocol_visit_id: string;
+  actual_date: string | null;
+  status: string;
+  payment_status: string;
+  notes: string | null;
+  protocol_visit?: ProtocolVisit;
+}
+
+export default function PatientManagement() {
+  const { projectId: selectedProject, setProjectId: setSelectedProject } = usePersistedFilters();
+  const [projects, setProjects] = useState<any[]>([]);
+  const [sites, setSites] = useState<any[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [protocolVisits, setProtocolVisits] = useState<ProtocolVisit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearch] = useState("");
+
+  // Dialog States
+  const [patientDialogOpen, setPatientDialogOpen] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [patientForm, setPatientForm] = useState({
+    patient_code: "",
+    site_id: "",
+    status: "Screening" as PatientStatus,
+    enrollment_date: "",
+    notes: ""
+  });
+
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<ProtocolVisit | null>(null);
+  const [scheduleForm, setScheduleForm] = useState({
+    visit_name: "",
+    target_day: 0,
+    window_minus: 0,
+    window_plus: 0,
+    payment_amount: 0,
+    site_id: "" // Can be empty for global study schedule
+  });
+
+  useEffect(() => {
+    loadBaseData();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProject) {
+      loadProjectData();
+    }
+  }, [selectedProject]);
+
+  const loadBaseData = async () => {
+    const { data } = await supabase.from("projects").select("id, title").order("title");
+    setProjects(data || []);
+  };
+
+  const loadProjectData = async () => {
+    setLoading(true);
+    try {
+      const [sitesRes, patientsRes, protocolRes] = await Promise.all([
+        supabase.from("research_centers").select("id, code, name").eq("project_id", selectedProject),
+        supabase.from("patients").select("*, site:research_centers(code, name)").eq("project_id", selectedProject),
+        supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject).order("target_day")
+      ]);
+
+      setSites(sitesRes.data || []);
+      setPatients(patientsRes.data || []);
+      setProtocolVisits(protocolRes.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error loading patient data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePatient = async () => {
+    if (!patientForm.patient_code || !patientForm.site_id) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+
+    const payload = {
+      project_id: selectedProject,
+      site_id: patientForm.site_id,
+      patient_code: patientForm.patient_code,
+      status: patientForm.status,
+      enrollment_date: patientForm.enrollment_date || null,
+      notes: patientForm.notes
+    };
+
+    let error;
+    if (editingPatient) {
+      const { error: err } = await supabase.from("patients").update(payload).eq("id", editingPatient.id);
+      error = err;
+    } else {
+      const { error: err } = await supabase.from("patients").insert(payload);
+      error = err;
+    }
+
+    if (error) {
+      toast.error("Error saving patient: " + error.message);
+    } else {
+      toast.success("Patient saved successfully");
+      setPatientDialogOpen(false);
+      loadProjectData();
+    }
+  };
+
+  const handleSaveSchedule = async () => {
+    const payload = {
+      project_id: selectedProject,
+      site_id: scheduleForm.site_id || null,
+      visit_name: scheduleForm.visit_name,
+      target_day: scheduleForm.target_day,
+      window_minus: scheduleForm.window_minus,
+      window_plus: scheduleForm.window_plus,
+      payment_amount: scheduleForm.payment_amount
+    };
+
+    let error;
+    if (editingSchedule) {
+      const { error: err } = await supabase.from("protocol_visit_schedules").update(payload).eq("id", editingSchedule.id);
+      error = err;
+    } else {
+      const { error: err } = await supabase.from("protocol_visit_schedules").insert(payload);
+      error = err;
+    }
+
+    if (error) {
+      toast.error("Error saving schedule");
+    } else {
+      toast.success("Schedule updated");
+      setScheduleDialogOpen(false);
+      loadProjectData();
+    }
+  };
+
+  const deletePatient = async (id: string) => {
+    if (!confirm("Are you sure? All related visits will be deleted.")) return;
+    const { error } = await supabase.from("patients").delete().eq("id", id);
+    if (error) toast.error("Error deleting patient");
+    else loadProjectData();
+  };
+
+  const filteredPatients = patients.filter(p => 
+    p.patient_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.site?.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getStatusBadge = (status: PatientStatus) => {
+    const variants: Record<PatientStatus, string> = {
+      'Screening': 'bg-blue-100 text-blue-800',
+      'Screen Failure': 'bg-red-100 text-red-800',
+      'Randomized': 'bg-green-100 text-green-800',
+      'Completed': 'bg-purple-100 text-purple-800',
+      'Lost to Follow-up': 'bg-orange-100 text-orange-800',
+      'Early Exit': 'bg-gray-100 text-gray-800',
+      'Withdrawn': 'bg-slate-100 text-slate-800'
+    };
+    return <Badge className={variants[status]}>{status}</Badge>;
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <CTMSNav />
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <UserCheck className="h-8 w-8 text-primary" />
+              Patient Management
+            </h1>
+            <p className="text-muted-foreground mt-1">Manage participants, protocol visits, and payments</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select value={selectedProject || ""} onValueChange={setSelectedProject}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Study" />
+              </SelectTrigger>
+              <SelectContent>
+                {projects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button onClick={() => {
+              setEditingPatient(null);
+              setPatientForm({ patient_code: "", site_id: sites[0]?.id || "", status: "Screening", enrollment_date: "", notes: "" });
+              setPatientDialogOpen(true);
+            }} disabled={!selectedProject}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Patient
+            </Button>
+          </div>
+        </div>
+
+        {!selectedProject ? (
+          <Card><CardContent className="py-20 text-center text-muted-foreground font-medium">Please select a study to manage patients.</CardContent></Card>
+        ) : (
+          <Tabs defaultValue="patients" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <TabsList>
+                <TabsTrigger value="patients" className="gap-2"><Users className="h-4 w-4" /> Patients</TabsTrigger>
+                <TabsTrigger value="protocol" className="gap-2"><Settings2 className="h-4 w-4" /> Protocol Setup</TabsTrigger>
+              </TabsList>
+              
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search patient code or site..." 
+                    value={searchTerm} 
+                    onChange={e => setSearch(e.target.value)}
+                    className="pl-8 w-[250px]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <TabsContent value="patients">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Participants List</CardTitle>
+                  <CardDescription>Track recruitment and study progress</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Patient Code</TableHead>
+                        <TableHead>Site</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Enrollment Date</TableHead>
+                        <TableHead>Notes</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
+                      ) : filteredPatients.length === 0 ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
+                      ) : (
+                        filteredPatients.map(p => (
+                          <TableRow key={p.id}>
+                            <TableCell className="font-bold">{p.patient_code}</TableCell>
+                            <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
+                            <TableCell>{getStatusBadge(p.status)}</TableCell>
+                            <TableCell>{p.enrollment_date ? format(new Date(p.enrollment_date), "dd/MM/yyyy") : "—"}</TableCell>
+                            <TableCell className="max-w-xs truncate text-muted-foreground text-xs">{p.notes || "—"}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => {
+                                  setEditingPatient(p);
+                                  setPatientForm({
+                                    patient_code: p.patient_code,
+                                    site_id: p.site_id,
+                                    status: p.status,
+                                    enrollment_date: p.enrollment_date || "",
+                                    notes: p.notes || ""
+                                  });
+                                  setPatientDialogOpen(true);
+                                }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePatient(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="protocol">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Visit Schedule Configuration</CardTitle>
+                    <CardDescription>Define target days, windows, and payments per visit</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    setEditingSchedule(null);
+                    setScheduleForm({ visit_name: "", target_day: 0, window_minus: 0, window_plus: 0, payment_amount: 0, site_id: "" });
+                    setScheduleDialogOpen(true);
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" /> Add Visit Type
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Visit Name</TableHead>
+                        <TableHead>Target Day</TableHead>
+                        <TableHead>Window (-/+)</TableHead>
+                        <TableHead>Payment (BRL)</TableHead>
+                        <TableHead>Scope</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {protocolVisits.length === 0 ? (
+                        <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No protocol visits defined.</TableCell></TableRow>
+                      ) : (
+                        protocolVisits.map(v => (
+                          <TableRow key={v.id}>
+                            <TableCell className="font-medium">{v.visit_name}</TableCell>
+                            <TableCell>Day {v.target_day}</TableCell>
+                            <TableCell>-{v.window_minus} / +{v.window_plus} days</TableCell>
+                            <TableCell className="font-mono">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v.payment_amount)}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{v.site_id ? "Site Specific" : "Global"}</Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon" onClick={() => {
+                                setEditingSchedule(v);
+                                setScheduleForm({
+                                  visit_name: v.visit_name,
+                                  target_day: v.target_day,
+                                  window_minus: v.window_minus,
+                                  window_plus: v.window_plus,
+                                  payment_amount: v.payment_amount,
+                                  site_id: v.site_id || ""
+                                });
+                                setScheduleDialogOpen(true);
+                              }}><Pencil className="h-4 w-4" /></Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
+      </main>
+
+      {/* Patient Edit Dialog */}
+      <Dialog open={patientDialogOpen} onOpenChange={setPatientDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editingPatient ? "Edit" : "New"} Patient</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Patient Code *</Label>
+              <Input value={patientForm.patient_code} onChange={e => setPatientForm({...patientForm, patient_code: e.target.value})} placeholder="e.g. 001-001" />
+            </div>
+            <div className="grid gap-2">
+              <Label>Site *</Label>
+              <Select value={patientForm.site_id} onValueChange={v => setPatientForm({...patientForm, site_id: v})}>
+                <SelectTrigger><SelectValue placeholder="Select site" /></SelectTrigger>
+                <SelectContent>
+                  {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Status</Label>
+              <Select value={patientForm.status} onValueChange={(v: PatientStatus) => setPatientForm({...patientForm, status: v})}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Screening">Screening</SelectItem>
+                  <SelectItem value="Screen Failure">Screen Failure</SelectItem>
+                  <SelectItem value="Randomized">Randomized</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Lost to Follow-up">Lost to Follow-up</SelectItem>
+                  <SelectItem value="Early Exit">Early Exit</SelectItem>
+                  <SelectItem value="Withdrawn">Withdrawn</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Enrollment Date</Label>
+              <Input type="date" value={patientForm.enrollment_date} onChange={e => setPatientForm({...patientForm, enrollment_date: e.target.value})} />
+            </div>
+            <div className="grid gap-2">
+              <Label>Notes</Label>
+              <Textarea value={patientForm.notes || ""} onChange={e => setPatientForm({...patientForm, notes: e.target.value})} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPatientDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSavePatient}>Save Patient</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Protocol Schedule Dialog */}
+      <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Configure Visit</DialogTitle></DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Visit Name</Label>
+              <Input value={scheduleForm.visit_name} onChange={e => setScheduleForm({...scheduleForm, visit_name: e.target.value})} placeholder="e.g. V1 - Baseline" />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="grid gap-2">
+                <Label>Target Day</Label>
+                <Input type="number" value={scheduleForm.target_day} onChange={e => setScheduleForm({...scheduleForm, target_day: parseInt(e.target.value)})} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Window (-)</Label>
+                <Input type="number" value={scheduleForm.window_minus} onChange={e => setScheduleForm({...scheduleForm, window_minus: parseInt(e.target.value)})} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Window (+)</Label>
+                <Input type="number" value={scheduleForm.window_plus} onChange={e => setScheduleForm({...scheduleForm, window_plus: parseInt(e.target.value)})} />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>Payment Amount (BRL)</Label>
+              <Input type="number" value={scheduleForm.payment_amount} onChange={e => setScheduleForm({...scheduleForm, payment_amount: parseFloat(e.target.value)})} />
+            </div>
+            <div className="grid gap-2">
+              <Label>Site Specific (optional)</Label>
+              <Select value={scheduleForm.site_id} onValueChange={v => setScheduleForm({...scheduleForm, site_id: v})}>
+                <SelectTrigger><SelectValue placeholder="Global (all sites)" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Global Study-wide</SelectItem>
+                  {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScheduleDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveSchedule}>Save Schedule</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+const Users = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M10.25 3.13a4 4 0 0 1 7.75 0"/></svg>
+);
