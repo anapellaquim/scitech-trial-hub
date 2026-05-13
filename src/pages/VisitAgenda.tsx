@@ -725,7 +725,7 @@ export default function VisitAgenda() {
                   <Card
                     key={visit.id}
                     className="cursor-pointer hover:shadow-elevated transition-smooth"
-                    onClick={() => navigate(`/site-monitoring?visitId=${visit.id}&edit=true`)}
+                    onClick={() => openEdit(visit)}
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
