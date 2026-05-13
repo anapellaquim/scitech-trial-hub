@@ -560,6 +560,16 @@ export default function Communications() {
             )}
           </TabsContent>
         </Tabs>
+
+        <BulkImportDialog
+          open={importOpen}
+          onOpenChange={setImportOpen}
+          tableName="notifications"
+          projectId={selectedProject === "all" ? undefined : selectedProject}
+          columns={importColumns}
+          onSuccess={refresh}
+        />
+
       </main>
     </div>
   );
