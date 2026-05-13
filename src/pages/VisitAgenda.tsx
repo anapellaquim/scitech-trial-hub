@@ -395,7 +395,56 @@ export default function VisitAgenda() {
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {(() => {
+                      const startDate = timeRange === "semester" 
+                        ? (currentDate.getMonth() < 6 ? startOfYear(currentDate) : addMonths(startOfYear(currentDate), 6))
+                        : startOfYear(currentDate);
+                      const endDate = timeRange === "semester"
+                        ? (currentDate.getMonth() < 6 ? addMonths(startOfYear(currentDate), 5) : endOfYear(currentDate))
+                        : endOfYear(currentDate);
+                      
+                      const months = eachMonthOfInterval({ start: startDate, end: endDate });
+                      
+                      return months.map(month => {
+                        const monthVisits = filteredVisits.filter(v => {
+                          const vDate = parseLocalDate(v.scheduled_date);
+                          return isSameMonth(vDate, month);
+                        });
+                        
+                        if (monthVisits.length === 0) return null;
+                        
+                        return (
+                          <div key={month.toISOString()} className="space-y-2">
+                            <h3 className="text-md font-semibold border-b pb-1">
+                              {format(month, "MMMM yyyy", { locale: ptBR })}
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {monthVisits.map(visit => (
+                                <Card 
+                                  key={visit.id} 
+                                  className="cursor-pointer hover:bg-muted/50 p-3 transition-colors"
+                                  onClick={() => navigate(`/site-monitoring?visitId=${visit.id}`)}
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <Badge className={visitTypeColors[visit.visit_type]}>{visit.visit_type}</Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                      {format(parseLocalDate(visit.scheduled_date), "dd/MM")}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm font-medium truncate">{visit.research_center?.code} - {visit.research_center?.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{visit.project?.title}</p>
+                                </Card>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      }).filter(Boolean);
+                    })()}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
