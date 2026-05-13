@@ -229,6 +229,8 @@ const Dashboard = () => {
         totalVisits: visitsInRange.length, overdueVisits: overdueVisits.length,
         visitsNext7Days: visitsNext7Days.length, visitsNext30Days: visitsNext30Days.length,
         completedVisits, openFindings: openFindings.length, criticalFindings: criticalFindings.length,
+        totalPatients: patientsData.length,
+        randomizedPatients: patientsData.filter(p => p.status === 'Randomized').length,
         findingsAging, siteChecklistCompletion,
       });
       setUpcomingItems(upcoming.slice(0, 8));
