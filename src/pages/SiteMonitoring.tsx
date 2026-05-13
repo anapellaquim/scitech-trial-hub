@@ -539,6 +539,7 @@ export default function SiteMonitoring() {
                             <TableHead>Days Left</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Resolved</TableHead>
+                            <TableHead className="w-[60px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -567,8 +568,32 @@ export default function SiteMonitoring() {
                                   <TableCell className={isOpen && daysLeft !== null && daysLeft < 0 ? "text-destructive font-semibold" : ""}>
                                     {daysLeft === null ? "—" : `${daysLeft}d`}
                                   </TableCell>
-                                  <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
-                                  <TableCell>{f.resolved_date || "—"}</TableCell>
+                                   <TableCell><Badge className={findingStatusColors[f.status] || ""}>{f.status.replace("_", " ")}</Badge></TableCell>
+                                   <TableCell>{f.resolved_date || "—"}</TableCell>
+                                   <TableCell>
+                                     <div className="flex gap-1">
+                                       <Button
+                                         variant="ghost"
+                                         size="icon"
+                                         title="Edit"
+                                         onClick={() => {
+                                           setSelectedVisit(v || null);
+                                           editFinding(f);
+                                           setFindingDialogOpen(true);
+                                         }}
+                                       >
+                                         <Pencil className="h-4 w-4" />
+                                       </Button>
+                                       <Button
+                                         variant="ghost"
+                                         size="icon"
+                                         title="Delete"
+                                         onClick={() => deleteFinding(f.id)}
+                                       >
+                                         <Trash2 className="h-4 w-4 text-destructive" />
+                                       </Button>
+                                     </div>
+                                   </TableCell>
                                 </TableRow>
                               );
                             })}
@@ -591,6 +616,7 @@ export default function SiteMonitoring() {
                             <TableHead>Category</TableHead>
                             <TableHead>Importance</TableHead>
                             <TableHead>Note</TableHead>
+                            <TableHead className="w-[60px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -605,6 +631,30 @@ export default function SiteMonitoring() {
                                 <TableCell>{n.category || "—"}</TableCell>
                                 <TableCell><Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge></TableCell>
                                 <TableCell className="max-w-[420px] text-sm whitespace-pre-wrap">{n.content}</TableCell>
+                                <TableCell>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Edit"
+                                      onClick={() => {
+                                        setNotesVisit(v || null);
+                                        editNote(n);
+                                        setNotesDialogOpen(true);
+                                      }}
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Delete"
+                                      onClick={() => deleteNote(n.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
                               </TableRow>
                             );
                           })}
