@@ -634,9 +634,9 @@ export default function VisitAgenda() {
                       <SelectValue placeholder="View" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="month">Mensal</SelectItem>
-                      <SelectItem value="semester">Semestral</SelectItem>
-                      <SelectItem value="year">Anual</SelectItem>
+                      <SelectItem value="month">Monthly</SelectItem>
+                      <SelectItem value="semester">Semiannual</SelectItem>
+                      <SelectItem value="year">Annual</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
