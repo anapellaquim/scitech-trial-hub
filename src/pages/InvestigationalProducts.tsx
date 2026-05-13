@@ -942,8 +942,32 @@ export default function InvestigationalProducts() {
                 <Input value={supplyForm.lot_number} onChange={(e) => setSupplyForm({ ...supplyForm, lot_number: e.target.value })} />
               </div>
               <div className="col-span-2 space-y-2">
-                <Label>Description</Label>
-                <Input value={supplyForm.description} onChange={(e) => setSupplyForm({ ...supplyForm, description: e.target.value })} />
+                <Label>Item (Description) *</Label>
+                {supplyForm.operation === "Acquisition" ? (
+                  <Input 
+                    value={supplyForm.description || ""} 
+                    onChange={(e) => setSupplyForm({ ...supplyForm, description: e.target.value })} 
+                    placeholder="Enter item description"
+                  />
+                ) : (
+                  <Select
+                    value={supplyForm.description || ""}
+                    onValueChange={(v) => setSupplyForm({ ...supplyForm, description: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {uniqueItems.length === 0 ? (
+                        <SelectItem value="_none" disabled>No items available from acquisitions</SelectItem>
+                      ) : (
+                        uniqueItems.map((item) => (
+                          <SelectItem key={item} value={item}>{item}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Expiration</Label>
@@ -955,12 +979,31 @@ export default function InvestigationalProducts() {
               </div>
               <div className="space-y-2">
                 <Label>Site</Label>
-                <Input value={supplyForm.site} onChange={(e) => setSupplyForm({ ...supplyForm, site: e.target.value })} />
+                <Select
+                  value={supplyForm.site || ""}
+                  onValueChange={(v) => setSupplyForm({ ...supplyForm, site: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select site" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sites.length === 0 ? (
+                      <SelectItem value="_none" disabled>No sites found for this project</SelectItem>
+                    ) : (
+                      sites.map((s) => (
+                        <SelectItem key={s.id} value={`${s.code} - ${s.name}`}>
+                          {s.code} - {s.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Value (R$)</Label>
                 <Input type="number" step="0.01" value={supplyForm.value} onChange={(e) => setSupplyForm({ ...supplyForm, value: e.target.value })} />
               </div>
+
               <div className="col-span-2 space-y-2">
                 <Label>Note</Label>
                 <Textarea rows={3} value={supplyForm.note} onChange={(e) => setSupplyForm({ ...supplyForm, note: e.target.value })} />
