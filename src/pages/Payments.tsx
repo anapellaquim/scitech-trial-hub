@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { DollarSign, Download, Users, AlertCircle, CheckCircle2, Building2, History, Pencil, Plus, CalendarDays, TrendingUp, Briefcase, Trash2, Settings2, RefreshCw, ExternalLink, AlertTriangle } from "lucide-react";
+import { DollarSign, Download, Users, AlertCircle, CheckCircle2, Building2, History, Pencil, Plus, CalendarDays, TrendingUp, Briefcase, Trash2, Settings2, RefreshCw, ExternalLink, AlertTriangle, Search } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { EditPaymentDialog } from "@/components/payments/EditPaymentDialog";
 import { RegisterPaymentDialog } from "@/components/payments/RegisterPaymentDialog";
