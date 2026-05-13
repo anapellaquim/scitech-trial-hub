@@ -32,6 +32,7 @@ import SiteMonitoring from "./pages/SiteMonitoring";
 import PMCFSurvey from "./pages/PMCFSurvey";
 import ClinicalEvaluation from "./pages/ClinicalEvaluation";
 import InvestigationalProducts from "./pages/InvestigationalProducts";
+import PatientManagement from "./pages/PatientManagement";
 
 const queryClient = new QueryClient();
 
