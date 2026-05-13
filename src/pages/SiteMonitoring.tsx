@@ -24,8 +24,9 @@ interface MonitoringVisit {
   visit_code: string | null; visit_type: string; status: string;
   planned_date: string | null; planned_date_end: string | null;
   actual_date: string | null; actual_date_end: string | null;
-  monitor_name: string | null; purpose: string | null; summary: string | null;
-  follow_up_actions: string | null; report_link: string | null; report_date: string | null;
+  monitor_name: string | null; summary: string | null;
+  report_link: string | null; report_date: string | null;
+  checklist?: Record<string, boolean>;
 }
 interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
