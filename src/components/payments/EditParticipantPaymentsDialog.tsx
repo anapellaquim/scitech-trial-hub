@@ -51,7 +51,7 @@ export function EditParticipantPaymentsDialog({
     if (open) {
       const initialStatus: Record<string, boolean> = {};
       visits.forEach((visit) => {
-        initialStatus[visit.id] = visit.payment_status === "paid";
+        initialStatus[visit.id] = visit.payment_status?.toLowerCase() === "paid";
       });
       setPaymentStatus(initialStatus);
     }
