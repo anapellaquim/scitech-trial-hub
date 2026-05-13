@@ -111,6 +111,7 @@ export function EditParticipantPaymentsDialog({
               const visit = participantVisits.find((v) => v.visit_number === vt.visit_number);
               const isCompleted = visit?.status?.toLowerCase() === "completed";
               const isLostVisit = visit?.status?.toLowerCase() === "lost visit";
+              const isUnscheduled = vt.visit_number === 99 || vt.name.toLowerCase().includes("random") || vt.name.toLowerCase().includes("unscheduled");
               const notPerformed = visit?.status?.toLowerCase() === "not_performed";
 
               if (!visit || notPerformed) {
