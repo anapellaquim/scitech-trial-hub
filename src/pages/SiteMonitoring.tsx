@@ -151,7 +151,16 @@ export default function SiteMonitoring() {
       if (editMode && visits.length > 0) {
         const visitToEdit = visits.find(v => v.id === visitId);
         if (visitToEdit) {
-          openEdit(visitToEdit);
+          setEditing(visitToEdit);
+          setForm({
+            site_id: visitToEdit.site_id || "", visit_code: visitToEdit.visit_code || "", visit_type: visitToEdit.visit_type,
+            status: visitToEdit.status, 
+            planned_date: visitToEdit.planned_date || "", planned_date_end: visitToEdit.planned_date_end || "",
+            actual_date: visitToEdit.actual_date || "", actual_date_end: visitToEdit.actual_date_end || "",
+            monitor_name: visitToEdit.monitor_name || "", purpose: visitToEdit.purpose || "", summary: visitToEdit.summary || "",
+            follow_up_actions: visitToEdit.follow_up_actions || "", report_link: visitToEdit.report_link || "", report_date: visitToEdit.report_date || "",
+          });
+          setDialogOpen(true);
         }
       }
 

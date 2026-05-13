@@ -444,13 +444,7 @@ export default function VisitAgenda() {
                   <Card
                     key={visit.id}
                     className="cursor-pointer hover:shadow-elevated transition-smooth"
-                    onClick={() => {
-                      if (visit.source === 'site_monitoring') {
-                        navigate(`/site-monitoring?visitId=${visit.id}`);
-                      } else {
-                        navigate(`/site-monitoring?visitId=${visit.id}`);
-                      }
-                    }}
+                    onClick={() => navigate(`/site-monitoring?visitId=${visit.id}&edit=true`)}
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
@@ -508,7 +502,7 @@ export default function VisitAgenda() {
                 {upcomingVisits.map((visit) => (
                   <div
                     key={visit.id}
-                    onClick={() => navigate(visit.source === 'site_monitoring' ? '/site-monitoring' : `/visits/${visit.id}`)}
+                    onClick={() => navigate(`/site-monitoring?visitId=${visit.id}&edit=true`)}
                     className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
