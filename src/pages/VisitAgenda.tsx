@@ -612,7 +612,7 @@ export default function VisitAgenda() {
           <TabsList className="mb-6">
             <TabsTrigger value="calendar" className="gap-2">
               <CalendarIcon className="h-4 w-4" />
-              Calendário
+              Calendar
             </TabsTrigger>
             <TabsTrigger value="list" className="gap-2">
               <List className="h-4 w-4" />
