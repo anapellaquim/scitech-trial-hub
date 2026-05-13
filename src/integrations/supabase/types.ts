@@ -205,6 +205,7 @@ export type Database = {
           description: string
           id: string
           impact_areas: string[] | null
+          impact_areas_other: string | null
           impact_assessment: string | null
           opened_at: string
           project_id: string | null
@@ -226,6 +227,7 @@ export type Database = {
           description: string
           id?: string
           impact_areas?: string[] | null
+          impact_areas_other?: string | null
           impact_assessment?: string | null
           opened_at?: string
           project_id?: string | null
@@ -247,6 +249,7 @@ export type Database = {
           description?: string
           id?: string
           impact_areas?: string[] | null
+          impact_areas_other?: string | null
           impact_assessment?: string | null
           opened_at?: string
           project_id?: string | null
