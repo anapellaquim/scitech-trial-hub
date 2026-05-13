@@ -158,7 +158,7 @@ export default function InvestigationalProducts() {
       supabase.from("investigational_products").select("*").order("created_at", { ascending: false }),
       supabase.from("ip_supply").select("*").order("date", { ascending: false }),
       selectedProject 
-        ? supabase.from("sites").select("id, name, code").eq("project_id", selectedProject)
+        ? supabase.from("study_sites").select("id, name, code").eq("project_id", selectedProject)
         : Promise.resolve({ data: [], error: null })
     ]);
     if (ip.error) toast.error("Failed to load IP: " + ip.error.message);
@@ -169,6 +169,7 @@ export default function InvestigationalProducts() {
     else setSites((siteData.data || []) as Site[]);
     setLoading(false);
   }, [selectedProject]);
+
 
   useEffect(() => {
     loadRecords();
