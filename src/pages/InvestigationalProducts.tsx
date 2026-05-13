@@ -329,16 +329,20 @@ export default function InvestigationalProducts() {
     Site: r.site, "Value (R$)": r.value, Note: r.note,
   })), [supplies]);
 
-  // Unique items (description) from Acquisition operations for predefined list
+  // Unique items (description) from predefined list AND Acquisition operations
   const uniqueItems = useMemo(() => {
     const set = new Set<string>();
+    // Add predefined items
+    predefinedItems.forEach(i => set.add(i.name));
+    // Add items from acquisitions (historical)
     supplies.forEach(s => {
       if (s.operation === "Acquisition" && s.description) {
         set.add(s.description);
       }
     });
     return Array.from(set).sort();
-  }, [supplies]);
+  }, [supplies, predefinedItems]);
+
 
   // KPIs by description + lot#
   const stockByItem = useMemo(() => {
