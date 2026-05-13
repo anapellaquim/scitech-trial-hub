@@ -251,11 +251,10 @@ export default function VisitAgenda() {
         actual_date: monVisit.actual_date || "", 
         actual_date_end: monVisit.actual_date_end || "",
         monitor_name: monVisit.monitor_name || monVisit.monitor || "", 
-        purpose: monVisit.purpose || monVisit.objective || "", 
         summary: monVisit.summary || monVisit.notes || "",
-        follow_up_actions: monVisit.follow_up_actions || "", 
         report_link: monVisit.report_link || "", 
         report_date: monVisit.report_date || "",
+        checklist: monVisit.checklist || {},
       });
 
       // Load related data (findings and notes) only if available for site_monitoring
