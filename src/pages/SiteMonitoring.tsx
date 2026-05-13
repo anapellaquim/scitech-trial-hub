@@ -399,6 +399,7 @@ export default function SiteMonitoring() {
     rows.length === 0 ? <p className="text-muted-foreground text-center py-8">No monitoring visits found.</p> : (
       <Table>
         <TableHeader><TableRow>
+          <TableHead className="w-[30px]"></TableHead>
           <TableHead>Site</TableHead><TableHead>Code</TableHead><TableHead>Type</TableHead>
           <TableHead>Status</TableHead><TableHead>Planned</TableHead><TableHead>Actual</TableHead>
           <TableHead>Monitor</TableHead><TableHead>Oversight</TableHead><TableHead>Report</TableHead>
@@ -408,67 +409,82 @@ export default function SiteMonitoring() {
           {rows.map(v => {
             const fs = visitFindings(v.id);
             const open = fs.filter(f => f.status === "open" || f.status === "in_progress").length;
+            const isExpanded = expandedVisitId === v.id;
             return (
-              <TableRow key={v.id}>
-                <TableCell className="text-sm">{siteName(v.site_id)}</TableCell>
-                <TableCell className="font-mono text-xs">{v.visit_code || "—"}</TableCell>
-                <TableCell><Badge variant="outline">{v.visit_type}</Badge></TableCell>
-                <TableCell><Badge className={statusColors[v.status] || ""}>{v.status.replace("_", " ")}</Badge></TableCell>
-                <TableCell>
-                  {v.planned_date || "—"}
-                  {v.planned_date_end && v.planned_date_end !== v.planned_date && ` to ${v.planned_date_end}`}
-                </TableCell>
-                <TableCell>
-                  {v.actual_date || "—"}
-                  {v.actual_date_end && v.actual_date_end !== v.actual_date && ` to ${v.actual_date_end}`}
-                </TableCell>
-                <TableCell>{v.monitor_name || "—"}</TableCell>
-                <TableCell>
-                  {fs.length === 0 ? "—" : (
-                    <span className="text-sm">{fs.length} <span className="text-muted-foreground">({open} open)</span></span>
-                  )}
-                </TableCell>
-                <TableCell>{v.report_link ? <a href={v.report_link} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline"><ExternalLink className="h-3.5 w-3.5" />Open</a> : "—"}</TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Oversight"
-                      onClick={() => {
-                        setSelectedVisit(v);
-                        setEditingFinding(null);
-                        setFindingForm(emptyFinding);
-                        setFindingDialogOpen(true);
-                      }}
-                    >
-                      <ShieldCheck className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Monitor Notes"
-                      onClick={() => {
-                        setNotesVisit(v);
-                        setEditingNote(null);
-                        setNoteForm(emptyNote);
-                        setNotesDialogOpen(true);
-                      }}
-                    >
-                      <span className="relative inline-flex">
-                        <StickyNote className="h-4 w-4" />
-                        {visitNotes(v.id).length > 0 && (
-                          <span className="absolute -top-1 -right-2 text-[9px] font-semibold bg-primary text-primary-foreground rounded-full px-1 leading-none py-[1px]">
-                            {visitNotes(v.id).length}
-                          </span>
-                        )}
-                      </span>
-                    </Button>
-                    <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(v)}><Pencil className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteVisit(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </div>
-                </TableCell>
-              </TableRow>
+              <>
+                <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setExpandedVisitId(isExpanded ? null : v.id)}>
+                  <TableCell>
+                    <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
+                  </TableCell>
+                  <TableCell className="text-sm">{siteName(v.site_id)}</TableCell>
+                  <TableCell className="font-mono text-xs">{v.visit_code || "—"}</TableCell>
+                  <TableCell><Badge variant="outline">{v.visit_type}</Badge></TableCell>
+                  <TableCell><Badge className={statusColors[v.status] || ""}>{v.status.replace("_", " ")}</Badge></TableCell>
+                  <TableCell>
+                    {v.planned_date || "—"}
+                    {v.planned_date_end && v.planned_date_end !== v.planned_date && ` to ${v.planned_date_end}`}
+                  </TableCell>
+                  <TableCell>
+                    {v.actual_date || "—"}
+                    {v.actual_date_end && v.actual_date_end !== v.actual_date && ` to ${v.actual_date_end}`}
+                  </TableCell>
+                  <TableCell>{v.monitor_name || "—"}</TableCell>
+                  <TableCell>
+                    {fs.length === 0 ? "—" : (
+                      <span className="text-sm">{fs.length} <span className="text-muted-foreground">({open} open)</span></span>
+                    )}
+                  </TableCell>
+                  <TableCell>{v.report_link ? <a href={v.report_link} target="_blank" rel="noreferrer" className="text-primary inline-flex items-center gap-1 hover:underline" onClick={e => e.stopPropagation()}><ExternalLink className="h-3.5 w-3.5" />Open</a> : "—"}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Oversight"
+                        onClick={() => {
+                          setSelectedVisit(v);
+                          setEditingFinding(null);
+                          setFindingForm(emptyFinding);
+                          setFindingDialogOpen(true);
+                        }}
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Monitor Notes"
+                        onClick={() => {
+                          setNotesVisit(v);
+                          setEditingNote(null);
+                          setNoteForm(emptyNote);
+                          setNotesDialogOpen(true);
+                        }}
+                      >
+                        <span className="relative inline-flex">
+                          <StickyNote className="h-4 w-4" />
+                          {visitNotes(v.id).length > 0 && (
+                            <span className="absolute -top-1 -right-2 text-[9px] font-semibold bg-primary text-primary-foreground rounded-full px-1 leading-none py-[1px]">
+                              {visitNotes(v.id).length}
+                            </span>
+                          )}
+                        </span>
+                      </Button>
+                      <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(v)}><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" title="Delete" onClick={() => deleteVisit(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+                {isExpanded && (
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={11} className="p-4">
+                      <div className="max-w-4xl mx-auto">
+                        <AuditTrail entityId={v.id} />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
             );
           })}
         </TableBody>
