@@ -5449,6 +5449,7 @@ export type Database = {
         | "library"
         | "clinical_evaluation"
         | "ip"
+        | "patients"
       notification_severity: "info" | "warning" | "critical"
       notification_type:
         | "task_overdue"
@@ -5705,6 +5706,7 @@ export const Constants = {
         "library",
         "clinical_evaluation",
         "ip",
+        "patients",
       ],
       notification_severity: ["info", "warning", "critical"],
       notification_type: [
