@@ -525,18 +525,28 @@ export default function Payments() {
         const visitType = protocolSchedulesData?.find(vt => vt.target_day === visit.visit_number);
         const visitValue = visit.payment_amount ?? visitType?.payment_amount ?? 0;
 
+        if (visit.payment_status === "paid") {
+          paidCount++;
+          totalPaid += Number(visitValue);
+        }
+
         if (visit.status === "completed") {
           completedCount++;
-          totalEarned += Number(visitValue);
-          
-          if (visit.payment_status === "paid") {
-            paidCount++;
-            totalPaid += Number(visitValue);
-          }
-        } else if (visit.status === "lost visit") {
-          // Explicitly do not count for payments
         }
       });
+
+      // Based on instructions: 
+      // "Valor Pendente" = all visits with status "a pagar" (which I infer as NOT paid)
+      // "Total Pago" = visits with status "Pago"
+      // "Total Acumulado" = Total Pago + Valor Pendente
+      
+      // I'll calculate total possible value (all visits associated with patient)
+      const totalVisitsValue = participantVisits.reduce((sum, v) => {
+        const vt = protocolSchedulesData?.find(schedule => schedule.target_day === v.visit_number);
+        return sum + (v.payment_amount ?? vt?.payment_amount ?? 0);
+      }, 0);
+
+      const pendingPayment = totalVisitsValue - totalPaid;
 
       return {
         participant_id: participant.id,
@@ -544,8 +554,8 @@ export default function Payments() {
         research_center: participant.research_center || "Sem Centro",
         completed_visits: completedCount,
         paid_visits: paidCount,
-        pending_payment: totalEarned - totalPaid,
-        total_earned: totalEarned,
+        pending_payment: pendingPayment,
+        total_earned: totalPaid + pendingPayment,
         total_paid: totalPaid,
       };
     });
