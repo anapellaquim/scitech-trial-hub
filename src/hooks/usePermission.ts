@@ -30,6 +30,7 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   site_monitoring: "Site Monitoring",
   pmcf_survey: "PMCF Survey",
   ip: "IP",
+  patients: "Patient Management",
   qualifications: "Qualifications",
   trainings: "Trainings",
   change_control: "Change Control",
