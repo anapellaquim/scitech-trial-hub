@@ -94,7 +94,7 @@ export default function PatientManagement() {
   const [visitForm, setVisitForm] = useState({
     protocol_visit_id: "",
     actual_date: "",
-    status: "Completed",
+    status: "Completed", // Options: Completed, Lost Visit, Pending
     notes: ""
   });
 
