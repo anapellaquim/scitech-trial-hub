@@ -858,7 +858,7 @@ export default function SiteMonitoring() {
             </div>
 
             <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
-            <div><Label>Follow-up Actions</Label><Textarea rows={2} value={form.follow_up_actions} onChange={e => setForm({...form, follow_up_actions: e.target.value})} /></div>
+            <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Report Date</Label><Input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} /></div>
               <div><Label>Report Link</Label><Input type="url" value={form.report_link} onChange={e => setForm({...form, report_link: e.target.value})} placeholder="https://..." /></div>
