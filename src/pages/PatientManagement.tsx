@@ -329,7 +329,17 @@ export default function PatientManagement() {
                               <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
                               <TableCell>{getStatusBadge(p.status)}</TableCell>
                               <TableCell>{p.enrollment_date ? format(new Date(p.enrollment_date), "dd/MM/yyyy") : "—"}</TableCell>
-                              <TableCell className="text-center font-semibold">{completedVisitsCount}/{protocolVisits.length}</TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex flex-col items-center">
+                                  <span className="font-semibold">{completedVisitsCount}/{protocolVisits.length}</span>
+                                  <div className="w-20 h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
+                                    <div 
+                                      className="h-full bg-primary transition-all" 
+                                      style={{ width: `${protocolVisits.length > 0 ? (completedVisitsCount / protocolVisits.length) * 100 : 0}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
                                   <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
