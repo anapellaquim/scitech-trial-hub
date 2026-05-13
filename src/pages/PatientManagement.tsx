@@ -443,18 +443,6 @@ export default function PatientManagement() {
     reader.readAsArrayBuffer(file);
   };
 
-        toast.success("Dados importados com sucesso");
-        loadProjectData();
-      } catch (err) {
-        console.error(err);
-        toast.error("Erro ao importar Excel. Verifique o formato.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <CTMSNav />
