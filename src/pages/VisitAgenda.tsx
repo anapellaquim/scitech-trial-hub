@@ -88,10 +88,10 @@ const statusColors: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  scheduled: "Agendada",
-  in_progress: "Em Andamento",
-  completed: "Concluída",
-  cancelled: "Cancelada",
+  scheduled: "Scheduled",
+  in_progress: "In Progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 const taskStatusColors: Record<string, string> = {
