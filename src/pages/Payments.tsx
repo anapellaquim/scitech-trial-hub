@@ -1550,44 +1550,11 @@ export default function Payments() {
                               </a>
                             </Button>
                           )}
-                          <Button 
-                            variant="outline"
-                            onClick={() => setIndividualPaymentDialogOpen(true)}
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Pagamento Avulso
-                          </Button>
-                          <Button 
-                            variant="default"
-                            onClick={() => {
-                              const center = centerSummaries.find(c => c.code === selectedCenterTab);
-                              const centerParticipants = participantPayments.filter(p => p.research_center === selectedCenterTab);
-                              const selectedInCenter = centerParticipants.filter(p => selectedParticipantIds.has(p.participant_id));
-                              const totalSelected = selectedInCenter.reduce((sum, p) => sum + p.pending_payment, 0);
-                              
-                              if (center && selectedInCenter.length > 0) {
-                                setSelectedCenter({
-                                  ...center,
-                                  pending_payment: totalSelected,
-                                  participants: selectedInCenter.length
-                                });
-                                setSelectedParticipant(null);
-                                setRegisterDialogOpen(true);
-                              }
-                            }}
-                            disabled={(() => {
-                              const centerParticipants = participantPayments.filter(p => p.research_center === selectedCenterTab);
-                              const selectedInCenter = centerParticipants.filter(p => selectedParticipantIds.has(p.participant_id) && p.pending_payment > 0);
-                              return selectedInCenter.length === 0;
-                            })()}
-                          >
-                            Pagamento dos Selecionados
-                          </Button>
                         </>
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-6">
                     {/* Manual center payments (created via "Novo Pagamento") */}
                     {(() => {
                       const manualCenterPayments = vendorPayments.filter(p => p.category === "center");
@@ -1683,172 +1650,24 @@ export default function Payments() {
                       </div>
                     ) : (
                       <>
-                        {/* Center Summary */}
-                        {(() => {
-                          const centerData = centerSummaries.find(c => c.code === selectedCenterTab);
-                          const centerParticipants = participantPayments.filter(p => p.research_center === selectedCenterTab);
-                          
-                          return (
-                            <>
-                              {centerData && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                  <div className="p-4 bg-muted rounded-lg">
-                                    <p className="text-sm text-muted-foreground">Participantes</p>
-                                    <p className="text-2xl font-bold">{centerData.participants}</p>
-                                  </div>
-                                  <div className="p-4 bg-warning/10 rounded-lg">
-                                    <p className="text-sm text-muted-foreground">Pendente Total</p>
-                                    <p className="text-2xl font-bold text-warning">{formatCurrency(centerData.pending_payment)}</p>
-                                  </div>
-                                  {(() => {
-                                    const selectedInCenter = centerParticipants.filter(p => selectedParticipantIds.has(p.participant_id) && p.pending_payment > 0);
-                                    const totalSelected = selectedInCenter.reduce((sum, p) => sum + p.pending_payment, 0);
-                                    return (
-                                      <div className="p-4 bg-primary/10 rounded-lg">
-                                        <p className="text-sm text-muted-foreground">Selecionados</p>
-                                        <p className="text-2xl font-bold text-primary">
-                                          {selectedInCenter.length} ({formatCurrency(totalSelected)})
-                                        </p>
-                                      </div>
-                                    );
-                                  })()}
-                                </div>
-                              )}
-
-                              {centerParticipants.length === 0 ? (
-                                <div className="text-center py-8">
-                                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                  <p className="text-muted-foreground">
-                                    Nenhum participante neste centro
-                                  </p>
-                                </div>
-                              ) : (
-                                <ScrollArea className="w-full">
-                                  <Table>
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead className="w-[50px]">
-                                          <Checkbox
-                                            checked={centerParticipants.filter(p => p.pending_payment > 0).length > 0 && 
-                                              centerParticipants.filter(p => p.pending_payment > 0).every(p => selectedParticipantIds.has(p.participant_id))}
-                                            onCheckedChange={(checked) => {
-                                              if (checked) {
-                                                const newSelected = new Set(selectedParticipantIds);
-                                                centerParticipants.filter(p => p.pending_payment > 0).forEach(p => newSelected.add(p.participant_id));
-                                                setSelectedParticipantIds(newSelected);
-                                              } else {
-                                                const newSelected = new Set(selectedParticipantIds);
-                                                centerParticipants.forEach(p => newSelected.delete(p.participant_id));
-                                                setSelectedParticipantIds(newSelected);
-                                              }
-                                            }}
-                                          />
-                                        </TableHead>
-                                        <TableHead className="sticky left-0 bg-background z-10 min-w-[120px]">Código</TableHead>
-                                        {visitTypes.map((vt) => (
-                                          <TableHead key={vt.id} className="text-center min-w-[100px]">
-                                            <div className="flex flex-col items-center">
-                                              <span className="text-xs font-medium">{vt.name}</span>
-                                              <span className="text-xs text-muted-foreground">
-                                                R$ {vt.value.toFixed(2)}
-                                              </span>
-                                            </div>
-                                          </TableHead>
-                                        ))}
-                                        <TableHead className="text-right min-w-[120px]">Pendente</TableHead>
-                                        <TableHead className="text-center min-w-[80px]">Ações</TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {centerParticipants.map((payment) => {
-                                        const participantVisits = visits.filter(v => v.participant_id === payment.participant_id);
-                                        const hasPending = payment.pending_payment > 0;
-                                        
-                                        return (
-                                          <TableRow key={payment.participant_id}>
-                                            <TableCell>
-                                              <Checkbox
-                                                checked={selectedParticipantIds.has(payment.participant_id)}
-                                                disabled={!hasPending}
-                                                onCheckedChange={(checked) => {
-                                                  const newSelected = new Set(selectedParticipantIds);
-                                                  if (checked) {
-                                                    newSelected.add(payment.participant_id);
-                                                  } else {
-                                                    newSelected.delete(payment.participant_id);
-                                                  }
-                                                  setSelectedParticipantIds(newSelected);
-                                                }}
-                                              />
-                                            </TableCell>
-                                            <TableCell className="sticky left-0 bg-background z-10 font-medium">
-                                              {payment.participant_code}
-                                            </TableCell>
-                                            {visitTypes.map((vt) => {
-                                              const visit = participantVisits.find(v => v.visit_number === vt.visit_number);
-                                              const isCompleted = visit?.status === "completed";
-                                              const isPaid = visit?.payment_status === "paid";
-                                              const notPerformed = visit?.status === "not_performed";
-                                              const isPending = visit?.status === "pending";
-                                              
-                                              return (
-                                                <TableCell key={vt.id} className="text-center">
-                                                  <div className="flex flex-col items-center gap-1">
-                                                    {notPerformed ? (
-                                                      <Badge variant="outline" className="text-xs bg-muted">
-                                                        N/R
-                                                      </Badge>
-                                                    ) : isCompleted ? (
-                                                      isPaid ? (
-                                                        <Badge variant="default" className="text-xs bg-success">
-                                                          Pago
-                                                        </Badge>
-                                                      ) : (
-                                                        <Badge variant="destructive" className="text-xs">
-                                                          A pagar
-                                                        </Badge>
-                                                      )
-                                                    ) : isPending ? (
-                                                      <Badge variant="outline" className="text-xs text-muted-foreground">
-                                                        Pendente
-                                                      </Badge>
-                                                    ) : (
-                                                      <span className="text-xs text-muted-foreground">-</span>
-                                                    )}
-                                                  </div>
-                                                </TableCell>
-                                              );
-                                            })}
-                                            <TableCell className="text-right">
-                                              {payment.pending_payment > 0 ? (
-                                                <Badge variant="destructive">{formatCurrency(payment.pending_payment)}</Badge>
-                                              ) : (
-                                                <Badge variant="secondary">R$ 0,00</Badge>
-                                              )}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                              <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => {
-                                                  setEditingParticipant(payment);
-                                                  setEditParticipantPaymentsOpen(true);
-                                                }}
-                                              >
-                                                <Pencil className="h-4 w-4" />
-                                              </Button>
-                                            </TableCell>
-                                          </TableRow>
-                                        );
-                                      })}
-                                    </TableBody>
-                                  </Table>
-                                  <ScrollBar orientation="horizontal" />
-                                </ScrollArea>
-                              )}
-                            </>
-                          );
-                        })()}
+                        {!selectedCenterTab ? (
+                          <div className="text-center py-8">
+                            <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">
+                              Selecione um centro para visualizar os pagamentos
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-semibold">Pagamentos Manuais do Centro</h3>
+                            </div>
+                            {/* O bloco de pagamentos manuais (Novo Pagamento) já é exibido acima via manualCenterPayments logic */}
+                            <p className="text-sm text-muted-foreground">
+                              Os pagamentos individuais de pacientes agora são gerenciados exclusivamente na aba <strong>Pacientes</strong>.
+                            </p>
+                          </div>
+                        )}
                       </>
                     )}
                   </CardContent>
