@@ -150,9 +150,10 @@ const Dashboard = () => {
         patientsQuery = patientsQuery.eq("project_id", selectedProject);
       }
 
-      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes] = await Promise.all([
+      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes, patientVisitsRes] = await Promise.all([
         supabase.from("projects").select("id, status"),
-        tasksQuery, visitsQuery, findingsQuery, checklistQuery, patientsQuery
+        tasksQuery, visitsQuery, findingsQuery, checklistQuery, patientsQuery,
+        supabase.from("patient_visits").select("id, status")
       ]);
 
       let projectsData = projectsRes.data || [];
@@ -228,7 +229,8 @@ const Dashboard = () => {
         tasksNext7Days: tasksNext7Days.length, tasksNext30Days: tasksNext30Days.length,
         totalVisits: visitsInRange.length, overdueVisits: overdueVisits.length,
         visitsNext7Days: visitsNext7Days.length, visitsNext30Days: visitsNext30Days.length,
-        completedVisits, openFindings: openFindings.length, criticalFindings: criticalFindings.length,
+        completedVisits: (patientVisitsRes.data || []).filter(v => v.status === "Completed").length, 
+        openFindings: openFindings.length, criticalFindings: criticalFindings.length,
         totalPatients: patientsData.length,
         randomizedPatients: patientsData.filter(p => p.status === 'Randomized').length,
         findingsAging, siteChecklistCompletion,
@@ -405,7 +407,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalPatients}</div>
-              <p className="text-xs text-muted-foreground">{stats.randomizedPatients} randomized</p>
+              <p className="text-xs text-muted-foreground">{stats.randomizedPatients} Randomized</p>
             </CardContent>
           </Card>
           <Card>
@@ -424,9 +426,9 @@ const Dashboard = () => {
               <CalendarClock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalVisits}</div>
+              <div className="text-2xl font-bold">{stats.completedVisits}</div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-success">{stats.completedVisits} completed</span>
+                <span className="text-success">Visits Completed</span>
                 <span className="text-muted-foreground">•</span>
                 <span className="text-warning">{stats.visitsNext7Days} in 7d</span>
               </div>
