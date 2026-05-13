@@ -249,9 +249,9 @@ export default function VisitAgenda() {
         planned_date_end: monVisit.planned_date_end || monVisit.scheduled_date_end || "",
         actual_date: monVisit.actual_date || "", 
         actual_date_end: monVisit.actual_date_end || "",
-        monitor_name: monVisit.monitor_name || "", 
-        purpose: monVisit.purpose || "", 
-        summary: monVisit.summary || "",
+        monitor_name: monVisit.monitor_name || monVisit.monitor || "", 
+        purpose: monVisit.purpose || monVisit.objective || "", 
+        summary: monVisit.summary || monVisit.notes || "",
         follow_up_actions: monVisit.follow_up_actions || "", 
         report_link: monVisit.report_link || "", 
         report_date: monVisit.report_date || "",
@@ -668,7 +668,7 @@ export default function VisitAgenda() {
                     return (
                       <div className={cn(
                         "grid gap-8",
-                        timeRange === "month" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                        timeRange === "month" ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"
                       )}>
                         {months.map((month) => {
                           const monthDays = eachDayOfInterval({
@@ -677,19 +677,20 @@ export default function VisitAgenda() {
                           });
                           
                           return (
-                            <div key={month.toISOString()} className="space-y-3">
-                              <h3 className="text-sm font-semibold text-center border-b pb-1 capitalize">
+                            <div key={month.toISOString()} className="space-y-4">
+                              <h3 className="text-base font-bold text-foreground px-1 capitalize flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-primary" />
                                 {format(month, "MMMM yyyy", { locale: ptBR })}
                               </h3>
-                              <div className="grid grid-cols-7 gap-px bg-muted border rounded-sm overflow-hidden">
+                              <div className="grid grid-cols-7 gap-px bg-muted/30 border rounded-xl overflow-hidden shadow-sm">
                                 {["D", "S", "T", "Q", "Q", "S", "S"].map((day) => (
-                                  <div key={day} className="bg-background p-1 text-center text-[10px] font-bold text-muted-foreground">
+                                  <div key={day} className="bg-muted/50 p-2 text-center text-[10px] font-bold text-muted-foreground/80 uppercase tracking-wider">
                                     {day}
                                   </div>
                                 ))}
                                 
                                 {Array.from({ length: startOfMonth(month).getDay() }).map((_, i) => (
-                                  <div key={`empty-${i}`} className="bg-background/50 p-1 h-12 md:h-16" />
+                                  <div key={`empty-${i}`} className="bg-muted/10 p-1 h-24 md:h-28 border-t border-l border-muted/20" />
                                 ))}
                                 
                                 {monthDays.map((day) => {
@@ -702,39 +703,53 @@ export default function VisitAgenda() {
                                     return isSameDay(start, day);
                                   });
                                   
+                                  const isTdy = isToday(day);
+                                  
                                   return (
                                     <div
                                       key={day.toISOString()}
                                       className={cn(
-                                        "bg-background p-1 h-20 md:h-24 flex flex-col items-start border-t border-l",
-                                        isToday(day) && "bg-primary/5"
+                                        "bg-background p-1.5 h-24 md:h-28 flex flex-col items-start border-t border-l border-muted/40 transition-colors hover:bg-muted/5 group relative",
+                                        isTdy && "bg-primary/[0.02]"
                                       )}
                                     >
                                       <span className={cn(
-                                        "text-[9px] font-bold px-1 mb-1 rounded-sm",
-                                        isToday(day) ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                                        "text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full mb-1.5 transition-colors",
+                                        isTdy ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground group-hover:text-foreground"
                                       )}>
                                         {format(day, "d")}
                                       </span>
-                                      <div className="flex flex-col gap-0.5 w-full overflow-hidden">
-                                        {dayVisits.slice(0, 4).map((visit) => (
-                                          <div 
-                                            key={visit.id}
-                                            onClick={() => openEdit(visit)}
-                                            className={cn(
-                                              "text-[8px] leading-tight px-1 py-0.5 rounded-sm cursor-pointer truncate font-medium border",
-                                              visit.visit_type === "SQV" && "bg-blue-100 text-blue-800 border-blue-200",
-                                              visit.visit_type === "SIV" && "bg-green-100 text-green-800 border-green-200",
-                                              visit.visit_type === "IMV" && "bg-primary/10 text-primary border-primary/20",
-                                              visit.visit_type === "COV" && "bg-orange-100 text-orange-800 border-orange-200",
-                                              !["SQV", "SIV", "IMV", "COV"].includes(visit.visit_type) && "bg-slate-100 text-slate-800 border-slate-200"
-                                            )}
-                                          >
-                                            {visit.visit_type}: {visit.research_center?.code}
-                                          </div>
-                                        ))}
+                                      <div className="flex flex-col gap-1 w-full overflow-y-auto scrollbar-none pr-0.5">
+                                        {dayVisits.slice(0, 4).map((visit) => {
+                                          const typeColor = visit.visit_type === "SQV" ? "bg-blue-500" :
+                                                           visit.visit_type === "SIV" ? "bg-emerald-500" :
+                                                           visit.visit_type === "IMV" ? "bg-primary" :
+                                                           visit.visit_type === "COV" ? "bg-amber-500" : "bg-slate-500";
+                                          
+                                          return (
+                                            <div 
+                                              key={visit.id}
+                                              onClick={() => openEdit(visit)}
+                                              className={cn(
+                                                "text-[9px] leading-tight px-2 py-1 rounded-md cursor-pointer truncate font-semibold border shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]",
+                                                visit.visit_type === "SQV" && "bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100",
+                                                visit.visit_type === "SIV" && "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100",
+                                                visit.visit_type === "IMV" && "bg-primary/5 text-primary border-primary/10 hover:bg-primary/10",
+                                                visit.visit_type === "COV" && "bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100",
+                                                !["SQV", "SIV", "IMV", "COV"].includes(visit.visit_type) && "bg-slate-50 text-slate-700 border-slate-100 hover:bg-slate-100"
+                                              )}
+                                            >
+                                              <div className="flex items-center gap-1.5">
+                                                <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", typeColor)} />
+                                                <span className="truncate">{visit.visit_type}: {visit.research_center?.code}</span>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
                                         {dayVisits.length > 4 && (
-                                          <span className="text-[7px] font-bold text-muted-foreground pl-1">+{dayVisits.length - 4}</span>
+                                          <span className="text-[8px] font-bold text-muted-foreground/60 pl-1.5 pt-0.5 italic">
+                                            + {dayVisits.length - 4} mais...
+                                          </span>
                                         )}
                                       </div>
                                     </div>
@@ -865,7 +880,7 @@ export default function VisitAgenda() {
       />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editing ? "Edit" : "New"} Monitoring Visit</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing ? "Editar" : "Nova"} Visita de Monitoria / Estudo</DialogTitle></DialogHeader>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Site *</Label>
