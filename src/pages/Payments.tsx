@@ -1735,32 +1735,6 @@ export default function Payments() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                      <Card className="bg-amber-50 border-amber-200">
-                        <CardContent className="pt-4">
-                          <p className="text-sm font-medium text-amber-800 mb-1">Valor Pendente</p>
-                          <p className="text-2xl font-bold text-amber-900">
-                            {formatCurrency(participantPayments.reduce((sum, p) => sum + p.pending_payment, 0))}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-emerald-50 border-emerald-200">
-                        <CardContent className="pt-4">
-                          <p className="text-sm font-medium text-emerald-800 mb-1">Total Pago</p>
-                          <p className="text-2xl font-bold text-emerald-900">
-                            {formatCurrency(participantPayments.reduce((sum, p) => sum + p.total_paid, 0))}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-blue-50 border-blue-200">
-                        <CardContent className="pt-4">
-                          <p className="text-sm font-medium text-blue-800 mb-1">Total Acumulado</p>
-                          <p className="text-2xl font-bold text-blue-900">
-                            {formatCurrency(participantPayments.reduce((sum, p) => sum + p.total_earned, 0))}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </div>
                     <ScrollArea className="w-full">
                       <Table>
                         <TableHeader>
