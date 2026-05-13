@@ -79,9 +79,9 @@ export default function VisitAgenda() {
   const [loading, setLoading] = useState(true);
   const [newVisitOpen, setNewVisitOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [selectedSite, setSelectedSite] = useState<string>("all");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
-  const [showTasks, setShowTasks] = useState(true);
 
   useEffect(() => {
     checkAuth();
