@@ -321,31 +321,41 @@ export default function PatientManagement() {
                       ) : filteredPatients.length === 0 ? (
                         <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
                       ) : (
-                        filteredPatients.map(p => (
-                          <TableRow key={p.id}>
-                            <TableCell className="font-bold">{p.patient_code}</TableCell>
-                            <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
-                            <TableCell>{getStatusBadge(p.status)}</TableCell>
-                            <TableCell>{p.enrollment_date ? format(new Date(p.enrollment_date), "dd/MM/yyyy") : "—"}</TableCell>
-                            <TableCell className="max-w-xs truncate text-muted-foreground text-xs">{p.notes || "—"}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => {
-                                  setEditingPatient(p);
-                                  setPatientForm({
-                                    patient_code: p.patient_code,
-                                    site_id: p.site_id,
-                                    status: p.status,
-                                    enrollment_date: p.enrollment_date || "",
-                                    notes: p.notes || ""
-                                  });
-                                  setPatientDialogOpen(true);
-                                }}><Pencil className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePatient(p.id)}><Trash2 className="h-4 w-4" /></Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                        filteredPatients.map(p => {
+                          const completedVisitsCount = patientVisits.filter(v => v.patient_id === p.id && v.status === 'Completed').length;
+                          return (
+                            <TableRow key={p.id}>
+                              <TableCell className="font-bold">{p.patient_code}</TableCell>
+                              <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
+                              <TableCell>{getStatusBadge(p.status)}</TableCell>
+                              <TableCell>{p.enrollment_date ? format(new Date(p.enrollment_date), "dd/MM/yyyy") : "—"}</TableCell>
+                              <TableCell className="text-center font-semibold">{completedVisitsCount}/{protocolVisits.length}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
+                                    setSelectedPatientForVisits(p);
+                                    setVisitForm({ protocol_visit_id: "", actual_date: format(new Date(), "yyyy-MM-dd"), status: "Completed", notes: "" });
+                                    setVisitDialogOpen(true);
+                                  }}>
+                                    <ClipboardCheck className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" onClick={() => {
+                                    setEditingPatient(p);
+                                    setPatientForm({
+                                      patient_code: p.patient_code,
+                                      site_id: p.site_id,
+                                      status: p.status,
+                                      enrollment_date: p.enrollment_date || "",
+                                      notes: p.notes || ""
+                                    });
+                                    setPatientDialogOpen(true);
+                                  }}><Pencil className="h-4 w-4" /></Button>
+                                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePatient(p.id)}><Trash2 className="h-4 w-4" /></Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
