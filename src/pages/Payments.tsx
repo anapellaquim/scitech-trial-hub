@@ -1854,8 +1854,88 @@ export default function Payments() {
                   </CardContent>
                 </Card>
               </TabsContent>
-
-              <TabsContent value="vendors" className="space-y-4">
+              <TabsContent value="patients" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Listagem de Pacientes
+                    </CardTitle>
+                    <CardDescription>
+                      Visualize todos os pacientes cadastrados no módulo Patient Management e seus status financeiros
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          placeholder="Filtrar por código ou centro..." 
+                          value={filterCenter}
+                          onChange={(e) => setFilterCenter(e.target.value)}
+                          className="pl-8"
+                        />
+                      </div>
+                    </div>
+                    <ScrollArea className="w-full">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Código do Paciente</TableHead>
+                            <TableHead>Centro</TableHead>
+                            <TableHead className="text-center">Visitas Completas</TableHead>
+                            <TableHead className="text-right">Total Acumulado</TableHead>
+                            <TableHead className="text-right">Total Pago</TableHead>
+                            <TableHead className="text-right">Valor Pendente</TableHead>
+                            <TableHead className="text-center">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {participantPayments
+                            .filter(p => 
+                              !filterCenter || 
+                              p.participant_code.toLowerCase().includes(filterCenter.toLowerCase()) ||
+                              p.research_center.toLowerCase().includes(filterCenter.toLowerCase())
+                            )
+                            .map((p) => (
+                            <TableRow key={p.participant_id}>
+                              <TableCell className="font-bold">{p.participant_code}</TableCell>
+                              <TableCell>{p.research_center}</TableCell>
+                              <TableCell className="text-center">
+                                <Badge variant="outline">{p.completed_visits}</Badge>
+                              </TableCell>
+                              <TableCell className="text-right font-medium">{formatCurrency(p.total_earned)}</TableCell>
+                              <TableCell className="text-right text-success">{formatCurrency(p.total_paid)}</TableCell>
+                              <TableCell className="text-right text-warning font-bold">{formatCurrency(p.pending_payment)}</TableCell>
+                              <TableCell className="text-center">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedCenterTab(p.research_center);
+                                    // Tabs switch automatically if we had a way to trigger value change, 
+                                    // but since it's an uncontrolled component or we need to manage state:
+                                  }}
+                                >
+                                  Ver no Centro
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {participantPayments.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                                Nenhum paciente encontrado.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </TabsContent>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
                     <div>
