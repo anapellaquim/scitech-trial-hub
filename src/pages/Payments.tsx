@@ -1936,6 +1936,7 @@ export default function Payments() {
                   </CardContent>
                 </Card>
               </TabsContent>
+              <TabsContent value="vendors" className="space-y-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
                     <div>
