@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Package, Upload, TrendingUp, TrendingDown, Boxes } from "lucide-react";
 import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
+import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
 interface IPRecord {
   id: string;
@@ -47,6 +48,13 @@ interface SupplyRecord {
   value: number | null;
   note: string | null;
 }
+
+interface Site {
+  id: string;
+  name: string;
+  code: string;
+}
+
 
 const emptyForm = () => ({
   id: "",
@@ -129,8 +137,10 @@ const SUPPLY_IMPORT_COLUMNS: ColumnMapping[] = [
 ];
 
 export default function InvestigationalProducts() {
+  const { projectId: selectedProject } = usePersistedFilters();
   const [records, setRecords] = useState<IPRecord[]>([]);
   const [supplies, setSupplies] = useState<SupplyRecord[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -144,20 +154,27 @@ export default function InvestigationalProducts() {
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
-    const [ip, sup] = await Promise.all([
+    const [ip, sup, siteData] = await Promise.all([
       supabase.from("investigational_products").select("*").order("created_at", { ascending: false }),
       supabase.from("ip_supply").select("*").order("date", { ascending: false }),
+      selectedProject 
+        ? supabase.from("study_sites").select("id, name, code").eq("project_id", selectedProject)
+        : Promise.resolve({ data: [], error: null })
     ]);
     if (ip.error) toast.error("Failed to load IP: " + ip.error.message);
     else setRecords((ip.data || []) as IPRecord[]);
     if (sup.error) toast.error("Failed to load Supply: " + sup.error.message);
     else setSupplies((sup.data || []) as SupplyRecord[]);
+    if (siteData.error) console.error("Failed to load sites:", siteData.error);
+    else setSites((siteData.data || []) as Site[]);
     setLoading(false);
-  }, []);
+  }, [selectedProject]);
+
 
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
+
 
   // ===== IP CRUD =====
   const openNew = () => { setEditing(null); setForm(emptyForm()); setDialogOpen(true); };
@@ -210,6 +227,7 @@ export default function InvestigationalProducts() {
   };
   const handleSaveSupply = async () => {
     if (!supplyForm.operation) { toast.error("Operation is required"); return; }
+    if (!supplyForm.description) { toast.error("Item (Description) is required"); return; }
     const payload = {
       operation: supplyForm.operation,
       date: supplyForm.date || null,
@@ -222,6 +240,7 @@ export default function InvestigationalProducts() {
       value: supplyForm.value === "" ? null : Number(supplyForm.value),
       note: supplyForm.note || null,
     };
+
     const { error } = editingSupply
       ? await supabase.from("ip_supply").update(payload).eq("id", editingSupply.id)
       : await supabase.from("ip_supply").insert(payload);
@@ -302,6 +321,17 @@ export default function InvestigationalProducts() {
     Site: r.site, "Value (R$)": r.value, Note: r.note,
   })), [supplies]);
 
+  // Unique items (description) from Acquisition operations for predefined list
+  const uniqueItems = useMemo(() => {
+    const set = new Set<string>();
+    supplies.forEach(s => {
+      if (s.operation === "Acquisition" && s.description) {
+        set.add(s.description);
+      }
+    });
+    return Array.from(set).sort();
+  }, [supplies]);
+
   // KPIs by description + lot#
   const stockByItem = useMemo(() => {
     const map = new Map<string, {
@@ -311,6 +341,7 @@ export default function InvestigationalProducts() {
     }>();
     supplies.forEach((s) => {
       const desc = (s.description || "—").trim();
+
       const lot = (s.lot_number || "—").trim();
       const invoice = (s.invoice || "—").trim();
       const key = `${desc}||${lot}||${invoice}`;
@@ -913,8 +944,32 @@ export default function InvestigationalProducts() {
                 <Input value={supplyForm.lot_number} onChange={(e) => setSupplyForm({ ...supplyForm, lot_number: e.target.value })} />
               </div>
               <div className="col-span-2 space-y-2">
-                <Label>Description</Label>
-                <Input value={supplyForm.description} onChange={(e) => setSupplyForm({ ...supplyForm, description: e.target.value })} />
+                <Label>Item (Description) *</Label>
+                {supplyForm.operation === "Acquisition" ? (
+                  <Input 
+                    value={supplyForm.description || ""} 
+                    onChange={(e) => setSupplyForm({ ...supplyForm, description: e.target.value })} 
+                    placeholder="Enter item description"
+                  />
+                ) : (
+                  <Select
+                    value={supplyForm.description || ""}
+                    onValueChange={(v) => setSupplyForm({ ...supplyForm, description: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {uniqueItems.length === 0 ? (
+                        <SelectItem value="_none" disabled>No items available from acquisitions</SelectItem>
+                      ) : (
+                        uniqueItems.map((item) => (
+                          <SelectItem key={item} value={item}>{item}</SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Expiration</Label>
@@ -926,12 +981,31 @@ export default function InvestigationalProducts() {
               </div>
               <div className="space-y-2">
                 <Label>Site</Label>
-                <Input value={supplyForm.site} onChange={(e) => setSupplyForm({ ...supplyForm, site: e.target.value })} />
+                <Select
+                  value={supplyForm.site || ""}
+                  onValueChange={(v) => setSupplyForm({ ...supplyForm, site: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select site" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sites.length === 0 ? (
+                      <SelectItem value="_none" disabled>No sites found for this project</SelectItem>
+                    ) : (
+                      sites.map((s) => (
+                        <SelectItem key={s.id} value={`${s.code} - ${s.name}`}>
+                          {s.code} - {s.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Value (R$)</Label>
                 <Input type="number" step="0.01" value={supplyForm.value} onChange={(e) => setSupplyForm({ ...supplyForm, value: e.target.value })} />
               </div>
+
               <div className="col-span-2 space-y-2">
                 <Label>Note</Label>
                 <Textarea rows={3} value={supplyForm.note} onChange={(e) => setSupplyForm({ ...supplyForm, note: e.target.value })} />
