@@ -411,8 +411,8 @@ export default function SiteMonitoring() {
   const exportData = filtered.map(v => ({
     Site: siteName(v.site_id), Code: v.visit_code || "", Type: v.visit_type,
     Status: v.status, "Planned Date": v.planned_date || "", "Actual Date": v.actual_date || "",
-    Monitor: v.monitor_name || "", Purpose: v.purpose || "", Summary: v.summary || "",
-    "Follow-up Actions": v.follow_up_actions || "", "Report Date": v.report_date || "",
+    Monitor: v.monitor_name || "", Summary: v.summary || "",
+    "Report Date": v.report_date || "",
     "Report Link": v.report_link || "", Oversight: visitFindings(v.id).length,
   }));
 
