@@ -143,9 +143,18 @@ export default function SiteMonitoring() {
 
   useEffect(() => {
     const visitId = searchParams.get("visitId");
+    const editMode = searchParams.get("edit") === "true";
     if (visitId) {
       setExpandedVisitId(visitId);
       
+      // If edit mode is requested, find the visit and open the dialog
+      if (editMode && visits.length > 0) {
+        const visitToEdit = visits.find(v => v.id === visitId);
+        if (visitToEdit) {
+          openEdit(visitToEdit);
+        }
+      }
+
       // Wait for data to load then scroll to it
       setTimeout(() => {
         const element = document.getElementById(`visit-${visitId}`);
@@ -154,7 +163,7 @@ export default function SiteMonitoring() {
         }
       }, 500);
     }
-  }, [searchParams]);
+  }, [searchParams, visits, openEdit]);
 
   useEffect(() => {
     const check = async () => {
