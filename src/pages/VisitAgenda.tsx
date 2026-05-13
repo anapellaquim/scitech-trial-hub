@@ -808,8 +808,8 @@ export default function VisitAgenda() {
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          {format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}
-                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM/yyyy", { locale: ptBR })}`}
+                          {format(parseLocalDate(visit.scheduled_date), "MM/dd/yyyy", { locale: enUS })}
+                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "MM/dd/yyyy", { locale: enUS })}`}
                         </span>
                         {visit.scheduled_time && (
                           <>
