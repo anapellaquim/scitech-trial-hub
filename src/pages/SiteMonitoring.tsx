@@ -156,7 +156,6 @@ export default function SiteMonitoring() {
 
   useEffect(() => {
     const visitId = searchParams.get("visitId");
-    const editMode = searchParams.get("edit") === "true";
     if (visitId) {
       setExpandedVisitId(visitId);
       
