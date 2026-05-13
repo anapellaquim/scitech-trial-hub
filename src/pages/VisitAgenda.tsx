@@ -687,7 +687,7 @@ export default function VisitAgenda() {
                             <div key={month.toISOString()} className="space-y-4">
                               <h3 className="text-base font-bold text-foreground px-1 capitalize flex items-center gap-2">
                                 <CalendarIcon className="h-4 w-4 text-primary" />
-                                {format(month, "MMMM yyyy", { locale: ptBR })}
+                                {format(month, "MMMM yyyy", { locale: enUS })}
                               </h3>
                               <div className="grid grid-cols-7 gap-px bg-muted/30 border rounded-xl overflow-hidden shadow-sm">
                                 {["D", "S", "T", "Q", "Q", "S", "S"].map((day) => (
