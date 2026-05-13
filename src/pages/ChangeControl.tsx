@@ -103,6 +103,7 @@ const emptyForm = {
   responsible: "",
   opened_at: todayDateOnly(),
   resolved_at: "",
+  impact_areas_other: "",
 };
 
 export default function ChangeControl() {
