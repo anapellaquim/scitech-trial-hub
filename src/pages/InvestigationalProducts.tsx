@@ -1048,6 +1048,59 @@ export default function InvestigationalProducts() {
           columns={SUPPLY_IMPORT_COLUMNS}
           onSuccess={loadRecords}
         />
+
+        {/* ===== Predefined Items Configuration Dialog ===== */}
+        <Dialog open={itemsDialogOpen} onOpenChange={setItemsDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Configure Predefined Items</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="New item name..." 
+                  value={newItemName} 
+                  onChange={(e) => setNewItemName(e.target.value)}
+                />
+                <Button onClick={async () => {
+                  if (!newItemName.trim()) return;
+                  const { error } = await supabase.from("investigational_product_items").insert({ name: newItemName.trim() });
+                  if (error) {
+                    if (error.code === '23505') toast.error("Item already exists");
+                    else toast.error("Error adding item");
+                  } else {
+                    toast.success("Item added");
+                    setNewItemName("");
+                    loadRecords();
+                  }
+                }}>Add</Button>
+              </div>
+              <ScrollArea className="h-64 border rounded-md p-2">
+                <div className="space-y-2">
+                  {predefinedItems.map(item => (
+                    <div key={item.id} className="flex items-center justify-between p-2 hover:bg-muted rounded-md group">
+                      <span>{item.name}</span>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={async () => {
+                        const { error } = await supabase.from("investigational_product_items").delete().eq("id", item.id);
+                        if (error) toast.error("Error deleting item");
+                        else {
+                          toast.success("Item deleted");
+                          loadRecords();
+                        }
+                      }}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  {predefinedItems.length === 0 && (
+                    <p className="text-sm text-center text-muted-foreground py-8">No predefined items yet.</p>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </DialogContent>
+        </Dialog>
+
       </main>
     </div>
   );
