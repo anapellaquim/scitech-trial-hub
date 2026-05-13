@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Calendar as CalendarIcon, List, MapPin, Clock, FileText, CheckSquare, CheckCircle2, AlertTriangle, Pencil, Trash2, ShieldCheck, StickyNote, History } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import KpiCards from "@/components/shared/KpiCards";
@@ -30,6 +31,7 @@ interface MonitoringVisit {
   actual_date: string | null; actual_date_end: string | null;
   monitor_name: string | null; purpose: string | null; summary: string | null;
   follow_up_actions: string | null; report_link: string | null; report_date: string | null;
+  checklist?: Record<string, boolean>;
 }
 interface OversightItem {
   id: string; monitoring_visit_id: string; category: string | null; severity: string;
@@ -100,7 +102,17 @@ const taskStatusColors: Record<string, string> = {
 };
 
 const VISIT_TYPES = ["SIV", "IMV", "COV", "Remote", "Other"];
-const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "cancelled", "postponed"];
+const CHECKLIST_ITEMS = [
+  "Confirm availability of PI and study staff",
+  "Review Subject Enrollment and Screening logs",
+  "Verify Source Documentation (SDV)",
+  "Review Informed Consent Forms (ICFs)",
+  "Perform Drug/Device Accountability",
+  "Review Investigator Site File (ISF)",
+  "Discuss deviations/findings with PI",
+  "Tour facilities (if applicable)",
+];
+const VISIT_STATUSES = ["planned", "scheduled", "in_progress", "completed", "pending_report"];
 const FINDING_SEVERITIES = ["low", "medium", "high", "critical"];
 const FINDING_STATUSES = ["open", "in_progress", "resolved", "closed"];
 const OVERSIGHT_CATEGORIES = [
@@ -127,8 +139,7 @@ const monStatusColors: Record<string, string> = {
   scheduled: "bg-cyan-100 text-cyan-800",
   in_progress: "bg-yellow-100 text-yellow-800",
   completed: "bg-green-100 text-green-800",
-  cancelled: "bg-gray-100 text-gray-800",
-  postponed: "bg-orange-100 text-orange-800",
+  pending_report: "bg-orange-100 text-orange-800",
 };
 
 const severityColors: Record<string, string> = {
@@ -149,8 +160,9 @@ const emptyForm = {
   site_id: "", visit_code: "", visit_type: "IMV", status: "planned",
   planned_date: "", planned_date_end: "",
   actual_date: "", actual_date_end: "",
-  monitor_name: "", purpose: "",
-  summary: "", follow_up_actions: "", report_link: "", report_date: "",
+  monitor_name: "", summary: "", 
+  report_link: "", report_date: "",
+  checklist: {} as Record<string, boolean>,
 };
 
 const emptyFinding = {
@@ -250,11 +262,10 @@ export default function VisitAgenda() {
         actual_date: monVisit.actual_date || "", 
         actual_date_end: monVisit.actual_date_end || "",
         monitor_name: monVisit.monitor_name || monVisit.monitor || "", 
-        purpose: monVisit.purpose || monVisit.objective || "", 
         summary: monVisit.summary || monVisit.notes || "",
-        follow_up_actions: monVisit.follow_up_actions || "", 
         report_link: monVisit.report_link || "", 
         report_date: monVisit.report_date || "",
+        checklist: monVisit.checklist || {},
       });
 
       // Load related data (findings and notes) only if available for site_monitoring
@@ -306,11 +317,10 @@ export default function VisitAgenda() {
         payload.actual_date = form.actual_date || null;
         payload.actual_date_end = form.actual_date_end || null;
         payload.monitor_name = form.monitor_name.trim() || null;
-        payload.purpose = form.purpose.trim() || null;
         payload.summary = form.summary.trim() || null;
-        payload.follow_up_actions = form.follow_up_actions.trim() || null;
         payload.report_link = form.report_link.trim() || null;
         payload.report_date = form.report_date || null;
+        payload.checklist = form.checklist;
       } else {
         payload.research_center_id = form.site_id;
         payload.scheduled_date = form.planned_date || null;
@@ -916,14 +926,39 @@ export default function VisitAgenda() {
               <div><Label>Actual Date (End)</Label><Input type="date" value={form.actual_date_end} onChange={e => setForm({...form, actual_date_end: e.target.value})} /></div>
             </div>
             <div><Label>Monitor (CRA)</Label><Input value={form.monitor_name} onChange={e => setForm({...form, monitor_name: e.target.value})} /></div>
-            <div><Label>Purpose / Objective</Label><Textarea rows={2} value={form.purpose} onChange={e => setForm({...form, purpose: e.target.value})} /></div>
             <div><Label>Summary</Label><Textarea rows={3} value={form.summary} onChange={e => setForm({...form, summary: e.target.value})} /></div>
-            <div><Label>Follow-up Actions</Label><Textarea rows={2} value={form.follow_up_actions} onChange={e => setForm({...form, follow_up_actions: e.target.value})} /></div>
+            
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Monitoring Checklist</Label>
+              <div className="grid gap-2 border rounded-md p-3 bg-muted/20">
+                {CHECKLIST_ITEMS.map((item) => (
+                  <div key={item} className="flex items-center space-x-2 py-1">
+                    <Checkbox 
+                      id={item} 
+                      checked={!!form.checklist[item]} 
+                      onCheckedChange={(checked) => {
+                        setForm({
+                          ...form,
+                          checklist: { ...form.checklist, [item]: !!checked }
+                        });
+                      }}
+                    />
+                    <label 
+                      htmlFor={item} 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {item}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div><Label>Report Date</Label><Input type="date" value={form.report_date} onChange={e => setForm({...form, report_date: e.target.value})} /></div>
               <div><Label>Report Link</Label><Input type="url" value={form.report_link} onChange={e => setForm({...form, report_link: e.target.value})} placeholder="https://..." /></div>
             </div>
-            
+
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
