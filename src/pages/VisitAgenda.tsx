@@ -20,6 +20,7 @@ interface Visit {
   visit_type: "SQV" | "SIV" | "IMV" | "COV";
   visit_number: number | null;
   scheduled_date: string;
+  scheduled_date_end: string | null;
   scheduled_time: string | null;
   status: string;
   notes: string | null;
@@ -137,6 +138,7 @@ export default function VisitAgenda() {
       // Unify visits from both sources
       const studyVisits = (visitsRes.data as any[] || []).map(v => ({
         ...v,
+        scheduled_date_end: null,
         source: 'study_visits'
       }));
 
@@ -145,6 +147,7 @@ export default function VisitAgenda() {
         visit_type: v.visit_type,
         visit_number: null,
         scheduled_date: v.scheduled_date,
+        scheduled_date_end: v.scheduled_date_end,
         scheduled_time: null,
         status: v.status,
         notes: null,
@@ -173,7 +176,14 @@ export default function VisitAgenda() {
   });
 
   const getVisitsForDay = (day: Date) => 
-    filteredVisits.filter(v => isSameDay(parseLocalDate(v.scheduled_date), day));
+    filteredVisits.filter(v => {
+      const start = parseLocalDate(v.scheduled_date);
+      if (v.scheduled_date_end) {
+        const end = parseLocalDate(v.scheduled_date_end);
+        return day >= start && day <= end;
+      }
+      return isSameDay(start, day);
+    });
 
   const getTasksForDay = (day: Date) => 
     tasks.filter(t => t.end_date && isSameDay(parseLocalDate(t.end_date), day));
@@ -369,7 +379,10 @@ export default function VisitAgenda() {
                     <CardContent className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>{format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}</span>
+                        <span>
+                          {format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}
+                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM/yyyy", { locale: ptBR })}`}
+                        </span>
                         {visit.scheduled_time && (
                           <>
                             <Clock className="h-4 w-4 text-muted-foreground ml-2" />
@@ -421,6 +434,7 @@ export default function VisitAgenda() {
                     <div className="text-right">
                       <p className="text-sm font-medium">
                         {format(parseLocalDate(visit.scheduled_date), "dd/MM", { locale: ptBR })}
+                        {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM", { locale: ptBR })}`}
                       </p>
                       {visit.scheduled_time && (
                         <p className="text-xs text-muted-foreground">{visit.scheduled_time.slice(0, 5)}</p>
