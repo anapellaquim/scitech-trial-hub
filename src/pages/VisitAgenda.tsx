@@ -340,10 +340,6 @@ export default function VisitAgenda() {
                       <div key={`empty-${i}`} className="p-2 min-h-[100px] bg-muted/20" />
                     ))}
                   
-                  {/* Empty cells for days before month starts */}
-                  {Array.from({ length: startOfMonth(currentMonth).getDay() }).map((_, i) => (
-                    <div key={`empty-${i}`} className="p-2 min-h-[100px] bg-muted/20" />
-                  ))}
                   
                   {daysInMonth.map((day) => {
                     const dayVisits = getVisitsForDay(day);
