@@ -534,58 +534,46 @@ export default function Regulatory() {
                       <TableHead>Study</TableHead>
                       <TableHead>Report Type</TableHead>
                       <TableHead>Submitted Date</TableHead>
-                      <TableHead>Requirements</TableHead>
                       <TableHead>Approval Date</TableHead>
-                      <TableHead>Requirement Deadline</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredReports.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                           No reports found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredReports.map((rep) => {
-                        const hasReq = !!rep.has_requirements;
-                        const effectiveSubmitted = hasReq && rep.requirement_submitted_date ? rep.requirement_submitted_date : rep.submitted_date;
-                        return (
-                          <TableRow 
-                            key={rep.id}
-                            className={`cursor-pointer hover:bg-muted/50 ${hasReq ? "text-destructive [&_*]:text-destructive" : ""}`}
-                            onClick={() => {
-                              setSelectedReport(rep);
-                              setShowEditReport(true);
-                            }}
-                          >
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">{rep.project?.title || "-"}</div>
-                              </div>
-                            </TableCell>
-                            <TableCell>{rep.report_type}</TableCell>
-                            <TableCell>
-                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
-                            </TableCell>
-                            <TableCell>{hasReq ? "Yes" : "No"}</TableCell>
-                            <TableCell>
-                              {rep.approval_date ? format(parseLocalDate(rep.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
-                            </TableCell>
-                            <TableCell>
-                              {hasReq && rep.requirement_due_date
-                                ? format(parseLocalDate(rep.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
-                                : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={statusColors[rep.status]}>
-                                {statusLabels[rep.status]}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
+                      filteredReports.map((rep) => (
+                        <TableRow 
+                          key={rep.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => {
+                            setSelectedReport(rep);
+                            setShowEditReport(true);
+                          }}
+                        >
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{rep.project?.title || "-"}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{rep.report_type}</TableCell>
+                          <TableCell>
+                            {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                          </TableCell>
+                          <TableCell>
+                            {rep.approval_date ? format(parseLocalDate(rep.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={statusColors[rep.status]}>
+                              {statusLabels[rep.status]}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
                   </TableBody>
                 </Table>
