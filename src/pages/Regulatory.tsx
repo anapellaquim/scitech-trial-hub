@@ -503,9 +503,21 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>{hasReq ? "Yes" : "No"}</TableCell>
                             <TableCell>
-                              {hasReq && sub.requirement_due_date
-                                ? format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
-                                : "-"}
+                              {hasReq && sub.requirement_due_date ? (() => {
+                                const reqDeadlineStatus = getDeadlineStatus(sub.requirement_due_date);
+                                const showCounter = !sub.requirement_submitted_date && sub.status !== "approved" && sub.status !== "rejected";
+                                return (
+                                  <div className="flex flex-col gap-0.5">
+                                    <span>{format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: enUS })}</span>
+                                    {reqDeadlineStatus && showCounter && (
+                                      <div className={`flex items-center gap-1 ${reqDeadlineStatus.color}`}>
+                                        <reqDeadlineStatus.icon className="h-4 w-4" />
+                                        <span className="text-xs">{reqDeadlineStatus.label}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })() : "-"}
                             </TableCell>
                             <TableCell>
                               {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
