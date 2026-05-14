@@ -696,6 +696,21 @@ export default function Payments() {
     };
   };
 
+  const togglePatientVisitPaid = async (visitId: string, paid: boolean) => {
+    const newStatus = paid ? "Paid" : "Pending";
+    setPatientVisitsRaw(prev => prev.map(v => v.id === visitId ? { ...v, payment_status: newStatus } : v));
+    const { error } = await supabase
+      .from("patient_visits")
+      .update({ payment_status: newStatus })
+      .eq("id", visitId);
+    if (error) {
+      toast.error("Erro ao atualizar pagamento");
+    } else {
+      toast.success(paid ? "Visita marcada como paga" : "Visita marcada como pendente");
+    }
+    loadProjectData();
+  };
+
   const markAsPaid = async (participantId: string, paymentDate: string, notes: string) => {
     const payment = participantPayments.find(p => p.participant_id === participantId);
     if (!payment || payment.pending_payment === 0) {
