@@ -525,6 +525,7 @@ export default function Payments() {
 
     setParticipants(participants || []);
     setVisits(visitsData || []);
+    setPatientVisitsRaw(patientVisitsRes || []);
 
     // Calculate payment data for each participant using protocol schedules as source of truth
     const payments: ParticipantPayment[] = participants.map((participant) => {
