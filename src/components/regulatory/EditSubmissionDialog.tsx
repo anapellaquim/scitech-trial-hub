@@ -78,6 +78,7 @@ export default function EditSubmissionDialog({
     status: "pending",
     notes: "",
     compliance_response: "",
+    has_requirements: "no",
     requirement_date: "",
     requirement_due_date: "",
     requirement_submitted_date: "",
@@ -96,6 +97,7 @@ export default function EditSubmissionDialog({
         status: submission.status,
         notes: submission.notes || "",
         compliance_response: (submission as any).compliance_response || "",
+        has_requirements: (submission as any).has_requirements ? "yes" : "no",
         requirement_date: (submission as any).requirement_date || "",
         requirement_due_date: (submission as any).requirement_due_date || "",
         requirement_submitted_date: (submission as any).requirement_submitted_date || "",
@@ -121,9 +123,14 @@ export default function EditSubmissionDialog({
 
     setLoading(true);
     try {
+      const hasReq = formData.has_requirements === "yes";
       let finalStatus = formData.status;
       if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "approved";
+      } else if (hasReq && formData.requirement_submitted_date) {
+        if (!["rejected"].includes(finalStatus)) finalStatus = "submitted";
+      } else if (hasReq && formData.requirement_date) {
+        if (!["rejected"].includes(finalStatus)) finalStatus = "revision_required";
       } else if (!formData.approval_date && !formData.submission_date) {
         finalStatus = "pending";
       }
@@ -143,6 +150,7 @@ export default function EditSubmissionDialog({
           requirement_date: formData.requirement_date || null,
           requirement_due_date: formData.requirement_due_date || null,
           requirement_submitted_date: formData.requirement_submitted_date || null,
+          has_requirements: formData.has_requirements === "yes",
         } as any)
         .eq("id", submission.id);
 
@@ -313,15 +321,37 @@ export default function EditSubmissionDialog({
           </div>
 
           <div className="space-y-2 rounded-md border p-3">
-            <Label className="text-sm font-semibold">Requirements</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm font-semibold">Requirements</Label>
+              <Select
+                value={formData.has_requirements}
+                onValueChange={(v) => setFormData({ ...formData, has_requirements: v })}
+              >
+                <SelectTrigger className="w-28 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="yes">Yes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="requirement_date" className="text-xs">Requirement Date</Label>
                 <Input
                   id="requirement_date"
                   type="date"
+                  disabled={formData.has_requirements !== "yes"}
                   value={formData.requirement_date}
-                  onChange={(e) => setFormData({ ...formData, requirement_date: e.target.value })}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const next = { ...formData, requirement_date: v };
+                    if (formData.has_requirements === "yes" && v && !formData.requirement_submitted_date && !formData.approval_date && !["rejected"].includes(formData.status)) {
+                      next.status = "revision_required";
+                    }
+                    setFormData(next);
+                  }}
                 />
               </div>
               <div className="space-y-1">
@@ -329,6 +359,7 @@ export default function EditSubmissionDialog({
                 <Input
                   id="requirement_due_date"
                   type="date"
+                  disabled={formData.has_requirements !== "yes"}
                   value={formData.requirement_due_date}
                   onChange={(e) => setFormData({ ...formData, requirement_due_date: e.target.value })}
                 />
@@ -338,8 +369,16 @@ export default function EditSubmissionDialog({
                 <Input
                   id="requirement_submitted_date"
                   type="date"
+                  disabled={formData.has_requirements !== "yes"}
                   value={formData.requirement_submitted_date}
-                  onChange={(e) => setFormData({ ...formData, requirement_submitted_date: e.target.value })}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const next = { ...formData, requirement_submitted_date: v };
+                    if (formData.has_requirements === "yes" && v && !formData.approval_date && !["rejected"].includes(formData.status)) {
+                      next.status = "submitted";
+                    }
+                    setFormData(next);
+                  }}
                 />
               </div>
             </div>

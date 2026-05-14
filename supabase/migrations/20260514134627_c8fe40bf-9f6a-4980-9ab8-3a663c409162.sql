@@ -1,0 +1,2 @@
+ALTER TABLE public.regulatory_submissions ADD COLUMN IF NOT EXISTS has_requirements boolean NOT NULL DEFAULT false;
+ALTER TABLE public.regulatory_reports ADD COLUMN IF NOT EXISTS has_requirements boolean NOT NULL DEFAULT false;

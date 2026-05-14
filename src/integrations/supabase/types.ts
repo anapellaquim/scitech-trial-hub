@@ -2871,6 +2871,7 @@ export type Database = {
           code: string | null
           created_at: string
           due_date: string
+          has_requirements: boolean
           id: string
           notes: string | null
           project_id: string | null
@@ -2891,6 +2892,7 @@ export type Database = {
           code?: string | null
           created_at?: string
           due_date: string
+          has_requirements?: boolean
           id?: string
           notes?: string | null
           project_id?: string | null
@@ -2911,6 +2913,7 @@ export type Database = {
           code?: string | null
           created_at?: string
           due_date?: string
+          has_requirements?: boolean
           id?: string
           notes?: string | null
           project_id?: string | null
@@ -2957,6 +2960,7 @@ export type Database = {
           compliance_response: string | null
           created_at: string
           flow_step_id: string | null
+          has_requirements: boolean
           id: string
           notes: string | null
           planned_date: string | null
@@ -2976,6 +2980,7 @@ export type Database = {
           compliance_response?: string | null
           created_at?: string
           flow_step_id?: string | null
+          has_requirements?: boolean
           id?: string
           notes?: string | null
           planned_date?: string | null
@@ -2995,6 +3000,7 @@ export type Database = {
           compliance_response?: string | null
           created_at?: string
           flow_step_id?: string | null
+          has_requirements?: boolean
           id?: string
           notes?: string | null
           planned_date?: string | null

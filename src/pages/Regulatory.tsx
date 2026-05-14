@@ -44,6 +44,10 @@ interface Submission {
   status: string;
   notes: string | null;
   compliance_response: string | null;
+  has_requirements?: boolean | null;
+  requirement_date?: string | null;
+  requirement_due_date?: string | null;
+  requirement_submitted_date?: string | null;
   project?: Project;
   site?: Site;
 }
@@ -58,6 +62,10 @@ interface Report {
   approval_date: string | null;
   status: string;
   notes: string | null;
+  has_requirements?: boolean | null;
+  requirement_date?: string | null;
+  requirement_due_date?: string | null;
+  requirement_submitted_date?: string | null;
   project?: Project;
 }
 
@@ -454,7 +462,10 @@ export default function Regulatory() {
                       </TableRow>
                     ) : (
                       filteredSubmissions.map((sub) => {
-                        const deadlineStatus = getDeadlineStatus(sub.planned_date);
+                        const hasReq = !!sub.has_requirements;
+                        const effectiveSubmitted = hasReq && sub.requirement_submitted_date ? sub.requirement_submitted_date : sub.submission_date;
+                        const deadlineDate = hasReq && sub.requirement_due_date ? sub.requirement_due_date : sub.planned_date;
+                        const deadlineStatus = getDeadlineStatus(deadlineDate);
                         return (
                           <TableRow 
                             key={sub.id} 
@@ -477,7 +488,7 @@ export default function Regulatory() {
                               {sub.planned_date ? format(parseLocalDate(sub.planned_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
-                              {sub.submission_date ? format(parseLocalDate(sub.submission_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
@@ -529,7 +540,10 @@ export default function Regulatory() {
                       </TableRow>
                     ) : (
                       filteredReports.map((rep) => {
-                        const deadlineStatus = getDeadlineStatus(rep.due_date);
+                        const hasReq = !!rep.has_requirements;
+                        const effectiveSubmitted = hasReq && rep.requirement_submitted_date ? rep.requirement_submitted_date : rep.submitted_date;
+                        const deadlineDate = hasReq && rep.requirement_due_date ? rep.requirement_due_date : rep.due_date;
+                        const deadlineStatus = getDeadlineStatus(deadlineDate);
                         return (
                           <TableRow 
                             key={rep.id}
@@ -549,7 +563,7 @@ export default function Regulatory() {
                               {format(parseLocalDate(rep.due_date), "dd/MM/yyyy", { locale: enUS })}
                             </TableCell>
                             <TableCell>
-                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               {rep.approval_date ? format(parseLocalDate(rep.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
