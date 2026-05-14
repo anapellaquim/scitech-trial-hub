@@ -251,13 +251,7 @@ export default function EditReportDialog({
             <Label htmlFor="status">Status *</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => {
-                const next = { ...formData, status: value };
-                if (formData.has_requirements === "yes" && value !== "rejected") {
-                  next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                }
-                setFormData(next);
-              }}
+              onValueChange={(value) => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
@@ -313,10 +307,10 @@ export default function EditReportDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, submitted_date: v };
-                  if (formData.has_requirements === "yes" && formData.status !== "rejected") {
-                    next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                  } else if (v) next.status = "submitted";
-                  else if (!formData.approval_date) next.status = "pending";
+                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                    if (v) next.status = "submitted";
+                    else if (!formData.approval_date) next.status = "pending";
+                  }
                   setFormData(next);
                 }}
               />
@@ -330,89 +324,13 @@ export default function EditReportDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, approval_date: v };
-                  if (formData.has_requirements === "yes" && formData.status !== "rejected") {
-                    next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                  } else if (v) next.status = "approved";
-                  else if (!formData.submitted_date) next.status = "pending";
-                  setFormData(next);
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2 rounded-md border p-3">
-            <div className="flex items-center justify-between gap-3">
-              <Label className="text-sm font-semibold">Requirements</Label>
-              <Select
-                value={formData.has_requirements}
-                onValueChange={(v) => {
-                  const next = { ...formData, has_requirements: v };
-                  if (v === "yes" && !["rejected"].includes(formData.status)) {
-                    next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
+                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                    if (v) next.status = "approved";
+                    else if (!formData.submitted_date) next.status = "pending";
                   }
                   setFormData(next);
                 }}
-              >
-                <SelectTrigger className="w-28 h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no">No</SelectItem>
-                  <SelectItem value="yes">Yes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="requirement_date" className="text-xs">Requirement Date</Label>
-                <Input
-                  id="requirement_date"
-                  type="date"
-                  disabled={formData.has_requirements !== "yes"}
-                  value={formData.requirement_date}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    const next = { ...formData, requirement_date: v };
-                    if (formData.has_requirements === "yes" && !["rejected"].includes(formData.status)) {
-                      next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                    }
-                    setFormData(next);
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="requirement_due_date" className="text-xs">Due Date</Label>
-                <Input
-                  id="requirement_due_date"
-                  type="date"
-                  disabled={formData.has_requirements !== "yes"}
-                  value={formData.requirement_due_date}
-                  onChange={(e) => {
-                    const next = { ...formData, requirement_due_date: e.target.value };
-                    if (formData.has_requirements === "yes" && !["rejected"].includes(formData.status)) {
-                      next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                    }
-                    setFormData(next);
-                  }}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="requirement_submitted_date" className="text-xs">Submitted Date</Label>
-                <Input
-                  id="requirement_submitted_date"
-                  type="date"
-                  disabled={formData.has_requirements !== "yes"}
-                  value={formData.requirement_submitted_date}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    const next = { ...formData, requirement_submitted_date: v };
-                    if (formData.has_requirements === "yes" && !["rejected"].includes(formData.status)) {
-                      next.status = v ? "submitted" : "revision_required";
-                    }
-                    setFormData(next);
-                  }}
-                />
-              </div>
+              />
             </div>
           </div>
 
