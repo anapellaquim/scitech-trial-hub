@@ -213,17 +213,17 @@ export function EditParticipantPaymentsDialog({
                   </div>
                   <div className="flex items-center gap-2">
                     <Checkbox
-                      id={`visit-${visit.id}`}
-                      checked={paymentStatus[visit.id] || false}
+                      id={`visit-${vt.id}`}
+                      checked={paymentStatus[vt.id] || false}
                       onCheckedChange={(checked) =>
                         setPaymentStatus((prev) => ({
                           ...prev,
-                          [visit.id]: checked === true,
+                          [vt.id]: checked === true,
                         }))
                       }
                     />
-                    <Label htmlFor={`visit-${visit.id}`} className="text-sm cursor-pointer">
-                      {paymentStatus[visit.id] ? (
+                    <Label htmlFor={`visit-${vt.id}`} className="text-sm cursor-pointer">
+                      {paymentStatus[vt.id] ? (
                         <Badge className="bg-success">Pago</Badge>
                       ) : (
                         <Badge variant="destructive">A pagar</Badge>
