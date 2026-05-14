@@ -230,7 +230,7 @@ export default function ClinicalEvaluation() {
   const openHistory = async (doc: CEDocument) => {
     setHistoryDoc(doc);
     setHistoryOpen(true);
-    setNewVersion({ version: "", change_summary: "", link: "", author: "", issued_at: "" });
+    setNewVersion({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "minor", revision_reason: "" });
     const { data, error } = await supabase
       .from("clinical_evaluation_document_versions")
       .select("*")
