@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { DollarSign, Download, Users, AlertCircle, CheckCircle2, Building2, History, Pencil, Plus, CalendarDays, TrendingUp, Briefcase, Trash2, Settings2, RefreshCw, ExternalLink, AlertTriangle, Search } from "lucide-react";
+import { DollarSign, Download, Users, AlertCircle, CheckCircle2, Building2, History, Pencil, Plus, CalendarDays, TrendingUp, Briefcase, Trash2, Settings2, RefreshCw, ExternalLink, AlertTriangle, Search, Clock, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { EditPaymentDialog } from "@/components/payments/EditPaymentDialog";
 import { RegisterPaymentDialog } from "@/components/payments/RegisterPaymentDialog";
@@ -22,7 +22,7 @@ import { NewCenterPaymentDialog } from "@/components/payments/NewCenterPaymentDi
 import { EditParticipantPaymentsDialog } from "@/components/payments/EditParticipantPaymentsDialog";
 import { VendorManagementDialog } from "@/components/payments/VendorManagementDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { parseLocalDate, todayDateOnly, formatDateOnly } from "@/lib/dateUtils";
