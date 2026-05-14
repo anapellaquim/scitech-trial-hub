@@ -321,8 +321,68 @@ export default function EditSubmissionDialog({
           </div>
 
           <div className="space-y-2 rounded-md border p-3">
-            <Label className="text-sm font-semibold">Requirements</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-sm font-semibold">Requirements</Label>
+              <Select
+                value={formData.has_requirements}
+                onValueChange={(v) => setFormData({ ...formData, has_requirements: v })}
+              >
+                <SelectTrigger className="w-28 h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="yes">Yes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="requirement_date" className="text-xs">Requirement Date</Label>
+                <Input
+                  id="requirement_date"
+                  type="date"
+                  disabled={formData.has_requirements !== "yes"}
+                  value={formData.requirement_date}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const next = { ...formData, requirement_date: v };
+                    if (formData.has_requirements === "yes" && v && !formData.requirement_submitted_date && !formData.approval_date && !["rejected"].includes(formData.status)) {
+                      next.status = "revision_required";
+                    }
+                    setFormData(next);
+                  }}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="requirement_due_date" className="text-xs">Due Date</Label>
+                <Input
+                  id="requirement_due_date"
+                  type="date"
+                  disabled={formData.has_requirements !== "yes"}
+                  value={formData.requirement_due_date}
+                  onChange={(e) => setFormData({ ...formData, requirement_due_date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="requirement_submitted_date" className="text-xs">Submitted Date</Label>
+                <Input
+                  id="requirement_submitted_date"
+                  type="date"
+                  disabled={formData.has_requirements !== "yes"}
+                  value={formData.requirement_submitted_date}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const next = { ...formData, requirement_submitted_date: v };
+                    if (formData.has_requirements === "yes" && v && !formData.approval_date && !["rejected"].includes(formData.status)) {
+                      next.status = "submitted";
+                    }
+                    setFormData(next);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
               <div className="space-y-1">
                 <Label htmlFor="requirement_date" className="text-xs">Requirement Date</Label>
                 <Input
