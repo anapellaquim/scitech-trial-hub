@@ -194,7 +194,7 @@ export default function EditReportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[480px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Regulatory Report</DialogTitle>
         </DialogHeader>
