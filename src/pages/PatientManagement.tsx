@@ -620,15 +620,20 @@ export default function PatientManagement() {
                                           {Icon && <Icon className="h-3 w-3" />}
                                           {computedStatus}
                                         </Badge>
-                                        {visit?.actual_date ? (
-                                          <span className="text-[10px] text-muted-foreground mt-1">
-                                            {format(new Date(visit.actual_date), "dd/MM/yyyy")}
-                                          </span>
-                                        ) : p.enrollment_date ? (
-                                          <span className="text-[10px] text-muted-foreground mt-1">
-                                            Exp: {format(addDays(new Date(p.enrollment_date), pv.target_day), "dd/MM/yyyy")}
-                                          </span>
-                                        ) : null}
+                                       {visit?.actual_date ? (
+                                         <span className="text-[10px] text-muted-foreground mt-1">
+                                           {format(new Date(visit.actual_date), "dd/MM/yyyy")}
+                                         </span>
+                                       ) : p.enrollment_date ? (
+                                         <span className="text-[10px] text-muted-foreground mt-1">
+                                           Exp: {format(addDays(new Date(p.enrollment_date), pv.target_day), "dd/MM/yyyy")}
+                                         </span>
+                                       ) : null}
+                                       {p.enrollment_date && (
+                                         <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
+                                           Window: {format(addDays(new Date(p.enrollment_date), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(new Date(p.enrollment_date), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
+                                         </span>
+                                       )}
                                       </div>
                                     </TableCell>
                                   );
