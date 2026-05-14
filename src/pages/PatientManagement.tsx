@@ -551,16 +551,52 @@ export default function PatientManagement() {
                 <TabsTrigger value="protocol" className="gap-2"><Settings2 className="h-4 w-4" /> Protocol Setup</TabsTrigger>
               </TabsList>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input 
                     placeholder="Search patient code or site..." 
                     value={searchTerm} 
                     onChange={e => setSearch(e.target.value)}
-                    className="pl-8 w-[250px]"
+                    className="pl-8 w-[220px]"
                   />
                 </div>
+                <Select value={filterSite} onValueChange={setFilterSite}>
+                  <SelectTrigger className="w-[180px]"><SelectValue placeholder="Site" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All sites</SelectItem>
+                    {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select value={filterPatientStatus} onValueChange={setFilterPatientStatus}>
+                  <SelectTrigger className="w-[170px]"><SelectValue placeholder="Patient status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="Screening">Screening</SelectItem>
+                    <SelectItem value="Screen failure">Screen failure</SelectItem>
+                    <SelectItem value="Included">Included</SelectItem>
+                    <SelectItem value="Complete">Complete</SelectItem>
+                    <SelectItem value="Lost to FUP">Lost to FUP</SelectItem>
+                    <SelectItem value="Early exit">Early exit</SelectItem>
+                    <SelectItem value="Withdrawn">Withdrawn</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterVisitStatus} onValueChange={setFilterVisitStatus}>
+                  <SelectTrigger className="w-[160px]"><SelectValue placeholder="Visit status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All visits</SelectItem>
+                    <SelectItem value="Scheduled">Scheduled</SelectItem>
+                    <SelectItem value="Window">In Window</SelectItem>
+                    <SelectItem value="Overdue">Overdue</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Lost Visit">Lost Visit</SelectItem>
+                  </SelectContent>
+                </Select>
+                {(filterSite !== "all" || filterPatientStatus !== "all" || filterVisitStatus !== "all" || searchTerm) && (
+                  <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterSite("all"); setFilterPatientStatus("all"); setFilterVisitStatus("all"); }}>
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
 
