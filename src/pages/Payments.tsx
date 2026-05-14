@@ -135,6 +135,12 @@ export default function Payments() {
   const [protocolSchedules, setProtocolSchedules] = useState<any[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  // Full patient data (for the mirrored Participants List panel)
+  const [patientsFull, setPatientsFull] = useState<any[]>([]);
+  const [patientVisitsRaw, setPatientVisitsRaw] = useState<any[]>([]);
+  const [sitesFull, setSitesFull] = useState<any[]>([]);
+  const [participantSearch, setParticipantSearch] = useState("");
+  const [participantFilterSite, setParticipantFilterSite] = useState<string>("all");
   const [participantPayments, setParticipantPayments] = useState<ParticipantPayment[]>([]);
   const [centerSummaries, setCenterSummaries] = useState<CenterSummary[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryRecord[]>([]);
