@@ -22,6 +22,7 @@ import { NewCenterPaymentDialog } from "@/components/payments/NewCenterPaymentDi
 import { EditParticipantPaymentsDialog } from "@/components/payments/EditParticipantPaymentsDialog";
 import { VendorManagementDialog } from "@/components/payments/VendorManagementDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
@@ -694,6 +695,20 @@ export default function Payments() {
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const [pendingPaidToggle, setPendingPaidToggle] = useState<{ visitId: string; paid: boolean; patientCode: string; visitName: string } | null>(null);
+
+  const requestTogglePatientVisitPaid = (visitId: string, paid: boolean) => {
+    const visit = patientVisitsRaw.find(v => v.id === visitId);
+    const patient = patientsFull.find(p => p.id === visit?.patient_id);
+    const ps = protocolSchedules.find(s => s.id === visit?.protocol_visit_id);
+    setPendingPaidToggle({
+      visitId,
+      paid,
+      patientCode: patient?.patient_code || "",
+      visitName: ps?.visit_name || "",
+    });
   };
 
   const togglePatientVisitPaid = async (visitId: string, paid: boolean) => {
@@ -1858,7 +1873,7 @@ export default function Payments() {
                                             <label className="flex items-center gap-1 text-[10px] cursor-pointer mt-0.5">
                                               <Checkbox
                                                 checked={isPaid}
-                                                onCheckedChange={(c) => togglePatientVisitPaid(visit.id, c === true)}
+                                                onCheckedChange={(c) => requestTogglePatientVisitPaid(visit.id, c === true)}
                                               />
                                               <span className={isPaid ? "text-success font-medium" : "text-warning font-medium"}>
                                                 {isPaid ? "Pago" : "A pagar"}
@@ -2691,6 +2706,28 @@ export default function Payments() {
           }}
         />
       )}
+
+      <AlertDialog open={!!pendingPaidToggle} onOpenChange={(o) => { if (!o) setPendingPaidToggle(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingPaidToggle?.paid ? "Marcar visita como paga?" : "Marcar visita como a pagar?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirme a alteração de status de pagamento para o paciente <strong>{pendingPaidToggle?.patientCode}</strong> na visita <strong>{pendingPaidToggle?.visitName}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (pendingPaidToggle) {
+                await togglePatientVisitPaid(pendingPaidToggle.visitId, pendingPaidToggle.paid);
+                setPendingPaidToggle(null);
+              }
+            }}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
