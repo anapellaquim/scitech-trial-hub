@@ -637,6 +637,13 @@ export default function Regulatory() {
           onSuccess={fetchData}
         />
 
+        const submissionTemplateData = [
+          submissionImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
+        ];
+        const reportTemplateData = [
+          reportImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
+        ];
+
         <BulkImportDialog
           open={importOpen}
           onOpenChange={setImportOpen}
@@ -644,6 +651,11 @@ export default function Regulatory() {
           projectId={projectFilter === "all" ? undefined : projectFilter}
           columns={importType === "submission" ? submissionImportColumns : reportImportColumns}
           onSuccess={fetchData}
+          sheetName={importType === "submission" ? "Submissions" : "Reports"}
+          templateSheets={[
+            { name: "Submissions", data: submissionTemplateData },
+            { name: "Reports", data: reportTemplateData },
+          ]}
         />
 
         <NewReportDialog
