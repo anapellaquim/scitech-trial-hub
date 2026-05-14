@@ -464,7 +464,7 @@ export default function Regulatory() {
                       filteredSubmissions.map((sub) => {
                         const hasReq = !!sub.has_requirements;
                         const effectiveSubmitted = hasReq && sub.requirement_submitted_date ? sub.requirement_submitted_date : sub.submission_date;
-                        const deadlineDate = hasReq && sub.requirement_due_date ? sub.requirement_due_date : sub.planned_date;
+                        const deadlineDate = sub.planned_date;
                         const deadlineStatus = getDeadlineStatus(deadlineDate);
                         return (
                           <TableRow 
@@ -547,7 +547,7 @@ export default function Regulatory() {
                       filteredReports.map((rep) => {
                         const hasReq = !!rep.has_requirements;
                         const effectiveSubmitted = hasReq && rep.requirement_submitted_date ? rep.requirement_submitted_date : rep.submitted_date;
-                        const deadlineDate = hasReq && rep.requirement_due_date ? rep.requirement_due_date : rep.due_date;
+                        const deadlineDate = rep.due_date;
                         const deadlineStatus = getDeadlineStatus(deadlineDate);
                         return (
                           <TableRow 
