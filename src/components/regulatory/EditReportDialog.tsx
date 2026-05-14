@@ -133,9 +133,14 @@ export default function EditReportDialog({
 
     setLoading(true);
     try {
+      const hasReq = formData.has_requirements === "yes";
       let finalStatus = formData.status;
       if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "approved";
+      } else if (hasReq && formData.requirement_submitted_date) {
+        if (!["rejected"].includes(finalStatus)) finalStatus = "submitted";
+      } else if (hasReq && formData.requirement_date) {
+        if (!["rejected"].includes(finalStatus)) finalStatus = "revision_required";
       } else if (!formData.approval_date && !formData.submitted_date) {
         finalStatus = "pending";
       }
