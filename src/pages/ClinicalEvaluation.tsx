@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -37,11 +37,6 @@ interface CEDocument {
   next_review_date: string | null;
   link: string | null;
   notes: string | null;
-  training_required: boolean;
-  training_trainees: string | null;
-  training_date: string | null;
-  training_trainer: string | null;
-  training_evidence_link: string | null;
 }
 
 interface CEVersion {
@@ -93,11 +88,6 @@ const emptyForm = () => ({
   next_review_date: "",
   link: "",
   notes: "",
-  training_required: false,
-  training_trainees: "",
-  training_date: "",
-  training_trainer: "",
-  training_evidence_link: "",
 });
 
 function computeNextReview(last: string | null, months: number): string | null {
@@ -173,11 +163,6 @@ export default function ClinicalEvaluation() {
       next_review_date: r.next_review_date || "",
       link: r.link || "",
       notes: r.notes || "",
-      training_required: !!r.training_required,
-      training_trainees: r.training_trainees || "",
-      training_date: r.training_date || "",
-      training_trainer: r.training_trainer || "",
-      training_evidence_link: r.training_evidence_link || "",
     });
     setDialogOpen(true);
   };
@@ -214,11 +199,6 @@ export default function ClinicalEvaluation() {
         computeNextReview(form.last_review_date || null, form.review_periodicity_months),
       link: form.link || null,
       notes: form.notes || null,
-      training_required: form.training_required,
-      training_trainees: form.training_required ? (form.training_trainees || null) : null,
-      training_date: form.training_required ? (form.training_date || null) : null,
-      training_trainer: form.training_required ? (form.training_trainer || null) : null,
-      training_evidence_link: form.training_required ? (form.training_evidence_link || null) : null,
     };
 
     const { error } = editing
@@ -506,51 +486,6 @@ export default function ClinicalEvaluation() {
               <Label>Notes</Label>
               <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
-            <div className="col-span-2 flex items-center space-x-2 pt-2">
-              <Checkbox
-                id="training_required"
-                checked={form.training_required}
-                onCheckedChange={(v) => setForm({ ...form, training_required: !!v })}
-              />
-              <Label htmlFor="training_required" className="cursor-pointer">Training Required</Label>
-            </div>
-            {form.training_required && (
-              <div className="col-span-2 grid grid-cols-2 gap-4 rounded-md border border-border bg-muted/30 p-4">
-                <div className="col-span-2 space-y-2">
-                  <Label>Trainees *</Label>
-                  <Textarea
-                    rows={2}
-                    placeholder="List trainees (one per line or comma-separated)"
-                    value={form.training_trainees}
-                    onChange={(e) => setForm({ ...form, training_trainees: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Training Date</Label>
-                  <Input
-                    type="date"
-                    value={form.training_date}
-                    onChange={(e) => setForm({ ...form, training_date: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Trainer</Label>
-                  <Input
-                    value={form.training_trainer}
-                    onChange={(e) => setForm({ ...form, training_trainer: e.target.value })}
-                    placeholder="Trainer name"
-                  />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Evidence Link</Label>
-                  <Input
-                    value={form.training_evidence_link}
-                    onChange={(e) => setForm({ ...form, training_evidence_link: e.target.value })}
-                    placeholder="https://... (training records, attendance sheet, certificates)"
-                  />
-                </div>
-              </div>
-            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>

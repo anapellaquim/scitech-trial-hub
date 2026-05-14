@@ -105,6 +105,10 @@ const emptyForm = {
   opened_at: todayDateOnly(),
   resolved_at: "",
   impact_areas_other: "",
+  training_trainees: "",
+  training_date: "",
+  training_trainer: "",
+  training_evidence_link: "",
 };
 
 export default function ChangeControl() {
@@ -205,6 +209,10 @@ export default function ChangeControl() {
       impact_areas: form.impact_areas,
       impact_areas_other: form.impact_areas.includes("other") ? form.impact_areas_other.trim() || null : null,
       requires_training: form.requires_training,
+      training_trainees: form.requires_training ? (form.training_trainees.trim() || null) : null,
+      training_date: form.requires_training ? (form.training_date || null) : null,
+      training_trainer: form.requires_training ? (form.training_trainer.trim() || null) : null,
+      training_evidence_link: form.requires_training ? (form.training_evidence_link.trim() || null) : null,
       requires_communication: form.requires_communication,
       status: form.status,
       responsible: form.responsible.trim() || null,
@@ -281,6 +289,10 @@ export default function ChangeControl() {
       responsible: r.responsible || "",
       opened_at: r.opened_at,
       resolved_at: r.resolved_at || "",
+      training_trainees: (r as any).training_trainees || "",
+      training_date: (r as any).training_date || "",
+      training_trainer: (r as any).training_trainer || "",
+      training_evidence_link: (r as any).training_evidence_link || "",
     });
     setActionItems(allActions.filter(a => a.change_control_id === r.id).map(a => ({ ...a })));
     setDialogOpen(true);
@@ -478,6 +490,44 @@ export default function ChangeControl() {
                 Communication Required
               </label>
             </div>
+
+            {form.requires_training && (
+              <div className="grid grid-cols-2 gap-4 rounded-md border border-border bg-muted/30 p-4">
+                <div className="col-span-2 space-y-2">
+                  <Label>Trainees *</Label>
+                  <Textarea
+                    rows={2}
+                    placeholder="List trainees (one per line or comma-separated)"
+                    value={form.training_trainees}
+                    onChange={(e) => setForm({ ...form, training_trainees: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Training Date</Label>
+                  <Input
+                    type="date"
+                    value={form.training_date}
+                    onChange={(e) => setForm({ ...form, training_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Trainer</Label>
+                  <Input
+                    value={form.training_trainer}
+                    onChange={(e) => setForm({ ...form, training_trainer: e.target.value })}
+                    placeholder="Trainer name"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Evidence Link</Label>
+                  <Input
+                    value={form.training_evidence_link}
+                    onChange={(e) => setForm({ ...form, training_evidence_link: e.target.value })}
+                    placeholder="https://... (training records, attendance sheet, certificates)"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <div className="flex items-center justify-between mb-2">
