@@ -44,6 +44,10 @@ interface Submission {
   status: string;
   notes: string | null;
   compliance_response: string | null;
+  has_requirements?: boolean | null;
+  requirement_date?: string | null;
+  requirement_due_date?: string | null;
+  requirement_submitted_date?: string | null;
   project?: Project;
   site?: Site;
 }
@@ -58,6 +62,10 @@ interface Report {
   approval_date: string | null;
   status: string;
   notes: string | null;
+  has_requirements?: boolean | null;
+  requirement_date?: string | null;
+  requirement_due_date?: string | null;
+  requirement_submitted_date?: string | null;
   project?: Project;
 }
 
