@@ -390,8 +390,8 @@ export default function ClinicalEvaluation() {
               </TableHeader>
               <TableBody>
                 {activeRecords.map((r) => (
-                  <>
-                  <TableRow key={r.id}>
+                  <Fragment key={r.id}>
+                  <TableRow>
                     <TableCell>
                       <div className="font-medium">{r.title}</div>
                       {r.code && <div className="text-xs text-muted-foreground">{r.code}</div>}
@@ -491,7 +491,7 @@ export default function ClinicalEvaluation() {
                       </TableCell>
                     </TableRow>
                   )}
-                  </>
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>
