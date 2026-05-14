@@ -554,8 +554,10 @@ export default function ClinicalEvaluation() {
             <TableHeader>
               <TableRow>
                 <TableHead>Version</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Issued</TableHead>
                 <TableHead>Author</TableHead>
+                <TableHead>Reason</TableHead>
                 <TableHead>Change Summary</TableHead>
                 <TableHead>Link</TableHead>
               </TableRow>
@@ -563,14 +565,20 @@ export default function ClinicalEvaluation() {
             <TableBody>
               {versions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">No versions recorded yet.</TableCell>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">No versions recorded yet.</TableCell>
                 </TableRow>
               ) : (
                 versions.map((v) => (
                   <TableRow key={v.id}>
                     <TableCell><Badge variant="outline">{v.version}</Badge></TableCell>
+                    <TableCell>
+                      <Badge className={v.revision_type === "major" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}>
+                        {v.revision_type === "major" ? "Major" : "Minor"}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-sm">{v.issued_at || "—"}</TableCell>
                     <TableCell className="text-sm">{v.author || "—"}</TableCell>
+                    <TableCell className="text-sm">{v.revision_reason || "—"}</TableCell>
                     <TableCell className="text-sm">{v.change_summary || "—"}</TableCell>
                     <TableCell>
                       {v.link ? (
