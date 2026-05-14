@@ -11,15 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar, Upload, Download, RefreshCw } from "lucide-react";
+import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar, Upload, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { format, differenceInDays, isPast, isWithinInterval, addDays } from "date-fns";
 import { enUS } from "date-fns/locale";
 import NewSubmissionDialog from "@/components/regulatory/NewSubmissionDialog";
 import NewReportDialog from "@/components/regulatory/NewReportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import BulkImportDialog, { type ColumnMapping } from "@/components/shared/BulkImportDialog";
-import ExcelExportButton from "@/components/shared/ExcelExportButton";
-
 import EditSubmissionDialog from "@/components/regulatory/EditSubmissionDialog";
 import EditReportDialog from "@/components/regulatory/EditReportDialog";
 
@@ -116,17 +115,17 @@ export default function Regulatory() {
     { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Planned Date", dbColumn: "planned_date" },
     { excelHeader: "Submission Date", dbColumn: "submission_date" },
-    { excelHeader: "Has Requirements", dbColumn: "has_requirements" },
-    { excelHeader: "Requirement Due Date", dbColumn: "requirement_due_date" },
+    { excelHeader: "Requirements", dbColumn: "has_requirements", transform: (v: any) => v?.toString().toLowerCase() === "yes" || v === true || v === 1 },
+    { excelHeader: "Requirement Deadline", dbColumn: "requirement_due_date" },
     { excelHeader: "Requirement Submitted Date", dbColumn: "requirement_submitted_date" },
     { excelHeader: "Approval Date", dbColumn: "approval_date" },
     { excelHeader: "Notes", dbColumn: "notes" },
   ];
 
   const reportImportColumns: ColumnMapping[] = [
-    { excelHeader: "Type", dbColumn: "report_type", required: true },
+    { excelHeader: "Report Type", dbColumn: "report_type", required: true },
     { excelHeader: "Status", dbColumn: "status", required: true },
-    { excelHeader: "Due Date", dbColumn: "due_date", required: true },
+    { excelHeader: "Deadline", dbColumn: "due_date", required: true },
     { excelHeader: "Submitted Date", dbColumn: "submitted_date" },
     { excelHeader: "Approval Date", dbColumn: "approval_date" },
     { excelHeader: "Notes", dbColumn: "notes" },
@@ -256,18 +255,17 @@ export default function Regulatory() {
     Notes: r.notes || "",
   })), [filteredReports]);
 
-  const [syncing, setSyncing] = useState(false);
+  const handleExportBoth = () => {
+    if (filteredSubmissions.length === 0 && filteredReports.length === 0) return;
+    const wb = XLSX.utils.book_new();
 
-  const handleSyncData = async () => {
-    setSyncing(true);
-    try {
-      await fetchData();
-      toast({ title: "Sincronização concluída", description: "Todos os dados importados foram sincronizados com os registros dos módulos." });
-    } catch (err: any) {
-      toast({ title: "Erro na sincronização", description: err.message, variant: "destructive" });
-    } finally {
-      setSyncing(false);
-    }
+    const subSheet = XLSX.utils.json_to_sheet(submissionExportData);
+    XLSX.utils.book_append_sheet(wb, subSheet, "Submissions");
+
+    const repSheet = XLSX.utils.json_to_sheet(reportExportData);
+    XLSX.utils.book_append_sheet(wb, repSheet, "Reports");
+
+    XLSX.writeFile(wb, `regulatory_data_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
   };
 
   // Stats — symmetric across Submissions + Reports
@@ -298,6 +296,13 @@ export default function Regulatory() {
     submissions.filter(s => s.status === "approved").length +
     reports.filter(r => r.status === "approved").length;
 
+  const submissionTemplateData = [
+    submissionImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
+  ];
+  const reportTemplateData = [
+    reportImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -323,10 +328,10 @@ export default function Regulatory() {
             </p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0 flex-wrap">
-            <ExcelExportButton 
-              data={importType === "submission" ? submissionExportData : reportExportData} 
-              fileName={importType === "submission" ? "submissions" : "reports"} 
-            />
+            <Button variant="outline" size="sm" onClick={handleExportBoth}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Excel
+            </Button>
             <Button variant="outline" onClick={() => {
               setImportType("report");
               setImportOpen(true);
@@ -646,6 +651,11 @@ export default function Regulatory() {
           projectId={projectFilter === "all" ? undefined : projectFilter}
           columns={importType === "submission" ? submissionImportColumns : reportImportColumns}
           onSuccess={fetchData}
+          sheetName={importType === "submission" ? "Submissions" : "Reports"}
+          templateSheets={[
+            { name: "Submissions", data: submissionTemplateData },
+            { name: "Reports", data: reportTemplateData },
+          ]}
         />
 
         <NewReportDialog

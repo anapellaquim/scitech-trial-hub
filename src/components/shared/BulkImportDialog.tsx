@@ -14,6 +14,11 @@ export interface ColumnMapping {
   transform?: (value: any) => any;
 }
 
+interface TemplateSheet {
+  name: string;
+  data: Record<string, string>[];
+}
+
 interface BulkImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -22,10 +27,12 @@ interface BulkImportDialogProps {
   columns: ColumnMapping[];
   onSuccess: () => void;
   templateData?: Record<string, string>[];
+  templateSheets?: TemplateSheet[];
+  sheetName?: string;
 }
 
 export default function BulkImportDialog({
-  open, onOpenChange, tableName, projectId, columns, onSuccess, templateData,
+  open, onOpenChange, tableName, projectId, columns, onSuccess, templateData, templateSheets, sheetName,
 }: BulkImportDialogProps) {
   const [preview, setPreview] = useState<Record<string, any>[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
@@ -39,7 +46,9 @@ export default function BulkImportDialog({
     reader.onload = (evt) => {
       try {
         const wb = XLSX.read(evt.target?.result, { type: "binary" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
+        const targetSheet = sheetName && wb.Sheets[sheetName] ? sheetName : wb.SheetNames[0];
+        const ws = wb.Sheets[targetSheet];
+        if (!ws) { toast.error(`Sheet "${targetSheet}" not found`); return; }
         const raw: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
         if (raw.length === 0) { toast.error("Empty file"); return; }
 
@@ -81,6 +90,15 @@ export default function BulkImportDialog({
   };
 
   const downloadTemplate = () => {
+    if (templateSheets && templateSheets.length > 0) {
+      const wb = XLSX.utils.book_new();
+      templateSheets.forEach((sheet) => {
+        const ws = XLSX.utils.json_to_sheet(sheet.data);
+        XLSX.utils.book_append_sheet(wb, ws, sheet.name);
+      });
+      XLSX.writeFile(wb, `${tableName}_template.xlsx`);
+      return;
+    }
     const data = templateData || [
       columns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
     ];
