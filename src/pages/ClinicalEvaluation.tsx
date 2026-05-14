@@ -340,7 +340,7 @@ export default function ClinicalEvaluation() {
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center text-muted-foreground">Loading...</div>
-          ) : records.length === 0 ? (
+          ) : activeRecords.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               No documents yet. Click "New Document" to get started.
             </div>
@@ -359,7 +359,7 @@ export default function ClinicalEvaluation() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {records.map((r) => (
+                {activeRecords.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>
                       <div className="font-medium">{r.title}</div>
