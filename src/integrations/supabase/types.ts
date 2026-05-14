@@ -322,6 +322,8 @@ export type Database = {
           id: string
           issued_at: string | null
           link: string | null
+          revision_reason: string | null
+          revision_type: string
           version: string
         }
         Insert: {
@@ -332,6 +334,8 @@ export type Database = {
           id?: string
           issued_at?: string | null
           link?: string | null
+          revision_reason?: string | null
+          revision_type?: string
           version: string
         }
         Update: {
@@ -342,6 +346,8 @@ export type Database = {
           id?: string
           issued_at?: string | null
           link?: string | null
+          revision_reason?: string | null
+          revision_type?: string
           version?: string
         }
         Relationships: [
