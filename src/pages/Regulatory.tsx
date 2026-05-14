@@ -259,16 +259,17 @@ export default function Regulatory() {
 
   const [syncing, setSyncing] = useState(false);
 
-  const handleSyncData = async () => {
-    setSyncing(true);
-    try {
-      await fetchData();
-      toast({ title: "Sincronização concluída", description: "Todos os dados importados foram sincronizados com os registros dos módulos." });
-    } catch (err: any) {
-      toast({ title: "Erro na sincronização", description: err.message, variant: "destructive" });
-    } finally {
-      setSyncing(false);
-    }
+  const handleExportBoth = () => {
+    if (filteredSubmissions.length === 0 && filteredReports.length === 0) return;
+    const wb = XLSX.utils.book_new();
+
+    const subSheet = XLSX.utils.json_to_sheet(submissionExportData);
+    XLSX.utils.book_append_sheet(wb, subSheet, "Submissions");
+
+    const repSheet = XLSX.utils.json_to_sheet(reportExportData);
+    XLSX.utils.book_append_sheet(wb, repSheet, "Reports");
+
+    XLSX.writeFile(wb, `regulatory_data_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
   };
 
   // Stats — symmetric across Submissions + Reports
