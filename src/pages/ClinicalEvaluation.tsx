@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import CTMSNav from "@/components/CTMSNav";
 import ExcelExportButton from "@/components/shared/ExcelExportButton";
@@ -122,6 +122,30 @@ export default function ClinicalEvaluation() {
   const [historyDoc, setHistoryDoc] = useState<CEDocument | null>(null);
   const [versions, setVersions] = useState<CEVersion[]>([]);
   const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "literature_review" as "literature_review" | "change_control", revision_reason: "" });
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [versionsByDoc, setVersionsByDoc] = useState<Record<string, CEVersion[]>>({});
+
+  const loadVersionsFor = useCallback(async (docId: string) => {
+    const { data, error } = await supabase
+      .from("clinical_evaluation_document_versions")
+      .select("*")
+      .eq("document_id", docId)
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast.error("Failed to load history: " + error.message);
+      return;
+    }
+    setVersionsByDoc((m) => ({ ...m, [docId]: (data || []) as CEVersion[] }));
+  }, []);
+
+  const toggleExpand = (doc: CEDocument) => {
+    if (expandedId === doc.id) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(doc.id);
+      if (!versionsByDoc[doc.id]) loadVersionsFor(doc.id);
+    }
+  };
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
@@ -271,6 +295,7 @@ export default function ClinicalEvaluation() {
 
     toast.success("Version added");
     openHistory(historyDoc);
+    loadVersionsFor(historyDoc.id);
     loadRecords();
   };
 
@@ -365,7 +390,8 @@ export default function ClinicalEvaluation() {
               </TableHeader>
               <TableBody>
                 {activeRecords.map((r) => (
-                  <TableRow key={r.id}>
+                  <Fragment key={r.id}>
+                  <TableRow>
                     <TableCell>
                       <div className="font-medium">{r.title}</div>
                       {r.code && <div className="text-xs text-muted-foreground">{r.code}</div>}
@@ -397,8 +423,11 @@ export default function ClinicalEvaluation() {
                             </a>
                           </Button>
                         )}
-                        <Button type="button" variant="ghost" size="icon" onClick={() => openHistory(r)}>
-                          <History className="h-4 w-4" />
+                        <Button type="button" variant="ghost" size="icon" onClick={() => toggleExpand(r)} title={expandedId === r.id ? "Hide history" : "Show history"}>
+                          <History className={`h-4 w-4 ${expandedId === r.id ? "text-primary" : ""}`} />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => openHistory(r)} title="Add version">
+                          <Plus className="h-4 w-4" />
                         </Button>
                         <Button type="button" variant="ghost" size="icon" onClick={() => openEdit(r)}>
                           <Pencil className="h-4 w-4" />
@@ -409,6 +438,60 @@ export default function ClinicalEvaluation() {
                       </div>
                     </TableCell>
                   </TableRow>
+                  {expandedId === r.id && (
+                    <TableRow key={r.id + "-history"} className="bg-muted/30 hover:bg-muted/30">
+                      <TableCell colSpan={8} className="p-0">
+                        <div className="p-4 space-y-2">
+                          <div className="flex items-center gap-2 text-sm font-medium">
+                            <History className="h-4 w-4" /> Change History
+                          </div>
+                          {!versionsByDoc[r.id] ? (
+                            <div className="text-xs text-muted-foreground">Loading…</div>
+                          ) : versionsByDoc[r.id].length === 0 ? (
+                            <div className="text-xs text-muted-foreground">No versions recorded yet.</div>
+                          ) : (
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="h-8">Version</TableHead>
+                                  <TableHead className="h-8">Type</TableHead>
+                                  <TableHead className="h-8">Issued</TableHead>
+                                  <TableHead className="h-8">Author</TableHead>
+                                  <TableHead className="h-8">Reason</TableHead>
+                                  <TableHead className="h-8">Change Summary</TableHead>
+                                  <TableHead className="h-8">Link</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {versionsByDoc[r.id].map((v) => (
+                                  <TableRow key={v.id}>
+                                    <TableCell><Badge variant="outline">{v.version}</Badge></TableCell>
+                                    <TableCell>
+                                      <Badge className={v.revision_type === "change_control" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}>
+                                        {v.revision_type === "change_control" ? "Change Control" : "Literature Review"}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-sm">{v.issued_at || "—"}</TableCell>
+                                    <TableCell className="text-sm">{v.author || "—"}</TableCell>
+                                    <TableCell className="text-sm">{v.revision_reason || "—"}</TableCell>
+                                    <TableCell className="text-sm">{v.change_summary || "—"}</TableCell>
+                                    <TableCell>
+                                      {v.link ? (
+                                        <a href={v.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+                                          <ExternalLink className="h-3 w-3" /> Open
+                                        </a>
+                                      ) : "—"}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>
