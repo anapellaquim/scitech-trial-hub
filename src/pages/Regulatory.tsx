@@ -499,10 +499,15 @@ export default function Regulatory() {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {deadlineStatus && (sub.status === "pending" || sub.status === "revision_required") && (
-                                <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
-                                  <deadlineStatus.icon className="h-4 w-4" />
-                                  <span className="text-sm">{deadlineStatus.label}</span>
+                              {deadlineDate && (
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="text-sm">{format(parseLocalDate(deadlineDate), "dd/MM/yyyy", { locale: enUS })}</span>
+                                  {deadlineStatus && (sub.status === "pending" || sub.status === "revision_required") && (
+                                    <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
+                                      <deadlineStatus.icon className="h-4 w-4" />
+                                      <span className="text-xs">{deadlineStatus.label}</span>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </TableCell>
