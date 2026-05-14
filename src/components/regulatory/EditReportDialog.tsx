@@ -87,10 +87,6 @@ export default function EditReportDialog({
     notes: "",
     recurrence_type: "none",
     recurrence_end_date: "",
-    has_requirements: "no",
-    requirement_date: "",
-    requirement_due_date: "",
-    requirement_submitted_date: "",
   });
 
   useEffect(() => {
