@@ -122,6 +122,30 @@ export default function ClinicalEvaluation() {
   const [historyDoc, setHistoryDoc] = useState<CEDocument | null>(null);
   const [versions, setVersions] = useState<CEVersion[]>([]);
   const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "literature_review" as "literature_review" | "change_control", revision_reason: "" });
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [versionsByDoc, setVersionsByDoc] = useState<Record<string, CEVersion[]>>({});
+
+  const loadVersionsFor = useCallback(async (docId: string) => {
+    const { data, error } = await supabase
+      .from("clinical_evaluation_document_versions")
+      .select("*")
+      .eq("document_id", docId)
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast.error("Failed to load history: " + error.message);
+      return;
+    }
+    setVersionsByDoc((m) => ({ ...m, [docId]: (data || []) as CEVersion[] }));
+  }, []);
+
+  const toggleExpand = (doc: CEDocument) => {
+    if (expandedId === doc.id) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(doc.id);
+      if (!versionsByDoc[doc.id]) loadVersionsFor(doc.id);
+    }
+  };
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
