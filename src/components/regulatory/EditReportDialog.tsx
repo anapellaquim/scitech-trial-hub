@@ -107,6 +107,7 @@ export default function EditReportDialog({
         notes: report.notes || "",
         recurrence_type: report.recurrence_type || "none",
         recurrence_end_date: report.recurrence_end_date || "",
+        has_requirements: (report as any).has_requirements ? "yes" : "no",
         requirement_date: (report as any).requirement_date || "",
         requirement_due_date: (report as any).requirement_due_date || "",
         requirement_submitted_date: (report as any).requirement_submitted_date || "",
