@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { DollarSign, Download, Users, AlertCircle, CheckCircle2, Building2, History, Pencil, Plus, CalendarDays, TrendingUp, Briefcase, Trash2, Settings2, RefreshCw, ExternalLink, AlertTriangle, Search } from "lucide-react";
+import { DollarSign, Download, Users, AlertCircle, CheckCircle2, Building2, History, Pencil, Plus, CalendarDays, TrendingUp, Briefcase, Trash2, Settings2, RefreshCw, ExternalLink, AlertTriangle, Search, Clock, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { EditPaymentDialog } from "@/components/payments/EditPaymentDialog";
 import { RegisterPaymentDialog } from "@/components/payments/RegisterPaymentDialog";
@@ -22,7 +22,7 @@ import { NewCenterPaymentDialog } from "@/components/payments/NewCenterPaymentDi
 import { EditParticipantPaymentsDialog } from "@/components/payments/EditParticipantPaymentsDialog";
 import { VendorManagementDialog } from "@/components/payments/VendorManagementDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { parseLocalDate, todayDateOnly, formatDateOnly } from "@/lib/dateUtils";
@@ -135,6 +135,12 @@ export default function Payments() {
   const [protocolSchedules, setProtocolSchedules] = useState<any[]>([]);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  // Full patient data (for the mirrored Participants List panel)
+  const [patientsFull, setPatientsFull] = useState<any[]>([]);
+  const [patientVisitsRaw, setPatientVisitsRaw] = useState<any[]>([]);
+  const [sitesFull, setSitesFull] = useState<any[]>([]);
+  const [participantSearch, setParticipantSearch] = useState("");
+  const [participantFilterSite, setParticipantFilterSite] = useState<string>("all");
   const [participantPayments, setParticipantPayments] = useState<ParticipantPayment[]>([]);
   const [centerSummaries, setCenterSummaries] = useState<CenterSummary[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryRecord[]>([]);
@@ -452,7 +458,7 @@ export default function Payments() {
     // Load protocol visit schedules from Patient Management module
     const { data: protocolSchedulesData } = await supabase
       .from("protocol_visit_schedules")
-      .select("id, visit_name, target_day, payment_amount, site_id")
+      .select("id, visit_name, target_day, payment_amount, site_id, window_minus, window_plus")
       .eq("project_id", selectedProject)
       .order("target_day");
 
@@ -470,12 +476,17 @@ export default function Payments() {
       .select("id, code, name")
       .eq("project_id", selectedProject)
       .order("code");
+    setSitesFull(centers || []);
 
     // Load patients from the new Patient Management module
     const { data: patientsBase } = await supabase
       .from("patients")
-      .select("id, patient_code, site_id, status")
+      .select("id, patient_code, site_id, status, enrollment_date")
       .eq("project_id", selectedProject);
+    setPatientsFull((patientsBase || []).map(p => ({
+      ...p,
+      site: centers?.find(c => c.id === p.site_id) || null,
+    })));
 
     const participants: Participant[] = (patientsBase || []).map(p => {
       const site = centers?.find(c => c.id === p.site_id);
@@ -514,6 +525,7 @@ export default function Payments() {
 
     setParticipants(participants || []);
     setVisits(visitsData || []);
+    setPatientVisitsRaw(patientVisitsRes || []);
 
     // Calculate payment data for each participant using protocol schedules as source of truth
     const payments: ParticipantPayment[] = participants.map((participant) => {
@@ -682,6 +694,21 @@ export default function Payments() {
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const togglePatientVisitPaid = async (visitId: string, paid: boolean) => {
+    const newStatus = paid ? "Paid" : "Pending";
+    setPatientVisitsRaw(prev => prev.map(v => v.id === visitId ? { ...v, payment_status: newStatus } : v));
+    const { error } = await supabase
+      .from("patient_visits")
+      .update({ payment_status: newStatus })
+      .eq("id", visitId);
+    if (error) {
+      toast.error("Erro ao atualizar pagamento");
+    } else {
+      toast.success(paid ? "Visita marcada como paga" : "Visita marcada como pendente");
+    }
+    loadProjectData();
   };
 
   const markAsPaid = async (participantId: string, paymentDate: string, notes: string) => {
@@ -1725,113 +1752,133 @@ export default function Payments() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5" />
-                      Listagem de Pacientes
+                      Pacientes
                     </CardTitle>
                     <CardDescription>
-                      Visualize todos os pacientes cadastrados no módulo Patient Management e seus status financeiros
+                      Espelho da Participants List. Marque as visitas Completed como pagas. Os valores são definidos em Visit Schedule Configuration.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="relative flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                      <div className="relative w-[260px]">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          placeholder="Filtrar por código ou centro..." 
-                          value={filterCenter}
-                          onChange={(e) => setFilterCenter(e.target.value)}
+                        <Input
+                          placeholder="Filtrar por código ou centro..."
+                          value={participantSearch}
+                          onChange={(e) => setParticipantSearch(e.target.value)}
                           className="pl-8"
                         />
                       </div>
+                      <Select value={participantFilterSite} onValueChange={setParticipantFilterSite}>
+                        <SelectTrigger className="w-[200px]"><SelectValue placeholder="Site" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos os sites</SelectItem>
+                          {sitesFull.map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.code} - {s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <TooltipProvider>
-                      <ScrollArea className="w-full">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Código do Paciente</TableHead>
-                              <TableHead>Centro</TableHead>
-                              <TableHead className="text-center">Visitas Completas</TableHead>
-                              <TableHead className="text-right">Total Acumulado</TableHead>
-                              <TableHead className="text-right">Total Pago</TableHead>
-                              <TableHead className="text-right">Valor Pendente</TableHead>
-                              <TableHead className="text-center">Ações</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {participantPayments
-                              .filter(p => 
-                                !filterCenter || 
-                                p.participant_code.toLowerCase().includes(filterCenter.toLowerCase()) ||
-                                p.research_center.toLowerCase().includes(filterCenter.toLowerCase())
-                              )
-                              .map((p) => {
-                                // Find protocol visits for this participant's site
-                                const participantSiteId = participants.find(part => part.id === p.participant_id)?.site_id;
-                                const participantProtocolVisits = protocolSchedules.filter(ps => !ps.site_id || ps.site_id === participantSiteId);
-                                
-                                return (
-                                  <TableRow key={p.participant_id}>
-                                    <TableCell className="font-bold">{p.participant_code}</TableCell>
-                                    <TableCell>{p.research_center}</TableCell>
-                                    <TableCell className="text-center">
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <div className="cursor-default inline-block">
-                                            <Badge variant="outline">{p.completed_visits}</Badge>
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="p-0">
-                                          <div className="p-3 space-y-2 min-w-[200px]">
-                                            <p className="font-semibold text-xs border-bottom pb-1 mb-1">Janela de Visitas (Protocolo)</p>
-                                            {participantProtocolVisits.length > 0 ? (
-                                              <div className="space-y-1">
-                                                {participantProtocolVisits.map(pv => (
-                                                  <div key={pv.id} className="flex justify-between text-[10px] gap-4">
-                                                    <span className="text-muted-foreground">{pv.visit_name}:</span>
-                                                    <span className="font-medium">
-                                                      D{pv.target_day} ({pv.window_minus || 0}/{pv.window_plus || 0})
-                                                    </span>
-                                                  </div>
-                                                ))}
-                                              </div>
-                                            ) : (
-                                              <p className="text-[10px] text-muted-foreground italic">Nenhuma visita configurada</p>
-                                            )}
-                                          </div>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium">{formatCurrency(p.total_earned)}</TableCell>
-                                    <TableCell className="text-right text-success">{formatCurrency(p.total_paid)}</TableCell>
-                                    <TableCell className="text-right text-warning font-bold">{formatCurrency(p.pending_payment)}</TableCell>
-                                    <TableCell className="text-center">
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm"
-                                        onClick={() => {
-                                          setEditingParticipant(p);
-                                          setEditParticipantPaymentsOpen(true);
-                                        }}
-                                        title="Registrar pagamento"
-                                      >
-                                        <DollarSign className="h-4 w-4" />
-                                      </Button>
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            {participantPayments.length === 0 && (
+                    {(() => {
+                      const term = participantSearch.toLowerCase();
+                      const filtered = patientsFull.filter(p => {
+                        const matchesSearch = !term ||
+                          p.patient_code.toLowerCase().includes(term) ||
+                          (p.site?.code || "").toLowerCase().includes(term);
+                        const matchesSite = participantFilterSite === "all" || p.site_id === participantFilterSite;
+                        return matchesSearch && matchesSite;
+                      });
+                      const visitsForPatient = (p: any) =>
+                        protocolSchedules.filter(ps => !ps.site_id || ps.site_id === p.site_id);
+
+                      return (
+                        <ScrollArea className="w-full">
+                          <Table>
+                            <TableHeader>
                               <TableRow>
-                                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                                  Nenhum paciente encontrado.
-                                </TableCell>
+                                <TableHead className="min-w-[120px]">Patient Code</TableHead>
+                                <TableHead className="min-w-[160px]">Site</TableHead>
+                                <TableHead className="min-w-[120px]">Status</TableHead>
+                                {protocolSchedules.map(pv => (
+                                  <TableHead key={pv.id} className="text-center min-w-[170px]">
+                                    {pv.visit_name}
+                                  </TableHead>
+                                ))}
                               </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
-                        <ScrollBar orientation="horizontal" />
-                      </ScrollArea>
-                    </TooltipProvider>
+                            </TableHeader>
+                            <TableBody>
+                              {filtered.length === 0 ? (
+                                <TableRow>
+                                  <TableCell colSpan={protocolSchedules.length + 3} className="text-center py-10 text-muted-foreground">
+                                    Nenhum paciente encontrado.
+                                  </TableCell>
+                                </TableRow>
+                              ) : filtered.map(p => (
+                                <TableRow key={p.id}>
+                                  <TableCell className="font-bold">{p.patient_code}</TableCell>
+                                  <TableCell>{p.site?.code} {p.site?.name ? `- ${p.site.name}` : ""}</TableCell>
+                                  <TableCell><Badge variant="outline">{p.status}</Badge></TableCell>
+                                  {protocolSchedules.map(pv => {
+                                    const applicable = visitsForPatient(p).some(x => x.id === pv.id);
+                                    if (!applicable) {
+                                      return <TableCell key={pv.id} className="text-center text-muted-foreground text-xs">—</TableCell>;
+                                    }
+                                    const visit = patientVisitsRaw.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
+                                    const status = visit?.status || 'Scheduled';
+                                    const isCompleted = status === 'Completed' || status === 'Complete';
+                                    const isLost = status === 'Lost Visit';
+                                    const isPaid = (visit?.payment_status || '').toLowerCase() === 'paid';
+
+                                    let statusColor = 'bg-slate-100 text-slate-800';
+                                    let Icon: any = null;
+                                    let display = status;
+                                    if (isCompleted) { statusColor = 'bg-green-500 text-white'; Icon = CheckCircle2; display = 'Completed'; }
+                                    else if (isLost) { statusColor = 'bg-slate-500 text-white'; Icon = X; display = 'Lost Visit'; }
+                                    else if (p.enrollment_date) {
+                                      const enroll = new Date(p.enrollment_date);
+                                      const target = addDays(enroll, pv.target_day);
+                                      const wStart = addDays(target, -(pv.window_minus || 0));
+                                      const wEnd = addDays(target, pv.window_plus || 0);
+                                      const today = new Date(); today.setHours(0,0,0,0);
+                                      if (today > wEnd) { display = 'Overdue'; statusColor = 'bg-red-500 text-white'; Icon = AlertTriangle; }
+                                      else if (today >= wStart && today <= wEnd) { display = 'Window'; statusColor = 'bg-amber-500 text-white'; Icon = Clock; }
+                                    }
+
+                                    return (
+                                      <TableCell key={pv.id} className="text-center">
+                                        <div className="flex flex-col items-center gap-1">
+                                          <Badge className={`${statusColor} flex items-center gap-1`}>
+                                            {Icon && <Icon className="h-3 w-3" />}
+                                            {display}
+                                          </Badge>
+                                          <span className="text-[11px] font-mono">
+                                            {formatCurrency(Number(pv.payment_amount) || 0)}
+                                          </span>
+                                          {isCompleted && visit ? (
+                                            <label className="flex items-center gap-1 text-[10px] cursor-pointer mt-0.5">
+                                              <Checkbox
+                                                checked={isPaid}
+                                                onCheckedChange={(c) => togglePatientVisitPaid(visit.id, c === true)}
+                                              />
+                                              <span className={isPaid ? "text-success font-medium" : "text-warning font-medium"}>
+                                                {isPaid ? "Pago" : "A pagar"}
+                                              </span>
+                                            </label>
+                                          ) : (
+                                            <span className="text-[10px] text-muted-foreground">—</span>
+                                          )}
+                                        </div>
+                                      </TableCell>
+                                    );
+                                  })}
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                          <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
