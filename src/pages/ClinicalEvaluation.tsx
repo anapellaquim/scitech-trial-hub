@@ -448,17 +448,6 @@ export default function ClinicalEvaluation() {
               <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="e.g. CER-001" />
             </div>
             <div className="space-y-2">
-              <Label>Document Type</Label>
-              <Select value={form.document_type} onValueChange={(v) => setForm({ ...form, document_type: v as DocType })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="clinical_evaluation_report">Clinical Evaluation Report</SelectItem>
-                  <SelectItem value="systematic_literature_review">Systematic Literature Review</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
               <Label>Current Version</Label>
               <Input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} />
             </div>
