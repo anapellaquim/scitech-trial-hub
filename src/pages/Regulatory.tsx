@@ -482,7 +482,7 @@ export default function Regulatory() {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {deadlineStatus && sub.status === "pending" && (
+                              {deadlineStatus && (sub.status === "pending" || sub.status === "revision_required") && (
                                 <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
                                   <deadlineStatus.icon className="h-4 w-4" />
                                   <span className="text-sm">{deadlineStatus.label}</span>
@@ -550,7 +550,7 @@ export default function Regulatory() {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {deadlineStatus && rep.status === "pending" && (
+                              {deadlineStatus && (rep.status === "pending" || rep.status === "revision_required") && (
                                 <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
                                   <deadlineStatus.icon className="h-4 w-4" />
                                   <span className="text-sm">{deadlineStatus.label}</span>
