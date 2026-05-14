@@ -449,8 +449,8 @@ export default function Regulatory() {
                       <TableHead>Planned Date</TableHead>
                       <TableHead>Submission Date</TableHead>
                       <TableHead>Requirements</TableHead>
-                      <TableHead>Approval Date</TableHead>
                       <TableHead>Requirement Deadline</TableHead>
+                      <TableHead>Approval Date</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
