@@ -448,10 +448,10 @@ export default function Regulatory() {
                       <TableHead>Site</TableHead>
                       <TableHead>Planned Date</TableHead>
                       <TableHead>Submission Date</TableHead>
+                      <TableHead>Requirements</TableHead>
                       <TableHead>Approval Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Deadline</TableHead>
                       <TableHead>Requirement Deadline</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -486,23 +486,9 @@ export default function Regulatory() {
                               {sub.site ? `${sub.site.code} · ${sub.site.name}` : "—"}
                             </TableCell>
                             <TableCell>
-                              {sub.planned_date ? format(parseLocalDate(sub.planned_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
-                            </TableCell>
-                            <TableCell>
-                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
-                            </TableCell>
-                            <TableCell>
-                              {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={statusColors[sub.status]}>
-                                {statusLabels[sub.status]}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {deadlineDate && (
+                              {deadlineDate ? (
                                 <div className="flex flex-col gap-0.5">
-                                  <span className="text-sm">{format(parseLocalDate(deadlineDate), "dd/MM/yyyy", { locale: enUS })}</span>
+                                  <span>{format(parseLocalDate(deadlineDate), "dd/MM/yyyy", { locale: enUS })}</span>
                                   {deadlineStatus && (sub.status === "pending" || sub.status === "revision_required") && (
                                     <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
                                       <deadlineStatus.icon className="h-4 w-4" />
@@ -510,12 +496,24 @@ export default function Regulatory() {
                                     </div>
                                   )}
                                 </div>
-                              )}
+                              ) : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                            </TableCell>
+                            <TableCell>{hasReq ? "Yes" : "No"}</TableCell>
+                            <TableCell>
+                              {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               {hasReq && sub.requirement_due_date
                                 ? format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
                                 : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={statusColors[sub.status]}>
+                                {statusLabels[sub.status]}
+                              </Badge>
                             </TableCell>
                           </TableRow>
                         );
@@ -535,18 +533,17 @@ export default function Regulatory() {
                     <TableRow>
                       <TableHead>Study</TableHead>
                       <TableHead>Report Type</TableHead>
-                      <TableHead>Due Date</TableHead>
                       <TableHead>Submitted Date</TableHead>
+                      <TableHead>Requirements</TableHead>
                       <TableHead>Approval Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Deadline</TableHead>
                       <TableHead>Requirement Deadline</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredReports.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           No reports found
                         </TableCell>
                       </TableRow>
@@ -554,8 +551,6 @@ export default function Regulatory() {
                       filteredReports.map((rep) => {
                         const hasReq = !!rep.has_requirements;
                         const effectiveSubmitted = hasReq && rep.requirement_submitted_date ? rep.requirement_submitted_date : rep.submitted_date;
-                        const deadlineDate = rep.due_date;
-                        const deadlineStatus = getDeadlineStatus(deadlineDate);
                         return (
                           <TableRow 
                             key={rep.id}
@@ -572,36 +567,21 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>{rep.report_type}</TableCell>
                             <TableCell>
-                              {format(parseLocalDate(rep.due_date), "dd/MM/yyyy", { locale: enUS })}
-                            </TableCell>
-                            <TableCell>
                               {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
+                            <TableCell>{hasReq ? "Yes" : "No"}</TableCell>
                             <TableCell>
                               {rep.approval_date ? format(parseLocalDate(rep.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={statusColors[rep.status]}>
-                                {statusLabels[rep.status]}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {deadlineDate && (
-                                <div className="flex flex-col gap-0.5">
-                                  <span className="text-sm">{format(parseLocalDate(deadlineDate), "dd/MM/yyyy", { locale: enUS })}</span>
-                                  {deadlineStatus && (rep.status === "pending" || rep.status === "revision_required") && (
-                                    <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
-                                      <deadlineStatus.icon className="h-4 w-4" />
-                                      <span className="text-xs">{deadlineStatus.label}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
                             </TableCell>
                             <TableCell>
                               {hasReq && rep.requirement_due_date
                                 ? format(parseLocalDate(rep.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
                                 : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={statusColors[rep.status]}>
+                                {statusLabels[rep.status]}
+                              </Badge>
                             </TableCell>
                           </TableRow>
                         );
