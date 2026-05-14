@@ -115,6 +115,12 @@ export default function EditSubmissionDialog({
 
     setLoading(true);
     try {
+      let finalStatus = formData.status;
+      if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
+        finalStatus = "approved";
+      } else if (!formData.approval_date && !formData.submission_date) {
+        finalStatus = "pending";
+      }
       const { error } = await supabase
         .from("regulatory_submissions")
         .update({
@@ -125,7 +131,7 @@ export default function EditSubmissionDialog({
           submission_date: formData.submission_date || null,
           approval_date: formData.approval_date || null,
           code: formData.code || null,
-          status: formData.status as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
+          status: finalStatus as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
           compliance_response: formData.compliance_response || null,
         } as any)
