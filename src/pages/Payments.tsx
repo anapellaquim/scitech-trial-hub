@@ -515,37 +515,44 @@ export default function Payments() {
     setParticipants(participants || []);
     setVisits(visitsData || []);
 
-    // Calculate payment data for each participant using visit_types values
+    // Calculate payment data for each participant using protocol schedules as source of truth
     const payments: ParticipantPayment[] = participants.map((participant) => {
       const participantVisits = visitsData?.filter((v) => v.participant_id === participant.id) || [];
-      
+
+      // Protocol visits applicable to this participant's site
+      const applicableSchedules = (protocolSchedulesData || []).filter(
+        (ps) => !ps.site_id || ps.site_id === participant.site_id
+      );
+
       let totalPaid = 0;
-      let completedCount = 0;
-      let paidCount = 0;
       let pendingValue = 0;
+      let totalEarned = 0;
+      let paidCount = 0;
+      const completedCount = participantVisits.filter((v) => v.status === "completed").length;
 
-      participantVisits.forEach((visit) => {
-        // Find protocol visit schedule, considering site_id if it exists
-        const visitType = protocolSchedulesData?.find(vt => 
-          vt.target_day === visit.visit_number && 
-          (!vt.site_id || vt.site_id === participant.site_id)
-        );
-        
-        // If the visit is not in the protocol for this participant's site, ignore it
-        if (!visitType) return;
-
-        const visitValue = visit.payment_amount ?? visitType?.payment_amount ?? 0;
-
-        if (visit.payment_status === "paid") {
+      applicableSchedules.forEach((ps) => {
+        const visit = participantVisits.find((v) => v.visit_number === ps.target_day);
+        const value = Number(visit?.payment_amount ?? ps.payment_amount ?? 0);
+        totalEarned += value;
+        if (visit?.payment_status === "paid") {
+          totalPaid += value;
           paidCount++;
-          totalPaid += Number(visitValue);
         } else {
-          // All visits not marked as "paid" contribute to pending value
-          pendingValue += Number(visitValue);
+          pendingValue += value;
         }
+      });
 
-        if (visit.status === "completed") {
-          completedCount++;
+      // Include unscheduled/random visits actually recorded but not in the protocol set
+      participantVisits.forEach((visit) => {
+        const inSchedule = applicableSchedules.some((ps) => ps.target_day === visit.visit_number);
+        if (inSchedule) return;
+        const value = Number(visit.payment_amount ?? 0);
+        totalEarned += value;
+        if (visit.payment_status === "paid") {
+          totalPaid += value;
+          paidCount++;
+        } else {
+          pendingValue += value;
         }
       });
 
@@ -556,7 +563,7 @@ export default function Payments() {
         completed_visits: completedCount,
         paid_visits: paidCount,
         pending_payment: pendingValue,
-        total_earned: totalPaid + pendingValue, // Total Acumulado
+        total_earned: totalEarned, // Total Acumulado
         total_paid: totalPaid,
       };
     });
