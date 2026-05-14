@@ -626,7 +626,7 @@ export default function PatientManagement() {
                                          </span>
                                        ) : p.enrollment_date ? (
                                          <span className="text-[10px] text-muted-foreground mt-1">
-                                           Exp: {format(addDays(new Date(p.enrollment_date), pv.target_day), "dd/MM/yyyy")}
+                                           Target: {format(addDays(new Date(p.enrollment_date), pv.target_day), "dd/MM/yyyy")}
                                          </span>
                                        ) : null}
                                        {p.enrollment_date && (
