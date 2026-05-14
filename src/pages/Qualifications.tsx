@@ -34,6 +34,7 @@ interface Qualification {
   contract_status: string;
   nda_status: string;
   rq_pcl006_status: string;
+  cv_status: string;
   documents_url: string | null;
   notes: string | null;
 }
