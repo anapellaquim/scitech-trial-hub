@@ -948,13 +948,9 @@ export default function PatientManagement() {
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>
                       <SelectContent>
-                        {protocolVisits.map(pv => {
-                          const enroll = selectedPatientForVisits?.enrollment_date;
-                          const targetDate = enroll ? format(addDays(new Date(enroll), pv.target_day), "MM/dd/yyyy") : `Day ${pv.target_day}`;
-                          return (
-                            <SelectItem key={pv.id} value={pv.id}>{pv.visit_name} (Target: {targetDate})</SelectItem>
-                          );
-                        })}
+                        {protocolVisits.map(pv => (
+                          <SelectItem key={pv.id} value={pv.id}>{pv.visit_name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
