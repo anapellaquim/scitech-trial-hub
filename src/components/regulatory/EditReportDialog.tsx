@@ -126,9 +126,9 @@ export default function EditReportDialog({
     setLoading(true);
     try {
       let finalStatus = formData.status;
-      if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
+      if (formData.approval_date) {
         finalStatus = "approved";
-      } else if (!formData.approval_date && !formData.submitted_date && !["rejected", "revision_required"].includes(finalStatus)) {
+      } else if (!formData.submitted_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "pending";
       }
       const { error } = await supabase
@@ -324,9 +324,11 @@ export default function EditReportDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, approval_date: v };
-                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
-                    if (v) next.status = "approved";
-                    else if (!formData.submitted_date) next.status = "pending";
+                  if (v) {
+                    next.status = "approved";
+                  } else if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                    if (!formData.submitted_date) next.status = "pending";
+                    else next.status = "submitted";
                   }
                   setFormData(next);
                 }}
