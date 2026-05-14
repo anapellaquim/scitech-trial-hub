@@ -105,6 +105,10 @@ const emptyForm = {
   opened_at: todayDateOnly(),
   resolved_at: "",
   impact_areas_other: "",
+  training_trainees: "",
+  training_date: "",
+  training_trainer: "",
+  training_evidence_link: "",
 };
 
 export default function ChangeControl() {
