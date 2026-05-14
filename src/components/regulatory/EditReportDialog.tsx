@@ -367,6 +367,9 @@ export default function EditReportDialog({
               </div>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="recurrence">Recurrence</Label>
             <Select
               value={formData.recurrence_type}
               onValueChange={(value) => setFormData({ ...formData, recurrence_type: value })}
