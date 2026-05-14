@@ -294,7 +294,7 @@ export default function EditReportDialog({
                 id="submitted_date"
                 type="date"
                 value={formData.submitted_date}
-                onChange={(e) => setFormData({ ...formData, submitted_date: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, submitted_date: e.target.value, status: e.target.value ? "submitted" : formData.status })}
               />
             </div>
             <div className="space-y-2">

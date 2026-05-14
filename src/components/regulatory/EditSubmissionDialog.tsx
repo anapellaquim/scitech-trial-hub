@@ -271,7 +271,7 @@ export default function EditSubmissionDialog({
                 id="submission_date"
                 type="date"
                 value={formData.submission_date}
-                onChange={(e) => setFormData({ ...formData, submission_date: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, submission_date: e.target.value, status: e.target.value ? "submitted" : formData.status })}
               />
             </div>
             <div className="space-y-2">
