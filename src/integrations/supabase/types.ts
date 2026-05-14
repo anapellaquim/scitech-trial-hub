@@ -3507,6 +3507,7 @@ export type Database = {
         Row: {
           contract_status: string
           created_at: string
+          cv_status: string
           documents_url: string | null
           feasibility_date: string | null
           id: string
@@ -3525,6 +3526,7 @@ export type Database = {
         Insert: {
           contract_status?: string
           created_at?: string
+          cv_status?: string
           documents_url?: string | null
           feasibility_date?: string | null
           id?: string
@@ -3543,6 +3545,7 @@ export type Database = {
         Update: {
           contract_status?: string
           created_at?: string
+          cv_status?: string
           documents_url?: string | null
           feasibility_date?: string | null
           id?: string
