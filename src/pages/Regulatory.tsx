@@ -299,10 +299,6 @@ export default function Regulatory() {
             </p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0 flex-wrap">
-            <Button variant="outline" onClick={handleSyncData} disabled={syncing}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-              Sincronizar
-            </Button>
             <ExcelExportButton 
               data={importType === "submission" ? submissionExportData : reportExportData} 
               fileName={importType === "submission" ? "submissions" : "reports"} 
