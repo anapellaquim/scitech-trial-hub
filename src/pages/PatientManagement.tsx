@@ -940,12 +940,21 @@ export default function PatientManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Protocol Visit</Label>
-                    <Select value={visitForm.protocol_visit_id} onValueChange={v => setVisitForm({...visitForm, protocol_visit_id: v})}>
+                    <Select value={visitForm.protocol_visit_id} onValueChange={v => {
+                      const pv = protocolVisits.find(x => x.id === v);
+                      const enroll = selectedPatientForVisits?.enrollment_date;
+                      const targetDate = pv && enroll ? format(addDays(new Date(enroll), pv.target_day), "yyyy-MM-dd") : visitForm.actual_date;
+                      setVisitForm({ ...visitForm, protocol_visit_id: v, actual_date: targetDate });
+                    }}>
                       <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>
                       <SelectContent>
-                        {protocolVisits.map(pv => (
-                          <SelectItem key={pv.id} value={pv.id}>{pv.visit_name} (Target Day {pv.target_day})</SelectItem>
-                        ))}
+                        {protocolVisits.map(pv => {
+                          const enroll = selectedPatientForVisits?.enrollment_date;
+                          const targetDate = enroll ? format(addDays(new Date(enroll), pv.target_day), "MM/dd/yyyy") : `Day ${pv.target_day}`;
+                          return (
+                            <SelectItem key={pv.id} value={pv.id}>{pv.visit_name} (Target: {targetDate})</SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>
