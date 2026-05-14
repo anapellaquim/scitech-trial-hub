@@ -236,7 +236,7 @@ export default function ReportSchedulesManager({ projects }: Props) {
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[480px] max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Editar" : "Novo"} Template</DialogTitle></DialogHeader>
           <div className="grid gap-4">
             <div><Label>Tipo de Relatório *</Label><Input value={form.report_type} onChange={e => setForm({ ...form, report_type: e.target.value })} placeholder="Relatório de Segurança Anual, ..." /></div>
