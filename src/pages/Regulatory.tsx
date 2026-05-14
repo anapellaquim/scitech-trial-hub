@@ -644,13 +644,6 @@ export default function Regulatory() {
           onSuccess={fetchData}
         />
 
-        const submissionTemplateData = [
-          submissionImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
-        ];
-        const reportTemplateData = [
-          reportImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
-        ];
-
         <BulkImportDialog
           open={importOpen}
           onOpenChange={setImportOpen}
