@@ -142,6 +142,7 @@ export default function Payments() {
   const [sitesFull, setSitesFull] = useState<any[]>([]);
   const [participantSearch, setParticipantSearch] = useState("");
   const [participantFilterSite, setParticipantFilterSite] = useState<string>("all");
+  const [participantFilterPayment, setParticipantFilterPayment] = useState<string>("all");
   const [participantPayments, setParticipantPayments] = useState<ParticipantPayment[]>([]);
   const [centerSummaries, setCenterSummaries] = useState<CenterSummary[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryRecord[]>([]);
@@ -1793,18 +1794,40 @@ export default function Payments() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <Select value={participantFilterPayment} onValueChange={setParticipantFilterPayment}>
+                        <SelectTrigger className="w-[200px]"><SelectValue placeholder="Status de pagamento" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos os pagamentos</SelectItem>
+                          <SelectItem value="pending">Com visitas a pagar</SelectItem>
+                          <SelectItem value="paid">Com visitas pagas</SelectItem>
+                          <SelectItem value="all_paid">Todas pagas</SelectItem>
+                          <SelectItem value="none">Sem visitas completas</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     {(() => {
                       const term = participantSearch.toLowerCase();
+                      const visitsForPatient = (p: any) =>
+                        protocolSchedules.filter(ps => !ps.site_id || ps.site_id === p.site_id);
                       const filtered = patientsFull.filter(p => {
                         const matchesSearch = !term ||
                           p.patient_code.toLowerCase().includes(term) ||
                           (p.site?.code || "").toLowerCase().includes(term);
                         const matchesSite = participantFilterSite === "all" || p.site_id === participantFilterSite;
-                        return matchesSearch && matchesSite;
+                        let matchesPayment = true;
+                        if (participantFilterPayment !== "all") {
+                          const completedVisits = visitsForPatient(p)
+                            .map(pv => patientVisitsRaw.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id))
+                            .filter(v => v && (v.status === "Completed" || v.status === "Complete"));
+                          const paidCount = completedVisits.filter(v => (v!.payment_status || "").toLowerCase() === "paid").length;
+                          const pendingCount = completedVisits.length - paidCount;
+                          if (participantFilterPayment === "pending") matchesPayment = pendingCount > 0;
+                          else if (participantFilterPayment === "paid") matchesPayment = paidCount > 0;
+                          else if (participantFilterPayment === "all_paid") matchesPayment = completedVisits.length > 0 && pendingCount === 0;
+                          else if (participantFilterPayment === "none") matchesPayment = completedVisits.length === 0;
+                        }
+                        return matchesSearch && matchesSite && matchesPayment;
                       });
-                      const visitsForPatient = (p: any) =>
-                        protocolSchedules.filter(ps => !ps.site_id || ps.site_id === p.site_id);
 
                       return (
                         <ScrollArea className="w-full">
