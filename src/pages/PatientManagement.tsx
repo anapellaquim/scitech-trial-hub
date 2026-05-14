@@ -263,10 +263,29 @@ export default function PatientManagement() {
     else loadProjectData();
   };
 
-  const filteredPatients = patients.filter(p => 
-    p.patient_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.site?.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const computeVisitStatus = (p: Patient, pv: ProtocolVisit): string => {
+    const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
+    if (visit?.status === 'Completed' || visit?.status === 'Complete') return 'Completed';
+    if (visit?.status === 'Lost Visit') return 'Lost Visit';
+    if (p.enrollment_date) {
+      const targetDate = addDays(new Date(p.enrollment_date), pv.target_day);
+      const windowStart = addDays(targetDate, -pv.window_minus);
+      const windowEnd = addDays(targetDate, pv.window_plus);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      if (today > windowEnd) return 'Overdue';
+      if (today >= windowStart && today <= windowEnd) return 'Window';
+    }
+    return 'Scheduled';
+  };
+
+  const filteredPatients = patients.filter(p => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = !term || p.patient_code.toLowerCase().includes(term) || p.site?.code.toLowerCase().includes(term);
+    const matchesSite = filterSite === "all" || p.site_id === filterSite;
+    const matchesStatus = filterPatientStatus === "all" || p.status === filterPatientStatus;
+    const matchesVisitStatus = filterVisitStatus === "all" || protocolVisits.some(pv => computeVisitStatus(p, pv) === filterVisitStatus);
+    return matchesSearch && matchesSite && matchesStatus && matchesVisitStatus;
+  });
 
   const getStatusBadge = (status: PatientStatus) => {
     const variants: Record<PatientStatus, string> = {
