@@ -123,17 +123,10 @@ export default function EditSubmissionDialog({
 
     setLoading(true);
     try {
-      const hasReq = formData.has_requirements === "yes";
       let finalStatus = formData.status;
-      if (hasReq && !["rejected"].includes(finalStatus)) {
-        finalStatus = formData.requirement_submitted_date ? "submitted" : "revision_required";
-      } else if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
+      if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "approved";
-      } else if (hasReq && formData.requirement_submitted_date) {
-        if (!["rejected"].includes(finalStatus)) finalStatus = "submitted";
-      } else if (hasReq) {
-        if (!["rejected"].includes(finalStatus)) finalStatus = "revision_required";
-      } else if (!formData.approval_date && !formData.submission_date) {
+      } else if (!formData.approval_date && !formData.submission_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "pending";
       }
       const { error } = await supabase
