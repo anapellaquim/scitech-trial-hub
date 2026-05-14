@@ -269,9 +269,14 @@ export default function ClinicalEvaluation() {
     loadRecords();
   };
 
+  const activeRecords = useMemo(
+    () => records.filter((r) => r.status !== "superseded"),
+    [records]
+  );
+
   const exportData = useMemo(
     () =>
-      records.map((r) => ({
+      activeRecords.map((r) => ({
         Title: r.title,
         Code: r.code,
         Type: DOC_TYPE_LABEL[r.document_type],
@@ -286,7 +291,7 @@ export default function ClinicalEvaluation() {
         "Next Review": r.next_review_date,
         Link: r.link,
       })),
-    [records],
+    [activeRecords],
   );
 
   return (
@@ -307,17 +312,17 @@ export default function ClinicalEvaluation() {
         </div>
       {(() => {
         const today = new Date(); today.setHours(0,0,0,0);
-        const total = records.length;
-        const approved = records.filter(r => r.status === "approved").length;
-        const drafts = records.filter(r => r.status === "draft" || r.status === "under_review").length;
-        const overdue = records.filter(r => r.next_review_date && new Date(r.next_review_date) < today).length;
-        const dueSoon = records.filter(r => {
+        const total = activeRecords.length;
+        const approved = activeRecords.filter(r => r.status === "approved").length;
+        const drafts = activeRecords.filter(r => r.status === "draft" || r.status === "under_review").length;
+        const overdue = activeRecords.filter(r => r.next_review_date && new Date(r.next_review_date) < today).length;
+        const dueSoon = activeRecords.filter(r => {
           if (!r.next_review_date) return false;
           const d = new Date(r.next_review_date);
           const diff = (d.getTime() - today.getTime()) / 86400000;
           return diff >= 0 && diff <= 60;
         }).length;
-        const archived = records.filter(r => r.status === "archived" || r.status === "superseded").length;
+        const archived = activeRecords.filter(r => r.status === "archived").length;
         return (
           <div className="mb-6">
             <KpiCards cols={6} items={[
@@ -326,7 +331,7 @@ export default function ClinicalEvaluation() {
               { label: "Draft / In Review", value: drafts, icon: Clock, accent: "warning" },
               { label: "Review Overdue", value: overdue, icon: AlertTriangle, accent: "danger" },
               { label: "Review ≤ 60d", value: dueSoon, icon: AlertCircle, accent: "warning" },
-              { label: "Archived/Superseded", value: archived, icon: FileCheck, accent: "muted" },
+              { label: "Archived", value: archived, icon: FileCheck, accent: "muted" },
             ]} />
           </div>
         );
@@ -335,7 +340,7 @@ export default function ClinicalEvaluation() {
         <CardContent className="p-0">
           {loading ? (
             <div className="p-8 text-center text-muted-foreground">Loading...</div>
-          ) : records.length === 0 ? (
+          ) : activeRecords.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               No documents yet. Click "New Document" to get started.
             </div>
@@ -354,7 +359,7 @@ export default function ClinicalEvaluation() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {records.map((r) => (
+                {activeRecords.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>
                       <div className="font-medium">{r.title}</div>
