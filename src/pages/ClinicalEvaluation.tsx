@@ -269,9 +269,14 @@ export default function ClinicalEvaluation() {
     loadRecords();
   };
 
+  const activeRecords = useMemo(
+    () => records.filter((r) => r.status !== "superseded"),
+    [records]
+  );
+
   const exportData = useMemo(
     () =>
-      records.map((r) => ({
+      activeRecords.map((r) => ({
         Title: r.title,
         Code: r.code,
         Type: DOC_TYPE_LABEL[r.document_type],
@@ -286,7 +291,7 @@ export default function ClinicalEvaluation() {
         "Next Review": r.next_review_date,
         Link: r.link,
       })),
-    [records],
+    [activeRecords],
   );
 
   return (
