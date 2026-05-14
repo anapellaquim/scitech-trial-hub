@@ -80,7 +80,7 @@ export default function NewSubmissionDialog({
         code: formData.code || null,
         notes: formData.notes || null,
         compliance_response: formData.compliance_response || null,
-        status: "pending",
+        status: formData.approval_date ? "approved" : "pending",
       } as any);
 
       if (error) throw error;
