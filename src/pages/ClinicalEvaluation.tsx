@@ -48,7 +48,7 @@ interface CEVersion {
   author: string | null;
   issued_at: string | null;
   created_at: string;
-  revision_type: "minor" | "major";
+  revision_type: "literature_review" | "change_control";
   revision_reason: string | null;
 }
 
