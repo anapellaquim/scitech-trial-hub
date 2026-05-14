@@ -540,7 +540,10 @@ export default function Regulatory() {
                       </TableRow>
                     ) : (
                       filteredReports.map((rep) => {
-                        const deadlineStatus = getDeadlineStatus(rep.due_date);
+                        const hasReq = !!rep.has_requirements;
+                        const effectiveSubmitted = hasReq && rep.requirement_submitted_date ? rep.requirement_submitted_date : rep.submitted_date;
+                        const deadlineDate = hasReq && rep.requirement_due_date ? rep.requirement_due_date : rep.due_date;
+                        const deadlineStatus = getDeadlineStatus(deadlineDate);
                         return (
                           <TableRow 
                             key={rep.id}
