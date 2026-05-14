@@ -48,6 +48,8 @@ interface CEVersion {
   author: string | null;
   issued_at: string | null;
   created_at: string;
+  revision_type: "minor" | "major";
+  revision_reason: string | null;
 }
 
 const DOC_TYPE_LABEL: Record<DocType, string> = {
