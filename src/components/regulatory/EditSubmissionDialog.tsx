@@ -248,13 +248,7 @@ export default function EditSubmissionDialog({
             <Label htmlFor="status">Status *</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => {
-                const next = { ...formData, status: value };
-                if (formData.has_requirements === "yes" && value !== "rejected") {
-                  next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                }
-                setFormData(next);
-              }}
+              onValueChange={(value) => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
