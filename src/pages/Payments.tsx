@@ -142,6 +142,7 @@ export default function Payments() {
   const [sitesFull, setSitesFull] = useState<any[]>([]);
   const [participantSearch, setParticipantSearch] = useState("");
   const [participantFilterSite, setParticipantFilterSite] = useState<string>("all");
+  const [participantFilterPayment, setParticipantFilterPayment] = useState<string>("all");
   const [participantPayments, setParticipantPayments] = useState<ParticipantPayment[]>([]);
   const [centerSummaries, setCenterSummaries] = useState<CenterSummary[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryRecord[]>([]);
