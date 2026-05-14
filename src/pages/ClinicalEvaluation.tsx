@@ -173,6 +173,11 @@ export default function ClinicalEvaluation() {
       next_review_date: r.next_review_date || "",
       link: r.link || "",
       notes: r.notes || "",
+      training_required: !!r.training_required,
+      training_trainees: r.training_trainees || "",
+      training_date: r.training_date || "",
+      training_trainer: r.training_trainer || "",
+      training_evidence_link: r.training_evidence_link || "",
     });
     setDialogOpen(true);
   };
