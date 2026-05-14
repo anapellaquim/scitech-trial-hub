@@ -161,6 +161,7 @@ export default function EditReportDialog({
           requirement_date: formData.requirement_date || null,
           requirement_due_date: formData.requirement_due_date || null,
           requirement_submitted_date: formData.requirement_submitted_date || null,
+          has_requirements: formData.has_requirements === "yes",
         } as any)
         .eq("id", report.id);
 
