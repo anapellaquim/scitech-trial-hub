@@ -470,7 +470,7 @@ export default function Regulatory() {
                         return (
                           <TableRow 
                             key={sub.id} 
-                            className={`cursor-pointer hover:bg-muted/50 ${hasReq ? "text-destructive [&_*]:text-destructive" : ""}`}
+                            className={`cursor-pointer hover:bg-muted/50 ${hasReq && sub.status !== "approved" ? "text-destructive [&_*]:text-destructive" : ""}`}
                             onClick={() => {
                               setSelectedSubmission(sub);
                               setShowEditSubmission(true);
