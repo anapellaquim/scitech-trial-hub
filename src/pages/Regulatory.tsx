@@ -540,12 +540,13 @@ export default function Regulatory() {
                       <TableHead>Approval Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Deadline</TableHead>
+                      <TableHead>Requirement Deadline</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredReports.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                           No reports found
                         </TableCell>
                       </TableRow>
