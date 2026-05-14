@@ -124,10 +124,12 @@ export default function EditSubmissionDialog({
     setLoading(true);
     try {
       let finalStatus = formData.status;
-      if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
-        finalStatus = "approved";
-      } else if (!formData.approval_date && !formData.submission_date && !["rejected", "revision_required"].includes(finalStatus)) {
-        finalStatus = "pending";
+      if (formData.has_requirements !== "yes") {
+        if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
+          finalStatus = "approved";
+        } else if (!formData.approval_date && !formData.submission_date && !["rejected", "revision_required"].includes(finalStatus)) {
+          finalStatus = "pending";
+        }
       }
       const { error } = await supabase
         .from("regulatory_submissions")
@@ -292,7 +294,7 @@ export default function EditSubmissionDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, submission_date: v };
-                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                  if (formData.has_requirements !== "yes" && formData.status !== "rejected" && formData.status !== "revision_required") {
                     if (v) next.status = "submitted";
                     else if (!formData.approval_date) next.status = "pending";
                   }
@@ -309,7 +311,7 @@ export default function EditSubmissionDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, approval_date: v };
-                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                  if (formData.has_requirements !== "yes" && formData.status !== "rejected" && formData.status !== "revision_required") {
                     if (v) next.status = "approved";
                     else if (!formData.submission_date) next.status = "pending";
                   }
