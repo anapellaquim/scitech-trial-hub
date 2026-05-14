@@ -491,6 +491,44 @@ export default function ChangeControl() {
               </label>
             </div>
 
+            {form.requires_training && (
+              <div className="grid grid-cols-2 gap-4 rounded-md border border-border bg-muted/30 p-4">
+                <div className="col-span-2 space-y-2">
+                  <Label>Trainees *</Label>
+                  <Textarea
+                    rows={2}
+                    placeholder="List trainees (one per line or comma-separated)"
+                    value={form.training_trainees}
+                    onChange={(e) => setForm({ ...form, training_trainees: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Training Date</Label>
+                  <Input
+                    type="date"
+                    value={form.training_date}
+                    onChange={(e) => setForm({ ...form, training_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Trainer</Label>
+                  <Input
+                    value={form.training_trainer}
+                    onChange={(e) => setForm({ ...form, training_trainer: e.target.value })}
+                    placeholder="Trainer name"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label>Evidence Link</Label>
+                  <Input
+                    value={form.training_evidence_link}
+                    onChange={(e) => setForm({ ...form, training_evidence_link: e.target.value })}
+                    placeholder="https://... (training records, attendance sheet, certificates)"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label>Action Plan</Label>
