@@ -696,6 +696,20 @@ export default function Payments() {
     };
   };
 
+  const [pendingPaidToggle, setPendingPaidToggle] = useState<{ visitId: string; paid: boolean; patientCode: string; visitName: string } | null>(null);
+
+  const requestTogglePatientVisitPaid = (visitId: string, paid: boolean) => {
+    const visit = patientVisitsRaw.find(v => v.id === visitId);
+    const patient = patientsFull.find(p => p.id === visit?.patient_id);
+    const ps = protocolSchedules.find(s => s.id === visit?.protocol_visit_id);
+    setPendingPaidToggle({
+      visitId,
+      paid,
+      patientCode: patient?.patient_code || "",
+      visitName: ps?.visit_name || "",
+    });
+  };
+
   const togglePatientVisitPaid = async (visitId: string, paid: boolean) => {
     const newStatus = paid ? "Paid" : "Pending";
     setPatientVisitsRaw(prev => prev.map(v => v.id === visitId ? { ...v, payment_status: newStatus } : v));
