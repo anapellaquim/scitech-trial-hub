@@ -46,7 +46,9 @@ export default function BulkImportDialog({
     reader.onload = (evt) => {
       try {
         const wb = XLSX.read(evt.target?.result, { type: "binary" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
+        const targetSheet = sheetName && wb.Sheets[sheetName] ? sheetName : wb.SheetNames[0];
+        const ws = wb.Sheets[targetSheet];
+        if (!ws) { toast.error(`Sheet "${targetSheet}" not found`); return; }
         const raw: Record<string, any>[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
         if (raw.length === 0) { toast.error("Empty file"); return; }
 
