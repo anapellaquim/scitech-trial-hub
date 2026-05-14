@@ -32,7 +32,7 @@ interface BulkImportDialogProps {
 }
 
 export default function BulkImportDialog({
-  open, onOpenChange, tableName, projectId, columns, onSuccess, templateData,
+  open, onOpenChange, tableName, projectId, columns, onSuccess, templateData, templateSheets, sheetName,
 }: BulkImportDialogProps) {
   const [preview, setPreview] = useState<Record<string, any>[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
