@@ -103,10 +103,6 @@ export default function EditReportDialog({
         notes: report.notes || "",
         recurrence_type: report.recurrence_type || "none",
         recurrence_end_date: report.recurrence_end_date || "",
-        has_requirements: (report as any).has_requirements ? "yes" : "no",
-        requirement_date: (report as any).requirement_date || "",
-        requirement_due_date: (report as any).requirement_due_date || "",
-        requirement_submitted_date: (report as any).requirement_submitted_date || "",
       });
     }
   }, [report, open]);
@@ -129,17 +125,10 @@ export default function EditReportDialog({
 
     setLoading(true);
     try {
-      const hasReq = formData.has_requirements === "yes";
       let finalStatus = formData.status;
-      if (hasReq && !["rejected"].includes(finalStatus)) {
-        finalStatus = formData.requirement_submitted_date ? "submitted" : "revision_required";
-      } else if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
+      if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "approved";
-      } else if (hasReq && formData.requirement_submitted_date) {
-        if (!["rejected"].includes(finalStatus)) finalStatus = "submitted";
-      } else if (hasReq) {
-        if (!["rejected"].includes(finalStatus)) finalStatus = "revision_required";
-      } else if (!formData.approval_date && !formData.submitted_date) {
+      } else if (!formData.approval_date && !formData.submitted_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "pending";
       }
       const { error } = await supabase
@@ -156,10 +145,10 @@ export default function EditReportDialog({
           notes: formData.notes || null,
           recurrence_type: formData.recurrence_type,
           recurrence_end_date: formData.recurrence_end_date || null,
-          requirement_date: formData.requirement_date || null,
-          requirement_due_date: formData.requirement_due_date || null,
-          requirement_submitted_date: formData.requirement_submitted_date || null,
-          has_requirements: formData.has_requirements === "yes",
+          has_requirements: false,
+          requirement_date: null,
+          requirement_due_date: null,
+          requirement_submitted_date: null,
         } as any)
         .eq("id", report.id);
 
