@@ -285,6 +285,10 @@ export default function ChangeControl() {
       responsible: r.responsible || "",
       opened_at: r.opened_at,
       resolved_at: r.resolved_at || "",
+      training_trainees: (r as any).training_trainees || "",
+      training_date: (r as any).training_date || "",
+      training_trainer: (r as any).training_trainer || "",
+      training_evidence_link: (r as any).training_evidence_link || "",
     });
     setActionItems(allActions.filter(a => a.change_control_id === r.id).map(a => ({ ...a })));
     setDialogOpen(true);
