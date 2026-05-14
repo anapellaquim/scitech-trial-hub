@@ -78,6 +78,9 @@ export default function EditSubmissionDialog({
     status: "pending",
     notes: "",
     compliance_response: "",
+    requirement_date: "",
+    requirement_due_date: "",
+    requirement_submitted_date: "",
   });
 
   useEffect(() => {
@@ -93,6 +96,9 @@ export default function EditSubmissionDialog({
         status: submission.status,
         notes: submission.notes || "",
         compliance_response: (submission as any).compliance_response || "",
+        requirement_date: (submission as any).requirement_date || "",
+        requirement_due_date: (submission as any).requirement_due_date || "",
+        requirement_submitted_date: (submission as any).requirement_submitted_date || "",
       });
     }
   }, [submission, open]);
@@ -134,6 +140,9 @@ export default function EditSubmissionDialog({
           status: finalStatus as "pending" | "submitted" | "under_review" | "approved" | "rejected" | "revision_required",
           notes: formData.notes || null,
           compliance_response: formData.compliance_response || null,
+          requirement_date: formData.requirement_date || null,
+          requirement_due_date: formData.requirement_due_date || null,
+          requirement_submitted_date: formData.requirement_submitted_date || null,
         } as any)
         .eq("id", submission.id);
 
@@ -300,6 +309,39 @@ export default function EditSubmissionDialog({
                   setFormData(next);
                 }}
               />
+            </div>
+          </div>
+
+          <div className="space-y-2 rounded-md border p-3">
+            <Label className="text-sm font-semibold">Requirements</Label>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="requirement_date" className="text-xs">Requirement Date</Label>
+                <Input
+                  id="requirement_date"
+                  type="date"
+                  value={formData.requirement_date}
+                  onChange={(e) => setFormData({ ...formData, requirement_date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="requirement_due_date" className="text-xs">Due Date</Label>
+                <Input
+                  id="requirement_due_date"
+                  type="date"
+                  value={formData.requirement_due_date}
+                  onChange={(e) => setFormData({ ...formData, requirement_due_date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="requirement_submitted_date" className="text-xs">Submitted Date</Label>
+                <Input
+                  id="requirement_submitted_date"
+                  type="date"
+                  value={formData.requirement_submitted_date}
+                  onChange={(e) => setFormData({ ...formData, requirement_submitted_date: e.target.value })}
+                />
+              </div>
             </div>
           </div>
 
