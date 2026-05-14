@@ -486,51 +486,6 @@ export default function ClinicalEvaluation() {
               <Label>Notes</Label>
               <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
-            <div className="col-span-2 flex items-center space-x-2 pt-2">
-              <Checkbox
-                id="training_required"
-                checked={form.training_required}
-                onCheckedChange={(v) => setForm({ ...form, training_required: !!v })}
-              />
-              <Label htmlFor="training_required" className="cursor-pointer">Training Required</Label>
-            </div>
-            {form.training_required && (
-              <div className="col-span-2 grid grid-cols-2 gap-4 rounded-md border border-border bg-muted/30 p-4">
-                <div className="col-span-2 space-y-2">
-                  <Label>Trainees *</Label>
-                  <Textarea
-                    rows={2}
-                    placeholder="List trainees (one per line or comma-separated)"
-                    value={form.training_trainees}
-                    onChange={(e) => setForm({ ...form, training_trainees: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Training Date</Label>
-                  <Input
-                    type="date"
-                    value={form.training_date}
-                    onChange={(e) => setForm({ ...form, training_date: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Trainer</Label>
-                  <Input
-                    value={form.training_trainer}
-                    onChange={(e) => setForm({ ...form, training_trainer: e.target.value })}
-                    placeholder="Trainer name"
-                  />
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Evidence Link</Label>
-                  <Input
-                    value={form.training_evidence_link}
-                    onChange={(e) => setForm({ ...form, training_evidence_link: e.target.value })}
-                    placeholder="https://... (training records, attendance sheet, certificates)"
-                  />
-                </div>
-              </div>
-            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
