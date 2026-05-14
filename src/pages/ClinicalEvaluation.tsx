@@ -88,11 +88,6 @@ const emptyForm = () => ({
   next_review_date: "",
   link: "",
   notes: "",
-  training_required: false,
-  training_trainees: "",
-  training_date: "",
-  training_trainer: "",
-  training_evidence_link: "",
 });
 
 function computeNextReview(last: string | null, months: number): string | null {
