@@ -458,7 +458,7 @@ export default function Payments() {
     // Load protocol visit schedules from Patient Management module
     const { data: protocolSchedulesData } = await supabase
       .from("protocol_visit_schedules")
-      .select("id, visit_name, target_day, payment_amount, site_id")
+      .select("id, visit_name, target_day, payment_amount, site_id, window_minus, window_plus")
       .eq("project_id", selectedProject)
       .order("target_day");
 
@@ -476,12 +476,17 @@ export default function Payments() {
       .select("id, code, name")
       .eq("project_id", selectedProject)
       .order("code");
+    setSitesFull(centers || []);
 
     // Load patients from the new Patient Management module
     const { data: patientsBase } = await supabase
       .from("patients")
-      .select("id, patient_code, site_id, status")
+      .select("id, patient_code, site_id, status, enrollment_date")
       .eq("project_id", selectedProject);
+    setPatientsFull((patientsBase || []).map(p => ({
+      ...p,
+      site: centers?.find(c => c.id === p.site_id) || null,
+    })));
 
     const participants: Participant[] = (patientsBase || []).map(p => {
       const site = centers?.find(c => c.id === p.site_id);
