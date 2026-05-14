@@ -49,13 +49,15 @@ export function EditParticipantPaymentsDialog({
 
   useEffect(() => {
     if (open) {
+      const participantVisitsLocal = visits.filter((v) => v.participant_id === participantId);
       const initialStatus: Record<string, boolean> = {};
-      visits.forEach((visit) => {
-        initialStatus[visit.id] = visit.payment_status?.toLowerCase() === "paid";
+      visitTypes.forEach((vt) => {
+        const visit = participantVisitsLocal.find((v) => v.visit_number === vt.visit_number);
+        initialStatus[vt.id] = visit?.payment_status?.toLowerCase() === "paid";
       });
       setPaymentStatus(initialStatus);
     }
-  }, [open, visits]);
+  }, [open, visits, visitTypes, participantId]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -67,38 +69,41 @@ export function EditParticipantPaymentsDialog({
   const handleSave = async () => {
     setLoading(true);
     try {
-      // First, update existing visit payment statuses
-      const visitUpdates = participantVisits.map((visit) => {
-        const isPaid = paymentStatus[visit.id];
-        const newStatus = isPaid ? "Paid" : "Pending";
-        
-        return supabase
-          .from("patient_visits")
-          .update({
-            payment_status: newStatus,
-          })
-          .eq("id", visit.id);
+      const ops: Promise<{ error: unknown } | { error: null }>[] = [];
+      const updatedVisitIds = new Set<string>();
+
+      visitTypes.forEach((vt) => {
+        const visit = participantVisits.find((v) => v.visit_number === vt.visit_number);
+        const isPaid = !!paymentStatus[vt.id];
+        const isUnscheduled =
+          vt.visit_number === 99 ||
+          vt.name.toLowerCase().includes("random") ||
+          vt.name.toLowerCase().includes("unscheduled");
+
+        if (visit) {
+          if (updatedVisitIds.has(visit.id)) return;
+          updatedVisitIds.add(visit.id);
+          ops.push(
+            supabase
+              .from("patient_visits")
+              .update({ payment_status: isPaid ? "Paid" : "Pending" })
+              .eq("id", visit.id) as unknown as Promise<{ error: null }>
+          );
+        } else if (isUnscheduled && isPaid) {
+          ops.push(
+            supabase
+              .from("patient_visits")
+              .insert({
+                patient_id: participantId,
+                protocol_visit_id: vt.id,
+                status: "Completed",
+                payment_status: "Paid",
+              }) as unknown as Promise<{ error: null }>
+          );
+        }
       });
 
-      // Then, handle unscheduled/random visits that don't have a record yet but are marked as paid
-      const unscheduledVisitsToCreate = visitTypes
-        .filter(vt => {
-          const isUnscheduled = vt.visit_number === 99 || vt.name.toLowerCase().includes("random") || vt.name.toLowerCase().includes("unscheduled");
-          const hasNoRecord = !participantVisits.some(v => v.visit_number === vt.visit_number);
-          return isUnscheduled && hasNoRecord && paymentStatus[`type-${vt.id}`];
-        })
-        .map(vt => {
-          return supabase
-            .from("patient_visits")
-            .insert({
-              patient_id: participantId,
-              protocol_visit_id: vt.id,
-              status: "Completed",
-              payment_status: "Paid"
-            });
-        });
-
-      const results = await Promise.all([...visitUpdates, ...unscheduledVisitsToCreate]);
+      const results = await Promise.all(ops);
       const hasError = results.some((r) => r.error);
 
       if (hasError) {
@@ -149,11 +154,11 @@ export function EditParticipantPaymentsDialog({
                       {isUnscheduled && (
                         <Checkbox
                           id={`vt-${vt.id}`}
-                          checked={paymentStatus[`type-${vt.id}`] || false}
+                          checked={paymentStatus[vt.id] || false}
                           onCheckedChange={(checked) =>
                             setPaymentStatus((prev) => ({
                               ...prev,
-                              [`type-${vt.id}`]: checked === true,
+                              [vt.id]: checked === true,
                             }))
                           }
                         />
@@ -180,11 +185,11 @@ export function EditParticipantPaymentsDialog({
                       {isUnscheduled && (
                         <Checkbox
                           id={`vt-${vt.id}`}
-                          checked={paymentStatus[`type-${vt.id}`] || false}
+                          checked={paymentStatus[vt.id] || false}
                           onCheckedChange={(checked) =>
                             setPaymentStatus((prev) => ({
                               ...prev,
-                              [`type-${vt.id}`]: checked === true,
+                              [vt.id]: checked === true,
                             }))
                           }
                         />
@@ -208,17 +213,17 @@ export function EditParticipantPaymentsDialog({
                   </div>
                   <div className="flex items-center gap-2">
                     <Checkbox
-                      id={`visit-${visit.id}`}
-                      checked={paymentStatus[visit.id] || false}
+                      id={`visit-${vt.id}`}
+                      checked={paymentStatus[vt.id] || false}
                       onCheckedChange={(checked) =>
                         setPaymentStatus((prev) => ({
                           ...prev,
-                          [visit.id]: checked === true,
+                          [vt.id]: checked === true,
                         }))
                       }
                     />
-                    <Label htmlFor={`visit-${visit.id}`} className="text-sm cursor-pointer">
-                      {paymentStatus[visit.id] ? (
+                    <Label htmlFor={`visit-${vt.id}`} className="text-sm cursor-pointer">
+                      {paymentStatus[vt.id] ? (
                         <Badge className="bg-success">Pago</Badge>
                       ) : (
                         <Badge variant="destructive">A pagar</Badge>
