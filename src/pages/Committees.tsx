@@ -219,12 +219,10 @@ export default function Committees() {
 
   const exportData = filtered.map(r => {
     const att = attendees.filter(a => a.committee_id === r.id);
-    const del = deliberations.filter(d => d.committee_id === r.id);
     return {
       Type: r.committee_type, "Meeting #": r.meeting_number, Date: r.meeting_date,
       Status: r.status, Agenda: r.agenda || "", "Next Meeting": r.next_meeting_date || "",
       Attendees: att.map(a => a.member_name).join(", "),
-      Deliberations: del.map(d => d.content).join("; "),
     };
   });
 
