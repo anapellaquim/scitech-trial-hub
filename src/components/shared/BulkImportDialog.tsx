@@ -90,6 +90,15 @@ export default function BulkImportDialog({
   };
 
   const downloadTemplate = () => {
+    if (templateSheets && templateSheets.length > 0) {
+      const wb = XLSX.utils.book_new();
+      templateSheets.forEach((sheet) => {
+        const ws = XLSX.utils.json_to_sheet(sheet.data);
+        XLSX.utils.book_append_sheet(wb, ws, sheet.name);
+      });
+      XLSX.writeFile(wb, `${tableName}_template.xlsx`);
+      return;
+    }
     const data = templateData || [
       columns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
     ];
