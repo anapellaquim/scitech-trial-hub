@@ -295,6 +295,7 @@ export default function ClinicalEvaluation() {
 
     toast.success("Version added");
     openHistory(historyDoc);
+    loadVersionsFor(historyDoc.id);
     loadRecords();
   };
 
