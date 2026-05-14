@@ -288,7 +288,7 @@ export default function Committees() {
               ) : (
                 <Table>
                   <TableHeader><TableRow>
-                    <TableHead>Type</TableHead><TableHead>Meeting #</TableHead><TableHead>Date</TableHead><TableHead>Status</TableHead><TableHead>Attendees</TableHead><TableHead>Deliberations</TableHead><TableHead>Next Meeting</TableHead><TableHead className="w-[120px]">Actions</TableHead>
+                    <TableHead>Type</TableHead><TableHead>Meeting #</TableHead><TableHead>Date</TableHead><TableHead>Status</TableHead><TableHead>Attendees</TableHead><TableHead>Next Meeting</TableHead><TableHead className="w-[120px]">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {filtered.map(r => {
