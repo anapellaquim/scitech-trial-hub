@@ -1828,8 +1828,6 @@ export default function Payments() {
                         }
                         return matchesSearch && matchesSite && matchesPayment;
                       });
-                      const visitsForPatient = (p: any) =>
-                        protocolSchedules.filter(ps => !ps.site_id || ps.site_id === p.site_id);
 
                       return (
                         <ScrollArea className="w-full">
