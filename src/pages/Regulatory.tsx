@@ -462,7 +462,10 @@ export default function Regulatory() {
                       </TableRow>
                     ) : (
                       filteredSubmissions.map((sub) => {
-                        const deadlineStatus = getDeadlineStatus(sub.planned_date);
+                        const hasReq = !!sub.has_requirements;
+                        const effectiveSubmitted = hasReq && sub.requirement_submitted_date ? sub.requirement_submitted_date : sub.submission_date;
+                        const deadlineDate = hasReq && sub.requirement_due_date ? sub.requirement_due_date : sub.planned_date;
+                        const deadlineStatus = getDeadlineStatus(deadlineDate);
                         return (
                           <TableRow 
                             key={sub.id} 
