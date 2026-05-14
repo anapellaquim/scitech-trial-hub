@@ -112,26 +112,23 @@ export default function Regulatory() {
   const [importType, setImportType] = useState<"submission" | "report">("submission");
 
   const submissionImportColumns: ColumnMapping[] = [
-    { excelHeader: "Study", dbColumn: "project_id", required: true },
     { excelHeader: "Type", dbColumn: "submission_type", required: true },
-    { excelHeader: "Site", dbColumn: "site_id" },
+    { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Planned Date", dbColumn: "planned_date" },
     { excelHeader: "Submission Date", dbColumn: "submission_date" },
     { excelHeader: "Requirements", dbColumn: "has_requirements", transform: (v: any) => v?.toString().toLowerCase() === "yes" || v === true || v === 1 },
     { excelHeader: "Requirement Deadline", dbColumn: "requirement_due_date" },
     { excelHeader: "Requirement Submitted Date", dbColumn: "requirement_submitted_date" },
     { excelHeader: "Approval Date", dbColumn: "approval_date" },
-    { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Notes", dbColumn: "notes" },
   ];
 
   const reportImportColumns: ColumnMapping[] = [
-    { excelHeader: "Study", dbColumn: "project_id", required: true },
     { excelHeader: "Report Type", dbColumn: "report_type", required: true },
+    { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Deadline", dbColumn: "due_date", required: true },
     { excelHeader: "Submitted Date", dbColumn: "submitted_date" },
     { excelHeader: "Approval Date", dbColumn: "approval_date" },
-    { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Notes", dbColumn: "notes" },
   ];
 
