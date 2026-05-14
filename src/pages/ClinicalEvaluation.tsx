@@ -48,6 +48,8 @@ interface CEVersion {
   author: string | null;
   issued_at: string | null;
   created_at: string;
+  revision_type: "minor" | "major";
+  revision_reason: string | null;
 }
 
 const DOC_TYPE_LABEL: Record<DocType, string> = {
@@ -119,7 +121,7 @@ export default function ClinicalEvaluation() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyDoc, setHistoryDoc] = useState<CEDocument | null>(null);
   const [versions, setVersions] = useState<CEVersion[]>([]);
-  const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "" });
+  const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "minor" as "minor" | "major", revision_reason: "" });
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
@@ -228,7 +230,7 @@ export default function ClinicalEvaluation() {
   const openHistory = async (doc: CEDocument) => {
     setHistoryDoc(doc);
     setHistoryOpen(true);
-    setNewVersion({ version: "", change_summary: "", link: "", author: "", issued_at: "" });
+    setNewVersion({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "minor", revision_reason: "" });
     const { data, error } = await supabase
       .from("clinical_evaluation_document_versions")
       .select("*")
@@ -254,7 +256,9 @@ export default function ClinicalEvaluation() {
       link: newVersion.link || null,
       author: newVersion.author || null,
       issued_at: newVersion.issued_at || null,
-    });
+      revision_type: newVersion.revision_type,
+      revision_reason: newVersion.revision_reason || null,
+    } as any);
     if (error) {
       toast.error("Failed to add version: " + error.message);
       return;
@@ -513,12 +517,26 @@ export default function ClinicalEvaluation() {
                 <Input type="date" value={newVersion.issued_at} onChange={(e) => setNewVersion({ ...newVersion, issued_at: e.target.value })} />
               </div>
               <div className="space-y-1">
+                <Label className="text-xs">Revision Type *</Label>
+                <Select value={newVersion.revision_type} onValueChange={(v) => setNewVersion({ ...newVersion, revision_type: v as "minor" | "major" })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="minor">Minor Revision</SelectItem>
+                    <SelectItem value="major">Major Revision</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
                 <Label className="text-xs">Author</Label>
                 <Input value={newVersion.author} onChange={(e) => setNewVersion({ ...newVersion, author: e.target.value })} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Link</Label>
                 <Input value={newVersion.link} onChange={(e) => setNewVersion({ ...newVersion, link: e.target.value })} placeholder="https://..." />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <Label className="text-xs">Revision Reason</Label>
+                <Textarea rows={2} value={newVersion.revision_reason} onChange={(e) => setNewVersion({ ...newVersion, revision_reason: e.target.value })} placeholder="Why was this revision made?" />
               </div>
               <div className="col-span-2 space-y-1">
                 <Label className="text-xs">Change summary</Label>
@@ -536,8 +554,10 @@ export default function ClinicalEvaluation() {
             <TableHeader>
               <TableRow>
                 <TableHead>Version</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Issued</TableHead>
                 <TableHead>Author</TableHead>
+                <TableHead>Reason</TableHead>
                 <TableHead>Change Summary</TableHead>
                 <TableHead>Link</TableHead>
               </TableRow>
@@ -545,14 +565,20 @@ export default function ClinicalEvaluation() {
             <TableBody>
               {versions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">No versions recorded yet.</TableCell>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">No versions recorded yet.</TableCell>
                 </TableRow>
               ) : (
                 versions.map((v) => (
                   <TableRow key={v.id}>
                     <TableCell><Badge variant="outline">{v.version}</Badge></TableCell>
+                    <TableCell>
+                      <Badge className={v.revision_type === "major" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}>
+                        {v.revision_type === "major" ? "Major" : "Minor"}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-sm">{v.issued_at || "—"}</TableCell>
                     <TableCell className="text-sm">{v.author || "—"}</TableCell>
+                    <TableCell className="text-sm">{v.revision_reason || "—"}</TableCell>
                     <TableCell className="text-sm">{v.change_summary || "—"}</TableCell>
                     <TableCell>
                       {v.link ? (
