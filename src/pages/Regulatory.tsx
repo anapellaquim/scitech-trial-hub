@@ -451,12 +451,13 @@ export default function Regulatory() {
                       <TableHead>Approval Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Deadline</TableHead>
+                      <TableHead>Requirement Deadline</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredSubmissions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                           No submissions found
                         </TableCell>
                       </TableRow>
@@ -511,6 +512,11 @@ export default function Regulatory() {
                                 </div>
                               )}
                             </TableCell>
+                            <TableCell>
+                              {hasReq && sub.requirement_due_date
+                                ? format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
+                                : "-"}
+                            </TableCell>
                           </TableRow>
                         );
                       })
@@ -534,12 +540,13 @@ export default function Regulatory() {
                       <TableHead>Approval Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Deadline</TableHead>
+                      <TableHead>Requirement Deadline</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredReports.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                           No reports found
                         </TableCell>
                       </TableRow>
@@ -590,6 +597,11 @@ export default function Regulatory() {
                                   )}
                                 </div>
                               )}
+                            </TableCell>
+                            <TableCell>
+                              {hasReq && rep.requirement_due_date
+                                ? format(parseLocalDate(rep.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
+                                : "-"}
                             </TableCell>
                           </TableRow>
                         );
