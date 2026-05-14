@@ -444,7 +444,7 @@ export default function ClinicalEvaluation() {
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="under_review">Under Review</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="superseded">Superseded</SelectItem>
+                  
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
