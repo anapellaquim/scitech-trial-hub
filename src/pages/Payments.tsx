@@ -2705,6 +2705,28 @@ export default function Payments() {
           }}
         />
       )}
+
+      <AlertDialog open={!!pendingPaidToggle} onOpenChange={(o) => { if (!o) setPendingPaidToggle(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingPaidToggle?.paid ? "Marcar visita como paga?" : "Marcar visita como a pagar?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirme a alteração de status de pagamento para o paciente <strong>{pendingPaidToggle?.patientCode}</strong> na visita <strong>{pendingPaidToggle?.visitName}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              if (pendingPaidToggle) {
+                await togglePatientVisitPaid(pendingPaidToggle.visitId, pendingPaidToggle.paid);
+                setPendingPaidToggle(null);
+              }
+            }}>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
