@@ -40,6 +40,7 @@ interface Submission {
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
+  approval_date: string | null;
   status: string;
   notes: string | null;
   compliance_response: string | null;
@@ -54,6 +55,7 @@ interface Report {
   report_type: string;
   due_date: string;
   submitted_date: string | null;
+  approval_date: string | null;
   status: string;
   notes: string | null;
   project?: Project;
