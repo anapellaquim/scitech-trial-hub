@@ -324,9 +324,11 @@ export default function EditReportDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, approval_date: v };
-                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
-                    if (v) next.status = "approved";
-                    else if (!formData.submitted_date) next.status = "pending";
+                  if (v) {
+                    next.status = "approved";
+                  } else if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                    if (!formData.submitted_date) next.status = "pending";
+                    else next.status = "submitted";
                   }
                   setFormData(next);
                 }}
