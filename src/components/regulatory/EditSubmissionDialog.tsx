@@ -325,7 +325,13 @@ export default function EditSubmissionDialog({
               <Label className="text-sm font-semibold">Requirements</Label>
               <Select
                 value={formData.has_requirements}
-                onValueChange={(v) => setFormData({ ...formData, has_requirements: v })}
+                onValueChange={(v) => {
+                  const next = { ...formData, has_requirements: v };
+                  if (v === "yes" && !formData.approval_date && !["rejected"].includes(formData.status)) {
+                    next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
+                  }
+                  setFormData(next);
+                }}
               >
                 <SelectTrigger className="w-28 h-8">
                   <SelectValue />
