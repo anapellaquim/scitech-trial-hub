@@ -324,13 +324,7 @@ export default function EditSubmissionDialog({
               <Label className="text-sm font-semibold">Requirements</Label>
               <Select
                 value={formData.has_requirements}
-                onValueChange={(v) => {
-                  const next = { ...formData, has_requirements: v };
-                  if (v === "yes" && !["rejected"].includes(formData.status)) {
-                    next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                  }
-                  setFormData(next);
-                }}
+                onValueChange={(v) => setFormData({ ...formData, has_requirements: v })}
               >
                 <SelectTrigger className="w-28 h-8">
                   <SelectValue />
@@ -349,14 +343,7 @@ export default function EditSubmissionDialog({
                   type="date"
                   disabled={formData.has_requirements !== "yes"}
                   value={formData.requirement_date}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    const next = { ...formData, requirement_date: v };
-                    if (formData.has_requirements === "yes" && !["rejected"].includes(formData.status)) {
-                      next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                    }
-                    setFormData(next);
-                  }}
+                  onChange={(e) => setFormData({ ...formData, requirement_date: e.target.value })}
                 />
               </div>
               <div className="space-y-1">
@@ -366,13 +353,7 @@ export default function EditSubmissionDialog({
                   type="date"
                   disabled={formData.has_requirements !== "yes"}
                   value={formData.requirement_due_date}
-                  onChange={(e) => {
-                    const next = { ...formData, requirement_due_date: e.target.value };
-                    if (formData.has_requirements === "yes" && !["rejected"].includes(formData.status)) {
-                      next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
-                    }
-                    setFormData(next);
-                  }}
+                  onChange={(e) => setFormData({ ...formData, requirement_due_date: e.target.value })}
                 />
               </div>
               <div className="space-y-1">
@@ -382,14 +363,7 @@ export default function EditSubmissionDialog({
                   type="date"
                   disabled={formData.has_requirements !== "yes"}
                   value={formData.requirement_submitted_date}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    const next = { ...formData, requirement_submitted_date: v };
-                    if (formData.has_requirements === "yes" && !["rejected"].includes(formData.status)) {
-                      next.status = v ? "submitted" : "revision_required";
-                    }
-                    setFormData(next);
-                  }}
+                  onChange={(e) => setFormData({ ...formData, requirement_submitted_date: e.target.value })}
                 />
               </div>
             </div>
