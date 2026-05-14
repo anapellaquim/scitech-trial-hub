@@ -121,7 +121,7 @@ export default function ClinicalEvaluation() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyDoc, setHistoryDoc] = useState<CEDocument | null>(null);
   const [versions, setVersions] = useState<CEVersion[]>([]);
-  const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "minor" as "minor" | "major", revision_reason: "" });
+  const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "literature_review" as "literature_review" | "change_control", revision_reason: "" });
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
@@ -230,7 +230,7 @@ export default function ClinicalEvaluation() {
   const openHistory = async (doc: CEDocument) => {
     setHistoryDoc(doc);
     setHistoryOpen(true);
-    setNewVersion({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "minor", revision_reason: "" });
+    setNewVersion({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "literature_review", revision_reason: "" });
     const { data, error } = await supabase
       .from("clinical_evaluation_document_versions")
       .select("*")
@@ -518,11 +518,11 @@ export default function ClinicalEvaluation() {
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Revision Type *</Label>
-                <Select value={newVersion.revision_type} onValueChange={(v) => setNewVersion({ ...newVersion, revision_type: v as "minor" | "major" })}>
+                <Select value={newVersion.revision_type} onValueChange={(v) => setNewVersion({ ...newVersion, revision_type: v as "literature_review" | "change_control" })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="minor">Minor Revision</SelectItem>
-                    <SelectItem value="major">Major Revision</SelectItem>
+                    <SelectItem value="literature_review">Literature Review</SelectItem>
+                    <SelectItem value="change_control">Change Control</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -572,8 +572,8 @@ export default function ClinicalEvaluation() {
                   <TableRow key={v.id}>
                     <TableCell><Badge variant="outline">{v.version}</Badge></TableCell>
                     <TableCell>
-                      <Badge className={v.revision_type === "major" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}>
-                        {v.revision_type === "major" ? "Major" : "Minor"}
+                      <Badge className={v.revision_type === "change_control" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}>
+                        {v.revision_type === "change_control" ? "Change Control" : "Literature Review"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm">{v.issued_at || "—"}</TableCell>
