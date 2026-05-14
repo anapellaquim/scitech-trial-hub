@@ -87,7 +87,7 @@ export default function NewReportDialog({
         approval_date: formData.approval_date || null,
         code: formData.code || null,
         notes: formData.notes || null,
-        status: "pending",
+        status: formData.approval_date ? "approved" : "pending",
         recurrence_type: formData.recurrence_type,
         recurrence_end_date: formData.recurrence_end_date || null,
       } as any);
