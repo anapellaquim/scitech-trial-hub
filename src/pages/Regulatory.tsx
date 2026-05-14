@@ -488,7 +488,7 @@ export default function Regulatory() {
                               {sub.planned_date ? format(parseLocalDate(sub.planned_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
-                              {sub.submission_date ? format(parseLocalDate(sub.submission_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
