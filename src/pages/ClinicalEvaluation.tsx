@@ -37,6 +37,11 @@ interface CEDocument {
   next_review_date: string | null;
   link: string | null;
   notes: string | null;
+  training_required: boolean;
+  training_trainees: string | null;
+  training_date: string | null;
+  training_trainer: string | null;
+  training_evidence_link: string | null;
 }
 
 interface CEVersion {
