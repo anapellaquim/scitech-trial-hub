@@ -296,6 +296,13 @@ export default function Regulatory() {
     submissions.filter(s => s.status === "approved").length +
     reports.filter(r => r.status === "approved").length;
 
+  const submissionTemplateData = [
+    submissionImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
+  ];
+  const reportTemplateData = [
+    reportImportColumns.reduce((acc, col) => ({ ...acc, [col.excelHeader]: "" }), {} as Record<string, string>),
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
