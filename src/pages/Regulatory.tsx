@@ -40,6 +40,7 @@ interface Submission {
   submission_type: string;
   planned_date: string | null;
   submission_date: string | null;
+  approval_date: string | null;
   status: string;
   notes: string | null;
   compliance_response: string | null;
@@ -54,6 +55,7 @@ interface Report {
   report_type: string;
   due_date: string;
   submitted_date: string | null;
+  approval_date: string | null;
   status: string;
   notes: string | null;
   project?: Project;
@@ -438,6 +440,7 @@ export default function Regulatory() {
                       <TableHead>Site</TableHead>
                       <TableHead>Planned Date</TableHead>
                       <TableHead>Submission Date</TableHead>
+                      <TableHead>Approval Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Deadline</TableHead>
                     </TableRow>
@@ -445,7 +448,7 @@ export default function Regulatory() {
                   <TableBody>
                     {filteredSubmissions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                           No submissions found
                         </TableCell>
                       </TableRow>
@@ -475,6 +478,9 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>
                               {sub.submission_date ? format(parseLocalDate(sub.submission_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[sub.status]}>
@@ -509,6 +515,7 @@ export default function Regulatory() {
                       <TableHead>Report Type</TableHead>
                       <TableHead>Due Date</TableHead>
                       <TableHead>Submitted Date</TableHead>
+                      <TableHead>Approval Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Deadline</TableHead>
                     </TableRow>
@@ -516,7 +523,7 @@ export default function Regulatory() {
                   <TableBody>
                     {filteredReports.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           No reports found
                         </TableCell>
                       </TableRow>
@@ -543,6 +550,9 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>
                               {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {rep.approval_date ? format(parseLocalDate(rep.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[rep.status]}>
