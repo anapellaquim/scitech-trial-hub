@@ -2877,6 +2877,9 @@ export type Database = {
           recurrence_end_date: string | null
           recurrence_type: string | null
           report_type: string
+          requirement_date: string | null
+          requirement_due_date: string | null
+          requirement_submitted_date: string | null
           site_id: string | null
           status: Database["public"]["Enums"]["regulatory_status"]
           submission_id: string | null
@@ -2894,6 +2897,9 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           report_type: string
+          requirement_date?: string | null
+          requirement_due_date?: string | null
+          requirement_submitted_date?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_id?: string | null
@@ -2911,6 +2917,9 @@ export type Database = {
           recurrence_end_date?: string | null
           recurrence_type?: string | null
           report_type?: string
+          requirement_date?: string | null
+          requirement_due_date?: string | null
+          requirement_submitted_date?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_id?: string | null
@@ -2952,6 +2961,9 @@ export type Database = {
           notes: string | null
           planned_date: string | null
           project_id: string | null
+          requirement_date: string | null
+          requirement_due_date: string | null
+          requirement_submitted_date: string | null
           site_id: string | null
           status: Database["public"]["Enums"]["regulatory_status"]
           submission_date: string | null
@@ -2968,6 +2980,9 @@ export type Database = {
           notes?: string | null
           planned_date?: string | null
           project_id?: string | null
+          requirement_date?: string | null
+          requirement_due_date?: string | null
+          requirement_submitted_date?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_date?: string | null
@@ -2984,6 +2999,9 @@ export type Database = {
           notes?: string | null
           planned_date?: string | null
           project_id?: string | null
+          requirement_date?: string | null
+          requirement_due_date?: string | null
+          requirement_submitted_date?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["regulatory_status"]
           submission_date?: string | null
