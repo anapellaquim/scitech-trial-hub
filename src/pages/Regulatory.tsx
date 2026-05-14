@@ -116,8 +116,11 @@ export default function Regulatory() {
     { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Planned Date", dbColumn: "planned_date" },
     { excelHeader: "Submission Date", dbColumn: "submission_date" },
+    { excelHeader: "Has Requirements", dbColumn: "has_requirements" },
+    { excelHeader: "Requirement Due Date", dbColumn: "requirement_due_date" },
+    { excelHeader: "Requirement Submitted Date", dbColumn: "requirement_submitted_date" },
+    { excelHeader: "Approval Date", dbColumn: "approval_date" },
     { excelHeader: "Notes", dbColumn: "notes" },
-    { excelHeader: "Compliance Response", dbColumn: "compliance_response" },
   ];
 
   const reportImportColumns: ColumnMapping[] = [
@@ -125,6 +128,7 @@ export default function Regulatory() {
     { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Due Date", dbColumn: "due_date", required: true },
     { excelHeader: "Submitted Date", dbColumn: "submitted_date" },
+    { excelHeader: "Approval Date", dbColumn: "approval_date" },
     { excelHeader: "Notes", dbColumn: "notes" },
   ];
 
