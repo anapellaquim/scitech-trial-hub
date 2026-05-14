@@ -469,7 +469,7 @@ export default function Regulatory() {
                         return (
                           <TableRow 
                             key={sub.id} 
-                            className="cursor-pointer hover:bg-muted/50"
+                            className={`cursor-pointer hover:bg-muted/50 ${hasReq ? "text-destructive [&_*]:text-destructive" : ""}`}
                             onClick={() => {
                               setSelectedSubmission(sub);
                               setShowEditSubmission(true);
@@ -547,7 +547,7 @@ export default function Regulatory() {
                         return (
                           <TableRow 
                             key={rep.id}
-                            className="cursor-pointer hover:bg-muted/50"
+                            className={`cursor-pointer hover:bg-muted/50 ${hasReq ? "text-destructive [&_*]:text-destructive" : ""}`}
                             onClick={() => {
                               setSelectedReport(rep);
                               setShowEditReport(true);
