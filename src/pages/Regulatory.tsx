@@ -325,10 +325,10 @@ export default function Regulatory() {
             </p>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0 flex-wrap">
-            <ExcelExportButton 
-              data={importType === "submission" ? submissionExportData : reportExportData} 
-              fileName={importType === "submission" ? "submissions" : "reports"} 
-            />
+            <Button variant="outline" size="sm" onClick={handleExportBoth}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Excel
+            </Button>
             <Button variant="outline" onClick={() => {
               setImportType("report");
               setImportOpen(true);
