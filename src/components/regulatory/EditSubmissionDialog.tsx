@@ -292,7 +292,7 @@ export default function EditSubmissionDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, submission_date: v };
-                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                  if (formData.has_requirements !== "yes" && formData.status !== "rejected" && formData.status !== "revision_required") {
                     if (v) next.status = "submitted";
                     else if (!formData.approval_date) next.status = "pending";
                   }
@@ -309,7 +309,7 @@ export default function EditSubmissionDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, approval_date: v };
-                  if (formData.status !== "rejected" && formData.status !== "revision_required") {
+                  if (formData.has_requirements !== "yes" && formData.status !== "rejected" && formData.status !== "revision_required") {
                     if (v) next.status = "approved";
                     else if (!formData.submission_date) next.status = "pending";
                   }
