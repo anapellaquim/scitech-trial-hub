@@ -125,7 +125,9 @@ export default function EditSubmissionDialog({
     try {
       const hasReq = formData.has_requirements === "yes";
       let finalStatus = formData.status;
-      if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
+      if (hasReq && !["rejected"].includes(finalStatus)) {
+        finalStatus = formData.requirement_submitted_date ? "submitted" : "revision_required";
+      } else if (formData.approval_date && !["rejected", "revision_required"].includes(finalStatus)) {
         finalStatus = "approved";
       } else if (hasReq && formData.requirement_submitted_date) {
         if (!["rejected"].includes(finalStatus)) finalStatus = "submitted";
@@ -253,7 +255,13 @@ export default function EditSubmissionDialog({
             <Label htmlFor="status">Status *</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value })}
+              onValueChange={(value) => {
+                const next = { ...formData, status: value };
+                if (formData.has_requirements === "yes" && value !== "rejected") {
+                  next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
+                }
+                setFormData(next);
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
@@ -297,7 +305,9 @@ export default function EditSubmissionDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, submission_date: v };
-                  if (v) next.status = "submitted";
+                  if (formData.has_requirements === "yes" && formData.status !== "rejected") {
+                    next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
+                  } else if (v) next.status = "submitted";
                   else if (!formData.approval_date) next.status = "pending";
                   setFormData(next);
                 }}
@@ -312,7 +322,9 @@ export default function EditSubmissionDialog({
                 onChange={(e) => {
                   const v = e.target.value;
                   const next = { ...formData, approval_date: v };
-                  if (v) next.status = "approved";
+                  if (formData.has_requirements === "yes" && formData.status !== "rejected") {
+                    next.status = formData.requirement_submitted_date ? "submitted" : "revision_required";
+                  } else if (v) next.status = "approved";
                   else if (!formData.submission_date) next.status = "pending";
                   setFormData(next);
                 }}
