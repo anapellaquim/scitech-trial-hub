@@ -185,11 +185,11 @@ export function EditParticipantPaymentsDialog({
                       {isUnscheduled && (
                         <Checkbox
                           id={`vt-${vt.id}`}
-                          checked={paymentStatus[`type-${vt.id}`] || false}
+                          checked={paymentStatus[vt.id] || false}
                           onCheckedChange={(checked) =>
                             setPaymentStatus((prev) => ({
                               ...prev,
-                              [`type-${vt.id}`]: checked === true,
+                              [vt.id]: checked === true,
                             }))
                           }
                         />
