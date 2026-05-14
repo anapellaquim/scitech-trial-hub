@@ -97,6 +97,7 @@ export default function EditSubmissionDialog({
         status: submission.status,
         notes: submission.notes || "",
         compliance_response: (submission as any).compliance_response || "",
+        has_requirements: (submission as any).has_requirements ? "yes" : "no",
         requirement_date: (submission as any).requirement_date || "",
         requirement_due_date: (submission as any).requirement_due_date || "",
         requirement_submitted_date: (submission as any).requirement_submitted_date || "",
