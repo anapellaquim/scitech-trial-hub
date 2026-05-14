@@ -116,8 +116,11 @@ export default function Regulatory() {
     { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Planned Date", dbColumn: "planned_date" },
     { excelHeader: "Submission Date", dbColumn: "submission_date" },
+    { excelHeader: "Has Requirements", dbColumn: "has_requirements" },
+    { excelHeader: "Requirement Due Date", dbColumn: "requirement_due_date" },
+    { excelHeader: "Requirement Submitted Date", dbColumn: "requirement_submitted_date" },
+    { excelHeader: "Approval Date", dbColumn: "approval_date" },
     { excelHeader: "Notes", dbColumn: "notes" },
-    { excelHeader: "Compliance Response", dbColumn: "compliance_response" },
   ];
 
   const reportImportColumns: ColumnMapping[] = [
@@ -125,6 +128,7 @@ export default function Regulatory() {
     { excelHeader: "Status", dbColumn: "status", required: true },
     { excelHeader: "Due Date", dbColumn: "due_date", required: true },
     { excelHeader: "Submitted Date", dbColumn: "submitted_date" },
+    { excelHeader: "Approval Date", dbColumn: "approval_date" },
     { excelHeader: "Notes", dbColumn: "notes" },
   ];
 
@@ -230,21 +234,25 @@ export default function Regulatory() {
 
   const submissionExportData = useMemo(() => filteredSubmissions.map(s => ({
     Study: s.project?.title || "",
-    Site: s.site ? `${s.site.code} - ${s.site.name}` : "",
     Type: s.submission_type,
-    Status: statusLabels[s.status] || s.status,
+    Site: s.site ? `${s.site.code} - ${s.site.name}` : "",
     "Planned Date": s.planned_date || "",
     "Submission Date": s.submission_date || "",
+    "Has Requirements": s.has_requirements ? "Yes" : "No",
+    "Requirement Due Date": s.requirement_due_date || "",
+    "Requirement Submitted Date": s.requirement_submitted_date || "",
+    "Approval Date": s.approval_date || "",
+    Status: statusLabels[s.status] || s.status,
     Notes: s.notes || "",
-    "Compliance Response": s.compliance_response || "",
   })), [filteredSubmissions]);
 
   const reportExportData = useMemo(() => filteredReports.map(r => ({
     Study: r.project?.title || "",
     Type: r.report_type,
-    Status: statusLabels[r.status] || r.status,
     "Due Date": r.due_date || "",
     "Submitted Date": r.submitted_date || "",
+    "Approval Date": r.approval_date || "",
+    Status: statusLabels[r.status] || r.status,
     Notes: r.notes || "",
   })), [filteredReports]);
 
@@ -262,17 +270,33 @@ export default function Regulatory() {
     }
   };
 
-  // Stats
+  // Stats — symmetric across Submissions + Reports
+  const isOpen = (status: string) => status === "pending" || status === "revision_required";
+  const isClosed = (status: string) => status === "approved" || status === "rejected";
 
+  const pendingCount =
+    submissions.filter(s => isOpen(s.status)).length +
+    reports.filter(r => isOpen(r.status)).length;
 
-  const pendingSubmissions = submissions.filter(s => s.status === "pending").length;
-  const overdueReports = reports.filter(r => r.status === "pending" && r.due_date && isPast(parseLocalDate(r.due_date))).length;
-  const approvedSubmissions = submissions.filter(s => s.status === "approved").length;
-  const upcomingDeadlines = reports.filter(r => {
-    if (!r.due_date || r.status !== "pending") return false;
-    const dueDate = parseLocalDate(r.due_date);
-    return isWithinInterval(dueDate, { start: new Date(), end: addDays(new Date(), 30) });
-  }).length;
+  const overdueCount =
+    submissions.filter(s => isOpen(s.status) && s.planned_date && isPast(parseLocalDate(s.planned_date))).length +
+    reports.filter(r => isOpen(r.status) && r.due_date && isPast(parseLocalDate(r.due_date))).length;
+
+  const upcomingDeadlines =
+    submissions.filter(s => {
+      if (!s.planned_date || !isOpen(s.status)) return false;
+      const d = parseLocalDate(s.planned_date);
+      return !isPast(d) && isWithinInterval(d, { start: new Date(), end: addDays(new Date(), 30) });
+    }).length +
+    reports.filter(r => {
+      if (!r.due_date || !isOpen(r.status)) return false;
+      const d = parseLocalDate(r.due_date);
+      return !isPast(d) && isWithinInterval(d, { start: new Date(), end: addDays(new Date(), 30) });
+    }).length;
+
+  const approvedCount =
+    submissions.filter(s => s.status === "approved").length +
+    reports.filter(r => r.status === "approved").length;
 
   if (loading) {
     return (
@@ -334,38 +358,38 @@ export default function Regulatory() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Submissions</CardTitle>
+              <CardTitle className="text-sm font-medium">Pending</CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{pendingSubmissions}</div>
+              <div className="text-2xl font-bold">{pendingCount}</div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Overdue Reports</CardTitle>
+              <CardTitle className="text-sm font-medium">Overdue</CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{overdueReports}</div>
+              <div className="text-2xl font-bold text-red-600">{overdueCount}</div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Approvals</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{approvedSubmissions}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Deadlines in 30 days</CardTitle>
+              <CardTitle className="text-sm font-medium">Due in 30 days</CardTitle>
               <Calendar className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">{upcomingDeadlines}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Approved</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
             </CardContent>
           </Card>
         </div>
