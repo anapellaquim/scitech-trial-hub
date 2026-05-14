@@ -293,7 +293,6 @@ export default function Committees() {
                   <TableBody>
                     {filtered.map(r => {
                       const att = attendees.filter(a => a.committee_id === r.id);
-                      const del = deliberations.filter(d => d.committee_id === r.id);
                       return (
                         <TableRow key={r.id}>
                           <TableCell><Badge variant="outline">{r.committee_type}</Badge></TableCell>
@@ -301,7 +300,6 @@ export default function Committees() {
                           <TableCell>{r.meeting_date}</TableCell>
                           <TableCell><Badge className={statusColors[r.status] || ""}>{r.status}</Badge></TableCell>
                           <TableCell>{att.length}</TableCell>
-                          <TableCell>{del.length}</TableCell>
                           <TableCell>{r.next_meeting_date || "-"}</TableCell>
                           <TableCell>
                             <div className="flex gap-1">
