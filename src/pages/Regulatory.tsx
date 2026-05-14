@@ -512,6 +512,11 @@ export default function Regulatory() {
                                 </div>
                               )}
                             </TableCell>
+                            <TableCell>
+                              {hasReq && sub.requirement_due_date
+                                ? format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
+                                : "-"}
+                            </TableCell>
                           </TableRow>
                         );
                       })
