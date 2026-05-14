@@ -517,12 +517,26 @@ export default function ClinicalEvaluation() {
                 <Input type="date" value={newVersion.issued_at} onChange={(e) => setNewVersion({ ...newVersion, issued_at: e.target.value })} />
               </div>
               <div className="space-y-1">
+                <Label className="text-xs">Revision Type *</Label>
+                <Select value={newVersion.revision_type} onValueChange={(v) => setNewVersion({ ...newVersion, revision_type: v as "minor" | "major" })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="minor">Minor Revision</SelectItem>
+                    <SelectItem value="major">Major Revision</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
                 <Label className="text-xs">Author</Label>
                 <Input value={newVersion.author} onChange={(e) => setNewVersion({ ...newVersion, author: e.target.value })} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Link</Label>
                 <Input value={newVersion.link} onChange={(e) => setNewVersion({ ...newVersion, link: e.target.value })} placeholder="https://..." />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <Label className="text-xs">Revision Reason</Label>
+                <Textarea rows={2} value={newVersion.revision_reason} onChange={(e) => setNewVersion({ ...newVersion, revision_reason: e.target.value })} placeholder="Why was this revision made?" />
               </div>
               <div className="col-span-2 space-y-1">
                 <Label className="text-xs">Change summary</Label>
