@@ -1799,7 +1799,7 @@ export default function Payments() {
                         <SelectContent>
                           <SelectItem value="all">Todos os pagamentos</SelectItem>
                           <SelectItem value="pending">Com visitas a pagar</SelectItem>
-                          <SelectItem value="paid">Com visitas pagas</SelectItem>
+                          
                           <SelectItem value="all_paid">Todas pagas</SelectItem>
                           <SelectItem value="none">Sem visitas completas</SelectItem>
                         </SelectContent>
