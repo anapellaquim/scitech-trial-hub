@@ -383,35 +383,6 @@ export default function EditSubmissionDialog({
               </div>
             </div>
           </div>
-              <div className="space-y-1">
-                <Label htmlFor="requirement_date" className="text-xs">Requirement Date</Label>
-                <Input
-                  id="requirement_date"
-                  type="date"
-                  value={formData.requirement_date}
-                  onChange={(e) => setFormData({ ...formData, requirement_date: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="requirement_due_date" className="text-xs">Due Date</Label>
-                <Input
-                  id="requirement_due_date"
-                  type="date"
-                  value={formData.requirement_due_date}
-                  onChange={(e) => setFormData({ ...formData, requirement_due_date: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="requirement_submitted_date" className="text-xs">Submitted Date</Label>
-                <Input
-                  id="requirement_submitted_date"
-                  type="date"
-                  value={formData.requirement_submitted_date}
-                  onChange={(e) => setFormData({ ...formData, requirement_submitted_date: e.target.value })}
-                />
-              </div>
-            </div>
-          </div>
 
           <div className="space-y-2">
             <Label>Site</Label>
