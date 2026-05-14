@@ -271,7 +271,13 @@ export default function EditSubmissionDialog({
                 id="submission_date"
                 type="date"
                 value={formData.submission_date}
-                onChange={(e) => setFormData({ ...formData, submission_date: e.target.value, status: e.target.value ? "submitted" : formData.status })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const next = { ...formData, submission_date: v };
+                  if (v) next.status = "submitted";
+                  else if (!formData.approval_date) next.status = "pending";
+                  setFormData(next);
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -280,7 +286,13 @@ export default function EditSubmissionDialog({
                 id="approval_date"
                 type="date"
                 value={formData.approval_date}
-                onChange={(e) => setFormData({ ...formData, approval_date: e.target.value })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const next = { ...formData, approval_date: v };
+                  if (v) next.status = "approved";
+                  else if (!formData.submission_date) next.status = "pending";
+                  setFormData(next);
+                }}
               />
             </div>
           </div>

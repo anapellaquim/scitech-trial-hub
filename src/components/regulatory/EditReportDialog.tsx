@@ -294,7 +294,13 @@ export default function EditReportDialog({
                 id="submitted_date"
                 type="date"
                 value={formData.submitted_date}
-                onChange={(e) => setFormData({ ...formData, submitted_date: e.target.value, status: e.target.value ? "submitted" : formData.status })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const next = { ...formData, submitted_date: v };
+                  if (v) next.status = "submitted";
+                  else if (!formData.approval_date) next.status = "pending";
+                  setFormData(next);
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -303,7 +309,13 @@ export default function EditReportDialog({
                 id="approval_date"
                 type="date"
                 value={formData.approval_date}
-                onChange={(e) => setFormData({ ...formData, approval_date: e.target.value })}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  const next = { ...formData, approval_date: v };
+                  if (v) next.status = "approved";
+                  else if (!formData.submitted_date) next.status = "pending";
+                  setFormData(next);
+                }}
               />
             </div>
           </div>
