@@ -214,6 +214,11 @@ export default function ClinicalEvaluation() {
         computeNextReview(form.last_review_date || null, form.review_periodicity_months),
       link: form.link || null,
       notes: form.notes || null,
+      training_required: form.training_required,
+      training_trainees: form.training_required ? (form.training_trainees || null) : null,
+      training_date: form.training_required ? (form.training_date || null) : null,
+      training_trainer: form.training_required ? (form.training_trainer || null) : null,
+      training_evidence_link: form.training_required ? (form.training_evidence_link || null) : null,
     };
 
     const { error } = editing
