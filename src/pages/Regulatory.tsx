@@ -234,21 +234,25 @@ export default function Regulatory() {
 
   const submissionExportData = useMemo(() => filteredSubmissions.map(s => ({
     Study: s.project?.title || "",
-    Site: s.site ? `${s.site.code} - ${s.site.name}` : "",
     Type: s.submission_type,
-    Status: statusLabels[s.status] || s.status,
+    Site: s.site ? `${s.site.code} - ${s.site.name}` : "",
     "Planned Date": s.planned_date || "",
     "Submission Date": s.submission_date || "",
+    "Has Requirements": s.has_requirements ? "Yes" : "No",
+    "Requirement Due Date": s.requirement_due_date || "",
+    "Requirement Submitted Date": s.requirement_submitted_date || "",
+    "Approval Date": s.approval_date || "",
+    Status: statusLabels[s.status] || s.status,
     Notes: s.notes || "",
-    "Compliance Response": s.compliance_response || "",
   })), [filteredSubmissions]);
 
   const reportExportData = useMemo(() => filteredReports.map(r => ({
     Study: r.project?.title || "",
     Type: r.report_type,
-    Status: statusLabels[r.status] || r.status,
     "Due Date": r.due_date || "",
     "Submitted Date": r.submitted_date || "",
+    "Approval Date": r.approval_date || "",
+    Status: statusLabels[r.status] || r.status,
     Notes: r.notes || "",
   })), [filteredReports]);
 
