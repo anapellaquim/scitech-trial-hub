@@ -215,6 +215,10 @@ export type Database = {
           resolved_at: string | null
           responsible: string | null
           status: string
+          training_date: string | null
+          training_evidence_link: string | null
+          training_trainees: string | null
+          training_trainer: string | null
           updated_at: string
         }
         Insert: {
@@ -237,6 +241,10 @@ export type Database = {
           resolved_at?: string | null
           responsible?: string | null
           status?: string
+          training_date?: string | null
+          training_evidence_link?: string | null
+          training_trainees?: string | null
+          training_trainer?: string | null
           updated_at?: string
         }
         Update: {
@@ -259,6 +267,10 @@ export type Database = {
           resolved_at?: string | null
           responsible?: string | null
           status?: string
+          training_date?: string | null
+          training_evidence_link?: string | null
+          training_trainees?: string | null
+          training_trainer?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -360,11 +372,6 @@ export type Database = {
           review_periodicity_months: number
           status: string
           title: string
-          training_date: string | null
-          training_evidence_link: string | null
-          training_required: boolean
-          training_trainees: string | null
-          training_trainer: string | null
           updated_at: string
           version: string
         }
@@ -385,11 +392,6 @@ export type Database = {
           review_periodicity_months?: number
           status?: string
           title: string
-          training_date?: string | null
-          training_evidence_link?: string | null
-          training_required?: boolean
-          training_trainees?: string | null
-          training_trainer?: string | null
           updated_at?: string
           version?: string
         }
@@ -410,11 +412,6 @@ export type Database = {
           review_periodicity_months?: number
           status?: string
           title?: string
-          training_date?: string | null
-          training_evidence_link?: string | null
-          training_required?: boolean
-          training_trainees?: string | null
-          training_trainer?: string | null
           updated_at?: string
           version?: string
         }
