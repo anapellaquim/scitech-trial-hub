@@ -1872,7 +1872,7 @@ export default function Payments() {
                                             <label className="flex items-center gap-1 text-[10px] cursor-pointer mt-0.5">
                                               <Checkbox
                                                 checked={isPaid}
-                                                onCheckedChange={(c) => togglePatientVisitPaid(visit.id, c === true)}
+                                                onCheckedChange={(c) => requestTogglePatientVisitPaid(visit.id, c === true)}
                                               />
                                               <span className={isPaid ? "text-success font-medium" : "text-warning font-medium"}>
                                                 {isPaid ? "Pago" : "A pagar"}
