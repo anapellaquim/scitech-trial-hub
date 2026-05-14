@@ -219,12 +219,10 @@ export default function Committees() {
 
   const exportData = filtered.map(r => {
     const att = attendees.filter(a => a.committee_id === r.id);
-    const del = deliberations.filter(d => d.committee_id === r.id);
     return {
       Type: r.committee_type, "Meeting #": r.meeting_number, Date: r.meeting_date,
       Status: r.status, Agenda: r.agenda || "", "Next Meeting": r.next_meeting_date || "",
       Attendees: att.map(a => a.member_name).join(", "),
-      Deliberations: del.map(d => d.content).join("; "),
     };
   });
 
@@ -290,12 +288,11 @@ export default function Committees() {
               ) : (
                 <Table>
                   <TableHeader><TableRow>
-                    <TableHead>Type</TableHead><TableHead>Meeting #</TableHead><TableHead>Date</TableHead><TableHead>Status</TableHead><TableHead>Attendees</TableHead><TableHead>Deliberations</TableHead><TableHead>Next Meeting</TableHead><TableHead className="w-[120px]">Actions</TableHead>
+                    <TableHead>Type</TableHead><TableHead>Meeting #</TableHead><TableHead>Date</TableHead><TableHead>Status</TableHead><TableHead>Attendees</TableHead><TableHead>Next Meeting</TableHead><TableHead className="w-[120px]">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {filtered.map(r => {
                       const att = attendees.filter(a => a.committee_id === r.id);
-                      const del = deliberations.filter(d => d.committee_id === r.id);
                       return (
                         <TableRow key={r.id}>
                           <TableCell><Badge variant="outline">{r.committee_type}</Badge></TableCell>
@@ -303,7 +300,6 @@ export default function Committees() {
                           <TableCell>{r.meeting_date}</TableCell>
                           <TableCell><Badge className={statusColors[r.status] || ""}>{r.status}</Badge></TableCell>
                           <TableCell>{att.length}</TableCell>
-                          <TableCell>{del.length}</TableCell>
                           <TableCell>{r.next_meeting_date || "-"}</TableCell>
                           <TableCell>
                             <div className="flex gap-1">
