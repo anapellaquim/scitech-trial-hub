@@ -121,7 +121,7 @@ export default function ClinicalEvaluation() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyDoc, setHistoryDoc] = useState<CEDocument | null>(null);
   const [versions, setVersions] = useState<CEVersion[]>([]);
-  const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "" });
+  const [newVersion, setNewVersion] = useState({ version: "", change_summary: "", link: "", author: "", issued_at: "", revision_type: "minor" as "minor" | "major", revision_reason: "" });
 
   const loadRecords = useCallback(async () => {
     setLoading(true);
