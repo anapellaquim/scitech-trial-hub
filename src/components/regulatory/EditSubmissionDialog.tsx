@@ -129,7 +129,7 @@ export default function EditSubmissionDialog({
         finalStatus = "approved";
       } else if (hasReq && formData.requirement_submitted_date) {
         if (!["rejected"].includes(finalStatus)) finalStatus = "submitted";
-      } else if (hasReq && formData.requirement_date) {
+      } else if (hasReq) {
         if (!["rejected"].includes(finalStatus)) finalStatus = "revision_required";
       } else if (!formData.approval_date && !formData.submission_date) {
         finalStatus = "pending";
