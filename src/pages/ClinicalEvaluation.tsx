@@ -256,7 +256,9 @@ export default function ClinicalEvaluation() {
       link: newVersion.link || null,
       author: newVersion.author || null,
       issued_at: newVersion.issued_at || null,
-    });
+      revision_type: newVersion.revision_type,
+      revision_reason: newVersion.revision_reason || null,
+    } as any);
     if (error) {
       toast.error("Failed to add version: " + error.message);
       return;
