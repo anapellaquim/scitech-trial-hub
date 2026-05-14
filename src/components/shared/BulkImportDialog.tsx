@@ -14,6 +14,11 @@ export interface ColumnMapping {
   transform?: (value: any) => any;
 }
 
+interface TemplateSheet {
+  name: string;
+  data: Record<string, string>[];
+}
+
 interface BulkImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -22,6 +27,8 @@ interface BulkImportDialogProps {
   columns: ColumnMapping[];
   onSuccess: () => void;
   templateData?: Record<string, string>[];
+  templateSheets?: TemplateSheet[];
+  sheetName?: string;
 }
 
 export default function BulkImportDialog({
