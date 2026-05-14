@@ -255,8 +255,6 @@ export default function Regulatory() {
     Notes: r.notes || "",
   })), [filteredReports]);
 
-  const [syncing, setSyncing] = useState(false);
-
   const handleExportBoth = () => {
     if (filteredSubmissions.length === 0 && filteredReports.length === 0) return;
     const wb = XLSX.utils.book_new();
