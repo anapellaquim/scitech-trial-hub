@@ -78,6 +78,7 @@ export default function EditSubmissionDialog({
     status: "pending",
     notes: "",
     compliance_response: "",
+    has_requirements: "no",
     requirement_date: "",
     requirement_due_date: "",
     requirement_submitted_date: "",
