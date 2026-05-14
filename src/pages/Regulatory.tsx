@@ -503,12 +503,12 @@ export default function Regulatory() {
                             </TableCell>
                             <TableCell>{hasReq ? "Yes" : "No"}</TableCell>
                             <TableCell>
-                              {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
-                            </TableCell>
-                            <TableCell>
                               {hasReq && sub.requirement_due_date
                                 ? format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: enUS })
                                 : "-"}
+                            </TableCell>
+                            <TableCell>
+                              {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[sub.status]}>
