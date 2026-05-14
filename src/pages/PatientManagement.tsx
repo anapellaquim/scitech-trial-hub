@@ -66,6 +66,9 @@ export default function PatientManagement() {
   const [protocolVisits, setProtocolVisits] = useState<ProtocolVisit[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearch] = useState("");
+  const [filterSite, setFilterSite] = useState<string>("all");
+  const [filterPatientStatus, setFilterPatientStatus] = useState<string>("all");
+  const [filterVisitStatus, setFilterVisitStatus] = useState<string>("all");
 
   // Dialog States
   const [patientDialogOpen, setPatientDialogOpen] = useState(false);
