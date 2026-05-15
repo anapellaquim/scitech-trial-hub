@@ -10,7 +10,42 @@
  * for display, and through `formatDateOnly` when serializing back to the DB.
  */
 
+import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+
 export const APP_TIMEZONE = "America/Sao_Paulo";
+
+/**
+ * Format any timestamp/date/string in the Brasília timezone (America/Sao_Paulo).
+ * Returns "" for invalid/empty input. Use this for ALL display formatting.
+ */
+export function formatInBrasilia(
+  value: Date | string | number | null | undefined,
+  pattern: string = "MM/dd/yyyy",
+): string {
+  if (value === null || value === undefined || value === "") return "";
+  try {
+    // For date-only "YYYY-MM-DD", format the local calendar day verbatim
+    if (typeof value === "string") {
+      const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) {
+        const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        // No tz conversion needed — render via formatInTimeZone with same wall time
+        return formatInTimeZone(d, APP_TIMEZONE, pattern);
+      }
+    }
+    return formatInTimeZone(value as Date | string | number, APP_TIMEZONE, pattern);
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * "Now" as a Date whose UTC components match the current wall time in Brasília.
+ * Use for derived calendar logic (today, day comparisons) instead of `new Date()`.
+ */
+export function nowInBrasilia(): Date {
+  return toZonedTime(new Date(), APP_TIMEZONE);
+}
 
 /**
  * Parse a date-only string ("YYYY-MM-DD" or "YYYY-MM-DDT...") as a LOCAL date,
@@ -20,7 +55,6 @@ export const APP_TIMEZONE = "America/Sao_Paulo";
  * Returns an Invalid Date for null/empty input.
  */
 export function parseLocalDate(value: string | number | Date | null | undefined, ...rest: number[]): Date {
-  // Multi-arg form (year, monthIndex, day, ...) — pass through to native Date
   if (rest.length > 0 && typeof value === "number") {
     return new Date(value as number, ...(rest as [number, ...number[]]));
   }
@@ -36,22 +70,27 @@ export function parseLocalDate(value: string | number | Date | null | undefined,
 }
 
 /**
- * Serialize a Date (or "YYYY-MM-DD" string) to "YYYY-MM-DD" using LOCAL
- * components — never UTC. Use this whenever you persist a date-only field.
+ * Serialize a Date (or "YYYY-MM-DD" string) to "YYYY-MM-DD" using Brasília
+ * wall-clock components. Use this whenever you persist a date-only field.
  */
 export function formatDateOnly(value: Date | string | null | undefined): string {
   if (!value) return "";
-  const d = typeof value === "string" ? parseLocalDate(value) : value;
+  if (typeof value === "string") {
+    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  }
+  const d = value instanceof Date ? value : new Date(value);
   if (isNaN(d.getTime())) return "";
-  const y = d.getFullYear();
-  const mo = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${mo}-${day}`;
+  return formatInTimeZone(d, APP_TIMEZONE, "yyyy-MM-dd");
 }
 
 /**
- * Today's date as "YYYY-MM-DD" in local time. Safe default for date inputs.
+ * Today's date as "YYYY-MM-DD" in Brasília. Safe default for date inputs.
  */
 export function todayDateOnly(): string {
-  return formatDateOnly(new Date());
+  return formatInTimeZone(new Date(), APP_TIMEZONE, "yyyy-MM-dd");
 }
+
+/** Alias for clarity at call sites that want the timezone in the name. */
+export const todayDateOnlyBrasilia = todayDateOnly;
+
