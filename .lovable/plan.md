@@ -1,44 +1,32 @@
-## Problema
+# Forçar fuso horário de Brasília (America/Sao_Paulo)
 
-Os filtros do card "Monitoring Visits" (Search, Site, Type, Status) só estão sendo aplicados às abas **All**, **Planned** e **Completed**. As abas **Oversight** e **Notes** ignoram completamente os filtros — elas iteram sobre `findings` e `notes` brutos, e os contadores (`Oversight (N)`, `Notes (N)`) mostram o total geral.
+## Objetivo
+Garantir que toda data/hora exibida e persistida pelo app respeite **America/Sao_Paulo**, independentemente do fuso do navegador do usuário. Formato continua MM/dd/yyyy.
 
-Além disso, os KPIs do topo (Pending Items, eCRF Queries, Protocol Deviations, AE Deviations, Critical Open, Avg Days to Due) também usam `findings` bruto, então não respeitam o filtro por site/visita.
+## Abordagem
 
-## Solução proposta
+1. **Adicionar `date-fns-tz`** como dependência (já usamos `date-fns`).
+2. **Estender `src/lib/dateUtils.ts`** com helpers centrais:
+   - `formatInBrasilia(date, pattern)` — usa `formatInTimeZone` para qualquer timestamp.
+   - `nowInBrasilia()` — Date "agora" deslocada para o fuso de Brasília.
+   - `todayDateOnlyBrasilia()` — substitui `todayDateOnly` para datas-only baseadas em hoje (ex.: defaults de inputs).
+   - Atualizar `parseLocalDate` / `formatDateOnly` para usar componentes de Brasília quando a entrada for um `Date` com hora (timestamp), preservando o comportamento atual para strings "YYYY-MM-DD".
+3. **Substituir nos componentes** todas as ocorrências de:
+   - `format(new Date(x), "...")` em campos `created_at`, `updated_at`, `signed_at`, `due_date`, auditoria, comunicações, visitas, pagamentos → `formatInBrasilia(x, "...")`.
+   - `new Date().toISOString().split("T")[0]` e `new Date().toLocaleDateString()` → helpers do dateUtils.
+   - Defaults de `<Input type="date">` que usam `new Date()` → `todayDateOnlyBrasilia()`.
+4. **Auditoria de cobertura**: rodar `rg` para `new Date\(|toLocaleDateString|toISOString` em `src/**` e revisar caso a caso (componentes mais sensíveis: `AuditTrail`, `Communications`, `Payments`, `PatientManagement`, `VisitAgenda`, `SiteMonitoring`, `RegulatoryReports`, dialogs com assinatura eletrônica).
+5. **Banco**: timestamps continuam em UTC (`timestamptz`) — conversão é só na UI. Não há migração SQL.
+6. **Memory**: atualizar `mem://index.md` com regra core "All dates rendered/serialized in America/Sao_Paulo via dateUtils helpers; never use raw `new Date()`/`toLocaleDateString` for display."
 
-Fazer com que **todos os filtros** (Search, Site, Type, Status) restrinjam de forma consistente todo o conteúdo do módulo — visitas, oversight items, notes e KPIs.
+## Detalhes técnicos
 
-### Mudanças em `src/pages/SiteMonitoring.tsx`
+- `formatInTimeZone(value, "America/Sao_Paulo", "MM/dd/yyyy HH:mm")` é a chamada base.
+- Para campos date-only (`YYYY-MM-DD` no Postgres) o comportamento atual já está correto via `parseLocalDate`; o risco está nos `timestamptz` exibidos sem fuso.
+- Edge function `generate-alerts` permanece em UTC para comparações internas; só formata em Brasília se enviar texto ao usuário.
 
-1. **Derivar listas filtradas de oversight e notes** a partir das visitas filtradas:
-   ```ts
-   const filteredVisitIds = new Set(filtered.map(v => v.id));
-   const filteredFindings = useMemo(
-     () => findings.filter(f => filteredVisitIds.has(f.monitoring_visit_id)),
-     [findings, filtered]
-   );
-   const filteredNotes = useMemo(
-     () => notes.filter(n => filteredVisitIds.has(n.monitoring_visit_id)),
-     [notes, filtered]
-   );
-   ```
+## Critérios de aceite
 
-2. **Atualizar contadores das abas**:
-   - `Oversight ({findings.length})` → `Oversight ({filteredFindings.length})`
-   - `Notes ({notes.length})` → `Notes ({filteredNotes.length})`
-
-3. **Atualizar tabelas das abas Oversight e Notes** para iterar sobre `filteredFindings` / `filteredNotes` em vez de `findings` / `notes`.
-
-4. **Atualizar os KPIs do topo** (Pending Items, eCRF Queries, Protocol Deviations, AE Deviations, Critical Open, Avg Days to Due) para serem calculados a partir de `filteredFindings`, garantindo coerência com os filtros aplicados.
-
-5. **Mensagens de empty state**: Quando os filtros estiverem ativos e não houver resultado, manter a mensagem atual ("No oversight items recorded yet." / "No monitor notes recorded yet.") — opcionalmente trocar para "No oversight items match the current filters." quando há filtro ativo. (Decisão menor; mantenho a mensagem atual a menos que você prefira outra.)
-
-### Fora de escopo
-
-- Não alteramos os filtros em si (continuam Search, Site, Type, Status).
-- Não alteramos schema do banco nem edge functions.
-- Não tocamos em outras páginas.
-
-## Resultado esperado
-
-Selecionar um site (ou outro filtro) passa a restringir simultaneamente: visitas, oversight items, notes e KPIs do topo, mantendo coerência total entre as 5 abas.
+- Usuário em qualquer fuso vê data/hora idêntica a um usuário em São Paulo.
+- Defaults de inputs `type="date"` refletem a data corrente em Brasília.
+- Nenhuma regressão em datas-only existentes (enrollment, target days, etc.).
