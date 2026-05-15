@@ -26,7 +26,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
-import { parseLocalDate, todayDateOnly, formatDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, todayDateOnly, formatDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 
 
 interface Project {
@@ -2224,7 +2224,7 @@ export default function Payments() {
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement("a");
                           a.href = url;
-                          a.download = `historico-pagamentos-${format(new Date(), "yyyy-MM-dd")}.csv`;
+                          a.download = `historico-pagamentos-${todayDateOnly()}.csv`;
                           a.click();
                         }}
                       >

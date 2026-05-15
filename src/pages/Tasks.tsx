@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
@@ -224,7 +224,7 @@ export default function Tasks() {
 
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return parseLocalDate(date).toLocaleDateString("pt-BR");
+    return formatInBrasilia(date, "MM/dd/yyyy");
   };
 
   const isOverdue = (endDate: string | null, status: string) => {

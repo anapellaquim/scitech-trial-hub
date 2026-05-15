@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
@@ -1220,7 +1220,7 @@ export default function VisitAgenda() {
                                   <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
                                   {n.category && <Badge variant="outline">{n.category}</Badge>}
                                   <span className="text-xs text-muted-foreground">
-                                    {n.author_name || "—"} · {new Date(n.created_at).toLocaleString("en-US")}
+                                    {n.author_name || "—"} · {formatInBrasilia(n.created_at, "MM/dd/yyyy, HH:mm")}
                                     {n.updated_at !== n.created_at && " (edited)"}
                                   </span>
                                   <Button 

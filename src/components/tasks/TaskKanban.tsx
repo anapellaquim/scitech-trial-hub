@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -46,7 +46,7 @@ const priorityLabels: Record<string, string> = {
 export default function TaskKanban({ tasks, onTaskClick, onStatusChange }: TaskKanbanProps) {
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return parseLocalDate(date).toLocaleDateString("pt-BR");
+    return formatInBrasilia(date, "MM/dd/yyyy");
   };
 
   const isOverdue = (endDate: string | null, status: string) => {

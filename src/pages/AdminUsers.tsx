@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import CTMSNav from "@/components/CTMSNav";
@@ -205,7 +205,7 @@ const AdminUsers = () => {
                         )) || <span className="text-muted-foreground text-sm">No roles assigned</span>}
                       </div>
                     </TableCell>
-                    <TableCell>{parseLocalDate(user.created_at).toLocaleDateString("en-US")}</TableCell>
+                    <TableCell>{formatInBrasilia(user.created_at, "MM/dd/yyyy")}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         {isAdmin && (

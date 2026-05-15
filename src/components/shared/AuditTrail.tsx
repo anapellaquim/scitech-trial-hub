@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatInBrasilia, todayDateOnly } from "@/lib/dateUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { History, User, Clock, ChevronDown, ChevronRight } from "lucide-react";
@@ -60,7 +61,7 @@ export function AuditTrail({ entityId }: { entityId: string }) {
                     </span>
                     <span className="text-muted-foreground flex items-center gap-1">
                       <Clock className="h-2.5 w-2.5" />
-                      {format(new Date(log.created_at), "dd/MM/yyyy HH:mm")}
+                      {formatInBrasilia(log.created_at, "dd/MM/yyyy HH:mm")}
                     </span>
                   </div>
                   <div className="text-muted-foreground flex items-center gap-1 mb-1">

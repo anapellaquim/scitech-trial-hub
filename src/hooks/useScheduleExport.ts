@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -101,7 +101,7 @@ export const useScheduleExport = () => {
     }
 
     // Download
-    const fileName = `cronograma_${project.title.replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    const fileName = `cronograma_${project.title.replace(/\s+/g, '_')}_${todayDateOnly()}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
 
@@ -113,7 +113,7 @@ export const useScheduleExport = () => {
     doc.setFontSize(18);
     doc.text(`Cronograma: ${project.title}`, pageWidth / 2, 15, { align: 'center' });
     doc.setFontSize(10);
-    doc.text(`Exportado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}`, pageWidth / 2, 22, { align: 'center' });
+    doc.text(`Exportado em: ${formatInBrasilia(new Date(), "MM/dd/yyyy HH:mm")}`, pageWidth / 2, 22, { align: 'center' });
 
     // Tasks table
     const tableData = tasks.map(task => [
@@ -167,7 +167,7 @@ export const useScheduleExport = () => {
     }
 
     // Download
-    const fileName = `cronograma_${project.title.replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+    const fileName = `cronograma_${project.title.replace(/\s+/g, '_')}_${todayDateOnly()}.pdf`;
     doc.save(fileName);
   };
 

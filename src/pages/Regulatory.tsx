@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -265,7 +265,7 @@ export default function Regulatory() {
     const repSheet = XLSX.utils.json_to_sheet(reportExportData);
     XLSX.utils.book_append_sheet(wb, repSheet, "Reports");
 
-    XLSX.writeFile(wb, `regulatory_data_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `regulatory_data_${todayDateOnly()}.xlsx`);
   };
 
   // Stats — symmetric across Submissions + Reports

@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import {
   format,
@@ -1164,7 +1164,7 @@ export const GanttChart = ({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <span className="text-xs">{format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+                  <span className="text-xs">{formatInBrasilia(new Date(), "MMMM d, yyyy")}</span>
                 </TooltipContent>
               </Tooltip>
             )}

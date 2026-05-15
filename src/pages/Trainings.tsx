@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -114,7 +114,7 @@ export default function Trainings() {
   const [form, setForm] = useState(emptyForm);
   const [recordForm, setRecordForm] = useState({
     user_name: "", team_role: "", status: "pending",
-    assigned_at: format(new Date(), "yyyy-MM-dd"),
+    assigned_at: todayDateOnly(),
     completed_at: "", certificate_url: "",
   });
 
@@ -224,7 +224,7 @@ export default function Trainings() {
     setEditingRecord(null);
     setRecordForm({
       user_name: "", team_role: t.delegate_role || "", status: "pending",
-      assigned_at: format(new Date(), "yyyy-MM-dd"), completed_at: "", certificate_url: "",
+      assigned_at: todayDateOnly(), completed_at: "", certificate_url: "",
     });
     setRecordDialogOpen(true);
   };

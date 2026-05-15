@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { formatInBrasilia, todayDateOnly } from "@/lib/dateUtils";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from "xlsx";
@@ -340,7 +341,7 @@ export default function PatientManagement() {
     const protocolSheet = XLSX.utils.json_to_sheet(protocolData);
     XLSX.utils.book_append_sheet(workbook, protocolSheet, "Configuracao Protocolo");
 
-    XLSX.writeFile(workbook, `patient-management-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    XLSX.writeFile(workbook, `patient-management-${todayDateOnly()}.xlsx`);
     toast.success("Dados exportados para Excel");
   };
 
@@ -357,12 +358,12 @@ export default function PatientManagement() {
     
     protocolVisits.forEach(v => {
       templateRow[`${v.visit_name} (Status)`] = 'Completed';
-      templateRow[`${v.visit_name} (Data)`] = format(new Date(), 'yyyy-MM-dd');
+      templateRow[`${v.visit_name} (Data)`] = todayDateOnly();
     });
     
     if (protocolVisits.length === 0) {
       templateRow['Visita Exemplo (Status)'] = 'Completed';
-      templateRow['Visita Exemplo (Data)'] = format(new Date(), 'yyyy-MM-dd');
+      templateRow['Visita Exemplo (Data)'] = todayDateOnly();
     }
 
     const patientsSheet = XLSX.utils.json_to_sheet([templateRow]);
@@ -680,7 +681,7 @@ export default function PatientManagement() {
                                         </Badge>
                                         {visit?.actual_date ? (
                                           <span className="text-[10px] text-muted-foreground mt-1">
-                                            {format(new Date(visit.actual_date), "dd/MM/yyyy")}
+                                            {formatInBrasilia(visit.actual_date, "MM/dd/yyyy")}
                                           </span>
                                         ) : null}
                                         {p.enrollment_date && (
@@ -708,7 +709,7 @@ export default function PatientManagement() {
                                   <div className="flex justify-end gap-2">
                                     <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
                                       setSelectedPatientForVisits(p);
-                                      setVisitForm({ protocol_visit_id: "", actual_date: format(new Date(), "yyyy-MM-dd"), status: "Completed", notes: "" });
+                                      setVisitForm({ protocol_visit_id: "", actual_date: todayDateOnly(), status: "Completed", notes: "" });
                                       setVisitDialogOpen(true);
                                     }}>
                                       <ClipboardCheck className="h-4 w-4" />
@@ -1003,7 +1004,7 @@ export default function PatientManagement() {
                       patientVisits.filter(v => v.patient_id === selectedPatientForVisits?.id).map(v => (
                         <TableRow key={v.id}>
                           <TableCell className="text-xs font-medium">{v.protocol_visit?.visit_name}</TableCell>
-                          <TableCell className="text-xs">{v.actual_date ? format(new Date(v.actual_date), "dd/MM/yyyy") : "—"}</TableCell>
+                          <TableCell className="text-xs">{v.actual_date ? formatInBrasilia(v.actual_date, "MM/dd/yyyy") : "—"}</TableCell>
                           <TableCell><Badge variant="outline" className="text-[10px] h-5">{v.status}</Badge></TableCell>
                           <TableCell><Badge className="text-[10px] h-5 bg-green-100 text-green-800">{v.payment_status}</Badge></TableCell>
                         </TableRow>
