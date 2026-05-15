@@ -26,7 +26,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
-import { parseLocalDate, todayDateOnly, formatDateOnly } , formatInBrasilia } from "@/lib/dateUtils";
+import { parseLocalDate, todayDateOnly, formatDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 
 
 interface Project {
