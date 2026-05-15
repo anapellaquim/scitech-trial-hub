@@ -224,7 +224,7 @@ export default function Tasks() {
 
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return parseLocalDate(date).toLocaleDateString("pt-BR");
+    return formatInBrasilia(date, "MM/dd/yyyy");
   };
 
   const isOverdue = (endDate: string | null, status: string) => {

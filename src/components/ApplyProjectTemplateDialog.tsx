@@ -91,7 +91,7 @@ export default function ApplyProjectTemplateDialog({
   const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
-  const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [startDate, setStartDate] = useState(todayDateOnly());
   const [daysPerPhase, setDaysPerPhase] = useState(14);
   const [daysPerActivity, setDaysPerActivity] = useState(3);
   const [createDependencies, setCreateDependencies] = useState(true);

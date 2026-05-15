@@ -2224,7 +2224,7 @@ export default function Payments() {
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement("a");
                           a.href = url;
-                          a.download = `historico-pagamentos-${format(new Date(), "yyyy-MM-dd")}.csv`;
+                          a.download = `historico-pagamentos-${todayDateOnly()}.csv`;
                           a.click();
                         }}
                       >

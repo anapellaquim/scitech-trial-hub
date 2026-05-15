@@ -114,7 +114,7 @@ export default function Trainings() {
   const [form, setForm] = useState(emptyForm);
   const [recordForm, setRecordForm] = useState({
     user_name: "", team_role: "", status: "pending",
-    assigned_at: format(new Date(), "yyyy-MM-dd"),
+    assigned_at: todayDateOnly(),
     completed_at: "", certificate_url: "",
   });
 
@@ -224,7 +224,7 @@ export default function Trainings() {
     setEditingRecord(null);
     setRecordForm({
       user_name: "", team_role: t.delegate_role || "", status: "pending",
-      assigned_at: format(new Date(), "yyyy-MM-dd"), completed_at: "", certificate_url: "",
+      assigned_at: todayDateOnly(), completed_at: "", certificate_url: "",
     });
     setRecordDialogOpen(true);
   };

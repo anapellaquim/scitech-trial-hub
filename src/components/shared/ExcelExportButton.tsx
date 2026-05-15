@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { formatInBrasilia, todayDateOnly } from "@/lib/dateUtils";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { format } from "date-fns";
@@ -15,7 +16,7 @@ export default function ExcelExportButton({ data, fileName, sheetName = "Data" }
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, sheetName);
-    XLSX.writeFile(wb, `${fileName}_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `${fileName}_${todayDateOnly()}.xlsx`);
   };
 
   return (

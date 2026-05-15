@@ -277,18 +277,12 @@ export default function EditTaskDialog({ task, open, onOpenChange, onSuccess }: 
   };
 
   const formatDateTime = (date: string) => {
-    return parseLocalDate(date).toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatInBrasilia(date, "MM/dd/yyyy HH:mm");
   };
 
   const formatDate = (date: string | null) => {
     if (!date) return "";
-    return parseLocalDate(date).toLocaleDateString("pt-BR");
+    return formatInBrasilia(date, "MM/dd/yyyy");
   };
 
   const isSubtaskOverdue = (dueDate: string | null, completed: boolean) => {

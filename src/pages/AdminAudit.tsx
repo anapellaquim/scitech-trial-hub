@@ -196,7 +196,7 @@ const AdminAudit = () => {
     doc.setFontSize(18);
     doc.text("Relatório de Audit Trail", 14, 22);
     doc.setFontSize(10);
-    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`, 14, 30);
+    doc.text(`Gerado em: ${formatInBrasilia(new Date(), "MM/dd/yyyy HH:mm")}`, 14, 30);
     doc.text(`Total de registros: ${totalCount}`, 14, 36);
 
     const tableData = auditEntries.map(entry => [
@@ -216,7 +216,7 @@ const AdminAudit = () => {
       headStyles: { fillColor: [59, 130, 246] },
     });
 
-    doc.save(`audit-trail-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    doc.save(`audit-trail-${todayDateOnly()}.pdf`);
     toast.success("PDF exportado com sucesso");
   };
 
@@ -236,7 +236,7 @@ const AdminAudit = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Audit Trail");
-    XLSX.writeFile(wb, `audit-trail-${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+    XLSX.writeFile(wb, `audit-trail-${todayDateOnly()}.xlsx`);
     toast.success("Excel exportado com sucesso");
   };
 
