@@ -401,7 +401,7 @@ export default function SiteMonitoring() {
     return matchSearch && matchSite && matchStatus && matchType;
   }), [visits, search, siteFilter, statusFilter, typeFilter]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayDateOnly();
   const planned = filtered.filter(v => ["planned", "scheduled"].includes(v.status));
   const completed = filtered.filter(v => v.status === "completed");
   const overdue = filtered.filter(v => ["planned", "scheduled"].includes(v.status) && v.planned_date && v.planned_date < today);

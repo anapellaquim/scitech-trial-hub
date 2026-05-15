@@ -93,7 +93,7 @@ function excelDate(v: any): string | null {
   if (v === "" || v == null) return null;
   if (typeof v === "number") {
     const d = parseLocalDate(Math.round((v - 25569) * 86400 * 1000));
-    return d.toISOString().slice(0, 10);
+    return formatDateOnly(d);
   }
   const s = String(v).trim();
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -105,7 +105,7 @@ function excelDate(v: any): string | null {
     return `${mdy[3]}-${mm}-${dd}`;
   }
   const parsed = parseLocalDate(s);
-  if (!isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+  if (!isNaN(parsed.getTime())) return formatDateOnly(parsed);
   return null;
 }
 
