@@ -1,4 +1,4 @@
-import { todayDateOnly, parseLocalDate } from "@/lib/dateUtils";
+import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,7 +111,7 @@ const reviewFrequencies = [
 const addMonths = (dateStr: string, months: number) => {
   const d = parseLocalDate(dateStr);
   d.setMonth(d.getMonth() + months);
-  return d.toISOString().slice(0, 10);
+  return formatDateOnly(d);
 };
 const computeNextReview = (identified: string, freq: string) => {
   const m = freq === "monthly" ? 1 : freq === "quarterly" ? 3 : freq === "semiannual" ? 6 : 3;
