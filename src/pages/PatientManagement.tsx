@@ -36,6 +36,7 @@ interface Patient {
   enrollment_date: string | null;
   randomization_date: string | null;
   randomization_group: RandomizationGroup | null;
+  exit_date: string | null;
   notes: string | null;
   site?: { code: string; name: string | null };
 }
@@ -101,6 +102,7 @@ export default function PatientManagement() {
     status: "Screening" as PatientStatus,
     enrollment_date: "",
     randomization_group: "" as RandomizationGroup | "",
+    exit_date: "",
     notes: ""
   });
 
@@ -195,6 +197,7 @@ export default function PatientManagement() {
                patientForm.status === 'Early exit' ? 'Early Exit' : patientForm.status) as any,
       enrollment_date: patientForm.enrollment_date || null,
       randomization_group: patientForm.randomization_group || null,
+      exit_date: patientForm.status === 'Early exit' ? (patientForm.exit_date || null) : null,
       notes: patientForm.notes
     } as any;
 
@@ -388,6 +391,11 @@ export default function PatientManagement() {
       const targetDate = addDays(parseLocalDate(anchor), pv.target_day);
       const windowStart = addDays(targetDate, -pv.window_minus);
       const windowEnd = addDays(targetDate, pv.window_plus);
+      // Patient exited the study: any visit whose target is after exit is impossible to perform.
+      if (p.exit_date) {
+        const exit = parseLocalDate(p.exit_date);
+        if (targetDate > exit) return 'Lost (Exited)';
+      }
       const today = new Date(); today.setHours(0, 0, 0, 0);
       if (today > windowEnd) return 'Overdue';
       if (today >= windowStart && today <= windowEnd) return 'Window';
@@ -662,7 +670,7 @@ export default function PatientManagement() {
             </Select>
             <Button onClick={() => {
               setEditingPatient(null);
-              setPatientForm({ patient_code: "", site_id: sites[0]?.id || "", status: "Screening", enrollment_date: "", randomization_group: "", notes: "" });
+              setPatientForm({ patient_code: "", site_id: sites[0]?.id || "", status: "Screening", enrollment_date: "", randomization_group: "", exit_date: "", notes: "" });
               setPatientDialogOpen(true);
             }} disabled={!selectedProject}>
               <Plus className="h-4 w-4 mr-2" />
@@ -816,17 +824,25 @@ export default function PatientManagement() {
                                       const targetDate = addDays(parseLocalDate(anchor), pv.target_day);
                                       const windowStart = addDays(targetDate, -pv.window_minus);
                                       const windowEnd = addDays(targetDate, pv.window_plus);
-                                      const today = new Date();
-                                      today.setHours(0, 0, 0, 0);
+                                      const exit = p.exit_date ? parseLocalDate(p.exit_date) : null;
 
-                                      if (today > windowEnd) {
-                                        computedStatus = 'Overdue';
-                                        statusColor = 'bg-red-500 text-white';
-                                        Icon = AlertTriangle;
-                                      } else if (today >= windowStart && today <= windowEnd) {
-                                        computedStatus = 'Window';
-                                        statusColor = 'bg-amber-500 text-white';
-                                        Icon = Clock;
+                                      if (exit && targetDate > exit) {
+                                        computedStatus = 'Lost (Exited)';
+                                        statusColor = 'bg-slate-500 text-white';
+                                        Icon = X;
+                                      } else {
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0);
+
+                                        if (today > windowEnd) {
+                                          computedStatus = 'Overdue';
+                                          statusColor = 'bg-red-500 text-white';
+                                          Icon = AlertTriangle;
+                                        } else if (today >= windowStart && today <= windowEnd) {
+                                          computedStatus = 'Window';
+                                          statusColor = 'bg-amber-500 text-white';
+                                          Icon = Clock;
+                                        }
                                       }
                                     }
                                   }
@@ -898,6 +914,7 @@ export default function PatientManagement() {
                                         status: p.status,
                                         enrollment_date: p.enrollment_date || "",
                                         randomization_group: p.randomization_group || "",
+                                        exit_date: p.exit_date || "",
                                         notes: p.notes || ""
                                       });
                                       setPatientDialogOpen(true);
@@ -1065,6 +1082,19 @@ export default function PatientManagement() {
               <Label>Enrollment Date</Label>
               <Input type="date" value={patientForm.enrollment_date} onChange={e => setPatientForm({...patientForm, enrollment_date: e.target.value})} />
             </div>
+            {patientForm.status === 'Early exit' && (
+              <div className="grid gap-2">
+                <Label>Exit Date *</Label>
+                <Input
+                  type="date"
+                  value={patientForm.exit_date}
+                  onChange={e => setPatientForm({...patientForm, exit_date: e.target.value})}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Visits whose target date falls after this exit date will be marked as Lost (participant exited the study).
+                </p>
+              </div>
+            )}
             <div className="grid gap-2">
               <Label>Randomization Group</Label>
               <Select
