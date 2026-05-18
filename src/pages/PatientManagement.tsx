@@ -905,7 +905,7 @@ export default function PatientManagement() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex justify-end gap-2">
-                                    <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
+                                    <Button variant="outline" size="icon" title={p.status === 'Screen failure' ? 'Screen failure: no procedures' : 'Patient Evolution'} disabled={p.status === 'Screen failure'} onClick={() => {
                                       setSelectedPatientForVisits(p);
                                       setVisitForm({ protocol_visit_id: "", actual_date: todayDateOnly(), status: "Completed", notes: "" });
                                       setVisitDialogOpen(true);
