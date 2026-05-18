@@ -164,8 +164,8 @@ export default function InvestigationalProducts() {
       supabase.from("investigational_products").select("*").order("created_at", { ascending: false }),
       supabase.from("ip_supply").select("*").order("date", { ascending: false }),
       selectedProject 
-        ? supabase.from("study_sites").select("id, name, code").eq("project_id", selectedProject)
-        : Promise.resolve({ data: [], error: null }),
+        ? supabase.from("research_centers").select("id, name, code").eq("project_id", selectedProject).order("code")
+        : supabase.from("research_centers").select("id, name, code").order("code"),
       supabase.from("investigational_product_items").select("id, name").order("name")
     ]);
     if (ip.error) toast.error("Failed to load IP: " + ip.error.message);
