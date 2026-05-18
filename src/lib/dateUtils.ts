@@ -24,13 +24,15 @@ export function formatInBrasilia(
 ): string {
   if (value === null || value === undefined || value === "") return "";
   try {
-    // For date-only "YYYY-MM-DD", format the local calendar day verbatim
+    // For date-only "YYYY-MM-DD", format the calendar day verbatim without
+    // any timezone conversion (avoids shifting the day on browsers in TZ
+    // other than America/Sao_Paulo).
     if (typeof value === "string") {
       const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (m) {
-        const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-        // No tz conversion needed — render via formatInTimeZone with same wall time
-        return formatInTimeZone(d, APP_TIMEZONE, pattern);
+        // Anchor at noon UTC so DST / offset rounding cannot move the day
+        const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0));
+        return formatInTimeZone(d, "UTC", pattern);
       }
     }
     return formatInTimeZone(value as Date | string | number, APP_TIMEZONE, pattern);
