@@ -706,8 +706,16 @@ export default function PatientManagement() {
                     <SelectItem value="Lost Visit">Lost Visit</SelectItem>
                   </SelectContent>
                 </Select>
-                {(filterSite !== "all" || filterPatientStatus !== "all" || filterVisitStatus !== "all" || searchTerm) && (
-                  <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterSite("all"); setFilterPatientStatus("all"); setFilterVisitStatus("all"); }}>
+                <Select value={filterRandomGroup} onValueChange={setFilterRandomGroup}>
+                  <SelectTrigger className="w-[180px]"><SelectValue placeholder="Random group" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All groups</SelectItem>
+                    {RANDOMIZATION_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    <SelectItem value="none">Not randomized</SelectItem>
+                  </SelectContent>
+                </Select>
+                {(filterSite !== "all" || filterPatientStatus !== "all" || filterVisitStatus !== "all" || filterRandomGroup !== "all" || searchTerm) && (
+                  <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterSite("all"); setFilterPatientStatus("all"); setFilterVisitStatus("all"); setFilterRandomGroup("all"); }}>
                     Clear
                   </Button>
                 )}
