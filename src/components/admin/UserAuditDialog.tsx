@@ -180,7 +180,7 @@ const UserAuditDialog = ({
                       )}
                       
                       <p className="text-xs text-muted-foreground">
-                        {format(parseLocalDate(entry.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                        {formatInBrasilia(entry.created_at, "dd 'de' MMMM 'de' yyyy 'às' HH:mm")}
                       </p>
                     </div>
                   </div>
