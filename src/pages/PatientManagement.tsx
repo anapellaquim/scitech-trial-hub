@@ -24,6 +24,9 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 // --- Types ---
 type PatientStatus = 'Screening' | 'Screen failure' | 'Included' | 'Complete' | 'Lost to FUP' | 'Early exit' | 'Withdrawn';
 
+type RandomizationGroup = 'AVF: PTA' | 'AVF: SOLARIS DE' | 'AVG: SOLARIS DE';
+const RANDOMIZATION_GROUPS: RandomizationGroup[] = ['AVF: PTA', 'AVF: SOLARIS DE', 'AVG: SOLARIS DE'];
+
 interface Patient {
   id: string;
   project_id: string;
@@ -32,9 +35,18 @@ interface Patient {
   status: PatientStatus;
   enrollment_date: string | null;
   randomization_date: string | null;
+  randomization_group: RandomizationGroup | null;
   notes: string | null;
   site?: { code: string; name: string | null };
 }
+
+// Desired display order for the Participants List visit columns.
+const VISIT_ORDER = ["procedure", "1 month", "3 month", "6 month", "12 month", "18 month", "24 month"];
+const visitOrderIndex = (name: string): number => {
+  const n = name.toLowerCase();
+  const i = VISIT_ORDER.findIndex(k => n.includes(k));
+  return i === -1 ? 999 : i;
+};
 
 interface ProtocolVisit {
   id: string;
