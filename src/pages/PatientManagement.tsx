@@ -803,6 +803,7 @@ export default function PatientManagement() {
                                   });
                                 setScheduleDialogOpen(true);
                               }}><Pencil className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteSchedule(v.id)}><Trash2 className="h-4 w-4" /></Button>
                             </TableCell>
                           </TableRow>
                         ))
