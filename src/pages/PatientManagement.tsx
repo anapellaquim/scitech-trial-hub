@@ -391,6 +391,11 @@ export default function PatientManagement() {
       const targetDate = addDays(parseLocalDate(anchor), pv.target_day);
       const windowStart = addDays(targetDate, -pv.window_minus);
       const windowEnd = addDays(targetDate, pv.window_plus);
+      // Patient exited the study: any visit whose target is after exit is impossible to perform.
+      if (p.exit_date) {
+        const exit = parseLocalDate(p.exit_date);
+        if (targetDate > exit) return 'Lost (Exited)';
+      }
       const today = new Date(); today.setHours(0, 0, 0, 0);
       if (today > windowEnd) return 'Overdue';
       if (today >= windowStart && today <= windowEnd) return 'Window';
