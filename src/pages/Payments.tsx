@@ -1904,15 +1904,17 @@ export default function Payments() {
                                   {orderedVisitDefs.map(pv => {
                                     const visit = patientVisitsRaw.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
                                     const status = visit?.status || 'Scheduled';
-                                    const isCompleted = status === 'Completed' || status === 'Complete';
-                                    const isLost = status === 'Lost Visit';
+                                    const isScreenFailure = p.status === 'Screen failure' || p.status === 'Screen Failure';
+                                    const isCompleted = !isScreenFailure && (status === 'Completed' || status === 'Complete');
+                                    const isLost = !isScreenFailure && status === 'Lost Visit';
                                     const isPaid = (visit?.payment_status || '').toLowerCase() === 'paid';
                                     const pay = paymentForPatient(p, pv);
 
                                     let statusColor = 'bg-slate-100 text-slate-800';
                                     let Icon: any = null;
                                     let display = status;
-                                    if (isCompleted) { statusColor = 'bg-green-500 text-white'; Icon = CheckCircle2; display = 'Completed'; }
+                                    if (isScreenFailure) { statusColor = 'bg-red-500 text-white'; Icon = X; display = 'Screen Failure'; }
+                                    else if (isCompleted) { statusColor = 'bg-green-500 text-white'; Icon = CheckCircle2; display = 'Completed'; }
                                     else if (isLost) { statusColor = 'bg-slate-500 text-white'; Icon = X; display = 'Lost Visit'; }
                                     else {
                                       const anchor = getAnchorDate(p);
