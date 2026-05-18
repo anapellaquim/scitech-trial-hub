@@ -475,6 +475,9 @@ export default function InvestigationalProducts() {
               <Button variant="outline" onClick={() => setItemsDialogOpen(true)}>
                 <Settings2 className="h-4 w-4 mr-1" /> Configure Items
               </Button>
+              <Button variant="outline" onClick={handleDeleteAllIP} disabled={records.length === 0} className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4 mr-1" /> Delete All
+              </Button>
               <Button onClick={openNew}>
                 <Plus className="h-4 w-4 mr-1" /> New IP
               </Button>
