@@ -46,6 +46,14 @@ interface ProtocolVisit {
   window_plus: number;
   payment_amount: number;
   currency: string;
+  is_paid: boolean;
+}
+
+interface SiteOverrideForm {
+  site_id: string;
+  enabled: boolean;     // false = use default (no override row)
+  is_paid: boolean;
+  payment_amount: number;
 }
 
 interface PatientVisit {
