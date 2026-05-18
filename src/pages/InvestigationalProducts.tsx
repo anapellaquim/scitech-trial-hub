@@ -274,7 +274,7 @@ export default function InvestigationalProducts() {
     toast.success("All IP records deleted"); loadRecords();
   };
   const handleDeleteAllSupply = async () => {
-    const confirm1 = confirm(`Delete ALL ${supplyRecords.length} supply movements? This cannot be undone.`);
+    const confirm1 = confirm(`Delete ALL ${supplies.length} supply movements? This cannot be undone.`);
     if (!confirm1) return;
     const typed = prompt('Type "DELETE ALL" to confirm:');
     if (typed !== "DELETE ALL") { toast.error("Confirmation text did not match. Nothing was deleted."); return; }
