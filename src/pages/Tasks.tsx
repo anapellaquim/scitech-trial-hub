@@ -224,7 +224,7 @@ export default function Tasks() {
 
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return formatInBrasilia(date, "MM/dd/yyyy");
+    return formatInBrasilia(date, "dd/MM/yyyy");
   };
 
   const isOverdue = (endDate: string | null, status: string) => {

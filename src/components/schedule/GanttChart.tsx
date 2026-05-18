@@ -1164,7 +1164,7 @@ export const GanttChart = ({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <span className="text-xs">{formatInBrasilia(new Date(), "MMMM d, yyyy")}</span>
+                  <span className="text-xs">{formatInBrasilia(new Date(), "dd 'de' MMMM 'de' yyyy")}</span>
                 </TooltipContent>
               </Tooltip>
             )}

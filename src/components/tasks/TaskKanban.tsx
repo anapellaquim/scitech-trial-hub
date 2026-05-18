@@ -46,7 +46,7 @@ const priorityLabels: Record<string, string> = {
 export default function TaskKanban({ tasks, onTaskClick, onStatusChange }: TaskKanbanProps) {
   const formatDate = (date: string | null) => {
     if (!date) return "-";
-    return formatInBrasilia(date, "MM/dd/yyyy");
+    return formatInBrasilia(date, "dd/MM/yyyy");
   };
 
   const isOverdue = (endDate: string | null, status: string) => {

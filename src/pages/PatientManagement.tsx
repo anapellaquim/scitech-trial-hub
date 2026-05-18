@@ -681,7 +681,7 @@ export default function PatientManagement() {
                                         </Badge>
                                         {visit?.actual_date ? (
                                           <span className="text-[10px] text-muted-foreground mt-1">
-                                            {formatInBrasilia(visit.actual_date, "MM/dd/yyyy")}
+                                            {formatInBrasilia(visit.actual_date, "dd/MM/yyyy")}
                                           </span>
                                         ) : null}
                                         {p.enrollment_date && (
@@ -1004,7 +1004,7 @@ export default function PatientManagement() {
                       patientVisits.filter(v => v.patient_id === selectedPatientForVisits?.id).map(v => (
                         <TableRow key={v.id}>
                           <TableCell className="text-xs font-medium">{v.protocol_visit?.visit_name}</TableCell>
-                          <TableCell className="text-xs">{v.actual_date ? formatInBrasilia(v.actual_date, "MM/dd/yyyy") : "—"}</TableCell>
+                          <TableCell className="text-xs">{v.actual_date ? formatInBrasilia(v.actual_date, "dd/MM/yyyy") : "—"}</TableCell>
                           <TableCell><Badge variant="outline" className="text-[10px] h-5">{v.status}</Badge></TableCell>
                           <TableCell><Badge className="text-[10px] h-5 bg-green-100 text-green-800">{v.payment_status}</Badge></TableCell>
                         </TableRow>

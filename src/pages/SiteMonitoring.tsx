@@ -729,7 +729,7 @@ export default function SiteMonitoring() {
                                   <TableCell>
                                     <History className={`h-4 w-4 text-muted-foreground transition-colors ${isExpanded ? "text-primary" : ""}`} />
                                   </TableCell>
-                                  <TableCell className="text-xs whitespace-nowrap">{formatInBrasilia(n.created_at, "MM/dd/yyyy, HH:mm")}</TableCell>
+                                  <TableCell className="text-xs whitespace-nowrap">{formatInBrasilia(n.created_at, "dd/MM/yyyy, HH:mm")}</TableCell>
                                   <TableCell className="text-sm">{v ? siteName(v.site_id) : "—"}</TableCell>
                                   <TableCell className="font-mono text-xs">{v?.visit_code || "—"}</TableCell>
                                   <TableCell className="text-sm">{n.author_name || "—"}</TableCell>
@@ -1101,7 +1101,7 @@ export default function SiteMonitoring() {
                                   <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
                                   {n.category && <Badge variant="outline">{n.category}</Badge>}
                                   <span className="text-xs text-muted-foreground">
-                                    {n.author_name || "—"} · {formatInBrasilia(n.created_at, "MM/dd/yyyy, HH:mm")}
+                                    {n.author_name || "—"} · {formatInBrasilia(n.created_at, "dd/MM/yyyy, HH:mm")}
                                     {n.updated_at !== n.created_at && " (edited)"}
                                   </span>
                                   <Button 
