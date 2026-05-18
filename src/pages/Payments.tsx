@@ -29,6 +29,13 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { parseLocalDate, todayDateOnly, formatDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 
 
+const VISIT_ORDER = ["procedure", "1 month", "3 month", "6 month", "12 month", "18 month", "24 month"];
+const visitOrderIndex = (name: string): number => {
+  const n = (name || "").toLowerCase();
+  const i = VISIT_ORDER.findIndex(k => n.includes(k));
+  return i === -1 ? 999 : i;
+};
+
 interface Project {
   id: string;
   title: string;
