@@ -900,6 +900,7 @@ export default function PatientManagement() {
                                         status: p.status,
                                         enrollment_date: p.enrollment_date || "",
                                         randomization_group: p.randomization_group || "",
+                                        exit_date: p.exit_date || "",
                                         notes: p.notes || ""
                                       });
                                       setPatientDialogOpen(true);
