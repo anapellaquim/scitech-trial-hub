@@ -110,6 +110,7 @@ export default function EditTaskDialog({ task, open, onOpenChange, onSuccess }: 
     const { data } = await supabase
       .from("profiles")
       .select("id, full_name")
+      .neq("full_name", "lsousa")
       .order("full_name");
     if (data) setProfiles(data);
   };
