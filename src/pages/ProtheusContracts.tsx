@@ -169,6 +169,7 @@ export default function ProtheusContracts() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Number</TableHead>
+                        <TableHead>Description</TableHead>
                         <TableHead>Product</TableHead>
                         <TableHead>Supplier</TableHead>
                         <TableHead>Date</TableHead>
