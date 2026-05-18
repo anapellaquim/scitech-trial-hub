@@ -383,6 +383,8 @@ export default function PatientManagement() {
     getVisitsForPatient(p).reduce((sum, pv) => sum + paymentForPatient(p, pv).amount, 0);
 
   const computeVisitStatus = (p: Patient, pv: ProtocolVisit): string => {
+    // Screen failure: patient never proceeds to procedures/visits.
+    if (p.status === 'Screen failure') return 'Screen Failure';
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
     if (visit?.status === 'Completed' || visit?.status === 'Complete') return 'Completed';
     if (visit?.status === 'Lost Visit') return 'Lost Visit';
@@ -810,7 +812,11 @@ export default function PatientManagement() {
                                   let statusColor = 'bg-slate-100 text-slate-800';
                                   let Icon = null;
 
-                                  if (visit?.status === 'Completed' || visit?.status === 'Complete') {
+                                  if (p.status === 'Screen failure') {
+                                    computedStatus = 'Screen Failure';
+                                    statusColor = 'bg-red-500 text-white';
+                                    Icon = X;
+                                  } else if (visit?.status === 'Completed' || visit?.status === 'Complete') {
                                     computedStatus = 'Completed';
                                     statusColor = 'bg-green-500 text-white';
                                     Icon = CheckCircle2;
@@ -899,7 +905,7 @@ export default function PatientManagement() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex justify-end gap-2">
-                                    <Button variant="outline" size="icon" title="Patient Evolution" onClick={() => {
+                                    <Button variant="outline" size="icon" title={p.status === 'Screen failure' ? 'Screen failure: no procedures' : 'Patient Evolution'} disabled={p.status === 'Screen failure'} onClick={() => {
                                       setSelectedPatientForVisits(p);
                                       setVisitForm({ protocol_visit_id: "", actual_date: todayDateOnly(), status: "Completed", notes: "" });
                                       setVisitDialogOpen(true);
