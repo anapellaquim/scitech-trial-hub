@@ -162,7 +162,7 @@ export default function InvestigationalProducts() {
     setLoading(true);
     const [ip, sup, siteData, itemsData] = await Promise.all([
       supabase.from("investigational_products").select("*").order("created_at", { ascending: false }),
-      supabase.from("ip_supply").select("*").order("date", { ascending: false }),
+      supabase.from("ip_supply").select("*").order("date", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }),
       selectedProject 
         ? supabase.from("research_centers").select("id, name, code").eq("project_id", selectedProject).order("code")
         : supabase.from("research_centers").select("id, name, code").order("code"),
