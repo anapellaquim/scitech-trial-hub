@@ -90,6 +90,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/pmcf-survey", icon: ClipboardList, label: "PMCF Survey", module: "pmcf_survey" },
       { to: "/payments", icon: DollarSign, label: "Payments", module: "payments" },
       { to: "/ip", icon: Package, label: "IP", module: "ip" },
+      { to: "/protheus-contracts", icon: FileSignature, label: "Protheus Contracts" },
     ],
   },
   {
