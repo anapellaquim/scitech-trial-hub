@@ -24,6 +24,9 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 // --- Types ---
 type PatientStatus = 'Screening' | 'Screen failure' | 'Included' | 'Complete' | 'Lost to FUP' | 'Early exit' | 'Withdrawn';
 
+type RandomizationGroup = 'AVF: PTA' | 'AVF: SOLARIS DE' | 'AVG: SOLARIS DE';
+const RANDOMIZATION_GROUPS: RandomizationGroup[] = ['AVF: PTA', 'AVF: SOLARIS DE', 'AVG: SOLARIS DE'];
+
 interface Patient {
   id: string;
   project_id: string;
@@ -32,9 +35,18 @@ interface Patient {
   status: PatientStatus;
   enrollment_date: string | null;
   randomization_date: string | null;
+  randomization_group: RandomizationGroup | null;
   notes: string | null;
   site?: { code: string; name: string | null };
 }
+
+// Desired display order for the Participants List visit columns.
+const VISIT_ORDER = ["procedure", "1 month", "3 month", "6 month", "12 month", "18 month", "24 month"];
+const visitOrderIndex = (name: string): number => {
+  const n = name.toLowerCase();
+  const i = VISIT_ORDER.findIndex(k => n.includes(k));
+  return i === -1 ? 999 : i;
+};
 
 interface ProtocolVisit {
   id: string;
@@ -78,6 +90,7 @@ export default function PatientManagement() {
   const [filterSite, setFilterSite] = useState<string>("all");
   const [filterPatientStatus, setFilterPatientStatus] = useState<string>("all");
   const [filterVisitStatus, setFilterVisitStatus] = useState<string>("all");
+  const [filterRandomGroup, setFilterRandomGroup] = useState<string>("all");
 
   // Dialog States
   const [patientDialogOpen, setPatientDialogOpen] = useState(false);
@@ -87,6 +100,7 @@ export default function PatientManagement() {
     site_id: "",
     status: "Screening" as PatientStatus,
     enrollment_date: "",
+    randomization_group: "" as RandomizationGroup | "",
     notes: ""
   });
 
@@ -180,8 +194,9 @@ export default function PatientManagement() {
                patientForm.status === 'Lost to FUP' ? 'Lost to Follow-up' :
                patientForm.status === 'Early exit' ? 'Early Exit' : patientForm.status) as any,
       enrollment_date: patientForm.enrollment_date || null,
+      randomization_group: patientForm.randomization_group || null,
       notes: patientForm.notes
-    };
+    } as any;
 
     let error;
     if (editingPatient) {
@@ -364,13 +379,26 @@ export default function PatientManagement() {
     return 'Scheduled';
   };
 
+  // Ordered visit definitions for the Participants List columns.
+  const orderedVisitDefs = useMemo(
+    () => [...visitDefinitions()].sort((a, b) => {
+      const ia = visitOrderIndex(a.visit_name);
+      const ib = visitOrderIndex(b.visit_name);
+      if (ia !== ib) return ia - ib;
+      return a.target_day - b.target_day;
+    }),
+    [protocolVisits]
+  );
+
   const filteredPatients = patients.filter(p => {
     const term = searchTerm.toLowerCase();
     const matchesSearch = !term || p.patient_code.toLowerCase().includes(term) || p.site?.code.toLowerCase().includes(term);
     const matchesSite = filterSite === "all" || p.site_id === filterSite;
     const matchesStatus = filterPatientStatus === "all" || p.status === filterPatientStatus;
+    const matchesRandom = filterRandomGroup === "all"
+      || (filterRandomGroup === "none" ? !p.randomization_group : p.randomization_group === filterRandomGroup);
     const matchesVisitStatus = filterVisitStatus === "all" || getVisitsForPatient(p).some(pv => computeVisitStatus(p, pv) === filterVisitStatus);
-    return matchesSearch && matchesSite && matchesStatus && matchesVisitStatus;
+    return matchesSearch && matchesSite && matchesStatus && matchesRandom && matchesVisitStatus;
   });
 
   const getStatusBadge = (status: PatientStatus) => {
@@ -618,7 +646,7 @@ export default function PatientManagement() {
             </Select>
             <Button onClick={() => {
               setEditingPatient(null);
-              setPatientForm({ patient_code: "", site_id: sites[0]?.id || "", status: "Screening", enrollment_date: "", notes: "" });
+              setPatientForm({ patient_code: "", site_id: sites[0]?.id || "", status: "Screening", enrollment_date: "", randomization_group: "", notes: "" });
               setPatientDialogOpen(true);
             }} disabled={!selectedProject}>
               <Plus className="h-4 w-4 mr-2" />
@@ -678,8 +706,16 @@ export default function PatientManagement() {
                     <SelectItem value="Lost Visit">Lost Visit</SelectItem>
                   </SelectContent>
                 </Select>
-                {(filterSite !== "all" || filterPatientStatus !== "all" || filterVisitStatus !== "all" || searchTerm) && (
-                  <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterSite("all"); setFilterPatientStatus("all"); setFilterVisitStatus("all"); }}>
+                <Select value={filterRandomGroup} onValueChange={setFilterRandomGroup}>
+                  <SelectTrigger className="w-[180px]"><SelectValue placeholder="Random group" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All groups</SelectItem>
+                    {RANDOMIZATION_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    <SelectItem value="none">Not randomized</SelectItem>
+                  </SelectContent>
+                </Select>
+                {(filterSite !== "all" || filterPatientStatus !== "all" || filterVisitStatus !== "all" || filterRandomGroup !== "all" || searchTerm) && (
+                  <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterSite("all"); setFilterPatientStatus("all"); setFilterVisitStatus("all"); setFilterRandomGroup("all"); }}>
                     Clear
                   </Button>
                 )}
@@ -700,7 +736,8 @@ export default function PatientManagement() {
                           <TableHead className="min-w-[120px]">Patient Code</TableHead>
                           <TableHead className="min-w-[150px]">Site</TableHead>
                           <TableHead className="min-w-[120px]">Status</TableHead>
-                          {protocolVisits.map(pv => (
+                          <TableHead className="min-w-[160px]">Random</TableHead>
+                          {orderedVisitDefs.map(pv => (
                             <TableHead key={pv.id} className="text-center min-w-[150px]">
                               {pv.visit_name}
                             </TableHead>
@@ -712,9 +749,9 @@ export default function PatientManagement() {
                       </TableHeader>
                       <TableBody>
                         {loading ? (
-                          <TableRow><TableCell colSpan={protocolVisits.length + 6} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={orderedVisitDefs.length + 7} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
                         ) : filteredPatients.length === 0 ? (
-                          <TableRow><TableCell colSpan={protocolVisits.length + 6} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={orderedVisitDefs.length + 7} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
                         ) : (
                           filteredPatients.map(p => {
                             const applicableVisits = getVisitsForPatient(p);
@@ -729,8 +766,13 @@ export default function PatientManagement() {
                                 <TableCell className="font-bold">{p.patient_code}</TableCell>
                                 <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
                                 <TableCell>{getStatusBadge(p.status)}</TableCell>
-                                
-                                {protocolVisits.map(pv => {
+                                <TableCell>
+                                  {p.randomization_group
+                                    ? <Badge variant="outline" className="text-[11px]">{p.randomization_group}</Badge>
+                                    : <span className="text-xs text-muted-foreground">—</span>}
+                                </TableCell>
+
+                                {orderedVisitDefs.map(pv => {
                                   if (!visitAppliesToPatient(p, pv)) {
                                     return (
                                       <TableCell key={pv.id} className="text-center text-muted-foreground">
@@ -833,6 +875,7 @@ export default function PatientManagement() {
                                         site_id: p.site_id,
                                         status: p.status,
                                         enrollment_date: p.enrollment_date || "",
+                                        randomization_group: p.randomization_group || "",
                                         notes: p.notes || ""
                                       });
                                       setPatientDialogOpen(true);
@@ -999,6 +1042,19 @@ export default function PatientManagement() {
             <div className="grid gap-2">
               <Label>Enrollment Date</Label>
               <Input type="date" value={patientForm.enrollment_date} onChange={e => setPatientForm({...patientForm, enrollment_date: e.target.value})} />
+            </div>
+            <div className="grid gap-2">
+              <Label>Randomization Group</Label>
+              <Select
+                value={patientForm.randomization_group || "__none__"}
+                onValueChange={(v) => setPatientForm({ ...patientForm, randomization_group: v === "__none__" ? "" : (v as RandomizationGroup) })}
+              >
+                <SelectTrigger><SelectValue placeholder="Select group" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Not randomized</SelectItem>
+                  {RANDOMIZATION_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label>Notes</Label>

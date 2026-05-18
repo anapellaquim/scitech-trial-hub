@@ -1861,6 +1861,7 @@ export type Database = {
           patient_code: string
           project_id: string
           randomization_date: string | null
+          randomization_group: string | null
           site_id: string
           status: Database["public"]["Enums"]["patient_status"]
           updated_at: string
@@ -1873,6 +1874,7 @@ export type Database = {
           patient_code: string
           project_id: string
           randomization_date?: string | null
+          randomization_group?: string | null
           site_id: string
           status?: Database["public"]["Enums"]["patient_status"]
           updated_at?: string
@@ -1885,6 +1887,7 @@ export type Database = {
           patient_code?: string
           project_id?: string
           randomization_date?: string | null
+          randomization_group?: string | null
           site_id?: string
           status?: Database["public"]["Enums"]["patient_status"]
           updated_at?: string
