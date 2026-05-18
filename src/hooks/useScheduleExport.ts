@@ -113,7 +113,7 @@ export const useScheduleExport = () => {
     doc.setFontSize(18);
     doc.text(`Cronograma: ${project.title}`, pageWidth / 2, 15, { align: 'center' });
     doc.setFontSize(10);
-    doc.text(`Exportado em: ${formatInBrasilia(new Date(), "MM/dd/yyyy HH:mm")}`, pageWidth / 2, 22, { align: 'center' });
+    doc.text(`Exportado em: ${formatInBrasilia(new Date(), "dd/MM/yyyy HH:mm")}`, pageWidth / 2, 22, { align: 'center' });
 
     // Tasks table
     const tableData = tasks.map(task => [

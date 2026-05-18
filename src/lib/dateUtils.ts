@@ -20,7 +20,7 @@ export const APP_TIMEZONE = "America/Sao_Paulo";
  */
 export function formatInBrasilia(
   value: Date | string | number | null | undefined,
-  pattern: string = "MM/dd/yyyy",
+  pattern: string = "dd/MM/yyyy",
 ): string {
   if (value === null || value === undefined || value === "") return "";
   try {

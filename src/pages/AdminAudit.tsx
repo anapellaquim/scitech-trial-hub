@@ -196,7 +196,7 @@ const AdminAudit = () => {
     doc.setFontSize(18);
     doc.text("Relatório de Audit Trail", 14, 22);
     doc.setFontSize(10);
-    doc.text(`Gerado em: ${formatInBrasilia(new Date(), "MM/dd/yyyy HH:mm")}`, 14, 30);
+    doc.text(`Gerado em: ${formatInBrasilia(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 30);
     doc.text(`Total de registros: ${totalCount}`, 14, 36);
 
     const tableData = auditEntries.map(entry => [

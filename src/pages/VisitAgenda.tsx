@@ -808,8 +808,8 @@ export default function VisitAgenda() {
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          {format(parseLocalDate(visit.scheduled_date), "MM/dd/yyyy", { locale: enUS })}
-                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "MM/dd/yyyy", { locale: enUS })}`}
+                          {format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: enUS })}
+                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM/yyyy", { locale: enUS })}`}
                         </span>
                         {visit.scheduled_time && (
                           <>
@@ -1220,7 +1220,7 @@ export default function VisitAgenda() {
                                   <Badge className={importanceColors[n.importance] || ""}>{n.importance}</Badge>
                                   {n.category && <Badge variant="outline">{n.category}</Badge>}
                                   <span className="text-xs text-muted-foreground">
-                                    {n.author_name || "—"} · {formatInBrasilia(n.created_at, "MM/dd/yyyy, HH:mm")}
+                                    {n.author_name || "—"} · {formatInBrasilia(n.created_at, "dd/MM/yyyy, HH:mm")}
                                     {n.updated_at !== n.created_at && " (edited)"}
                                   </span>
                                   <Button 

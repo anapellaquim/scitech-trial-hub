@@ -205,7 +205,7 @@ const AdminUsers = () => {
                         )) || <span className="text-muted-foreground text-sm">No roles assigned</span>}
                       </div>
                     </TableCell>
-                    <TableCell>{formatInBrasilia(user.created_at, "MM/dd/yyyy")}</TableCell>
+                    <TableCell>{formatInBrasilia(user.created_at, "dd/MM/yyyy")}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         {isAdmin && (
