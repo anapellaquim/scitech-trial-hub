@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { formatDateOnly, parseLocalDate } from "@/lib/dateUtils";
@@ -155,56 +156,71 @@ export default function ProtheusContracts() {
                       .some((v) => (v ?? "").toString().toLowerCase().includes(term))
                   )
                 : rows;
-              return loading ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
-              ) : filtered.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No contracts found.</p>
-              ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Number</TableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Unit</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Delivered</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-28">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-medium">{r.contract_number}</TableCell>
-                      <TableCell>{r.product || "-"}</TableCell>
-                      <TableCell>{r.supplier || "-"}</TableCell>
-                      <TableCell>{r.contract_date ? formatDateOnly(parseLocalDate(r.contract_date)) : "-"}</TableCell>
-                      <TableCell className="text-right">{Number(r.quantity)}</TableCell>
-                      <TableCell className="text-right">{fmtMoney(Number(r.unit_value))}</TableCell>
-                      <TableCell className="text-right">{fmtMoney(Number(r.total_value))}</TableCell>
-                      <TableCell className="text-right">{Number(r.delivered_quantity)}</TableCell>
-                      <TableCell>
-                        <Badge variant={r.status === "inactive" ? "secondary" : "default"}>
-                          {r.status === "inactive" ? "Inactive" : "Active"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" onClick={() => openEdit(r)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => remove(r.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              const active = filtered.filter((r) => r.status !== "inactive");
+              const inactive = filtered.filter((r) => r.status === "inactive");
+
+              const renderTable = (list: Contract[]) =>
+                loading ? (
+                  <p className="text-sm text-muted-foreground">Loading...</p>
+                ) : list.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No contracts found.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Number</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Supplier</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Qty</TableHead>
+                        <TableHead className="text-right">Unit</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="text-right">Delivered</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="w-28">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {list.map((r) => (
+                        <TableRow key={r.id}>
+                          <TableCell className="font-medium">{r.contract_number}</TableCell>
+                          <TableCell>{r.product || "-"}</TableCell>
+                          <TableCell>{r.supplier || "-"}</TableCell>
+                          <TableCell>{r.contract_date ? formatDateOnly(parseLocalDate(r.contract_date)) : "-"}</TableCell>
+                          <TableCell className="text-right">{Number(r.quantity)}</TableCell>
+                          <TableCell className="text-right">{fmtMoney(Number(r.unit_value))}</TableCell>
+                          <TableCell className="text-right">{fmtMoney(Number(r.total_value))}</TableCell>
+                          <TableCell className="text-right">{Number(r.delivered_quantity)}</TableCell>
+                          <TableCell>
+                            <Badge variant={r.status === "inactive" ? "secondary" : "default"}>
+                              {r.status === "inactive" ? "Inactive" : "Active"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" onClick={() => openEdit(r)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" onClick={() => remove(r.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                );
+
+              return (
+                <Tabs defaultValue="active">
+                  <TabsList>
+                    <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
+                    <TabsTrigger value="inactive">Inactive ({inactive.length})</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="active">{renderTable(active)}</TabsContent>
+                  <TabsContent value="inactive">{renderTable(inactive)}</TabsContent>
+                </Tabs>
               );
             })()}
           </CardContent>
