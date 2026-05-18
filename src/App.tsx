@@ -78,6 +78,7 @@ function App() {
             <Route path="/clinical-evaluation" element={<ClinicalEvaluation />} />
             <Route path="/ip" element={<InvestigationalProducts />} />
             <Route path="/patient-management" element={<PatientManagement />} />
+            <Route path="/protheus-contracts" element={<ProtheusContracts />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
