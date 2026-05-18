@@ -222,7 +222,7 @@ const AdminAudit = () => {
 
   const exportToExcel = () => {
     const data = auditEntries.map(entry => ({
-      "Data/Hora": format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm:ss"),
+      "Data/Hora": formatInBrasilia(entry.created_at, "dd/MM/yyyy HH:mm:ss"),
       "Módulo": moduleConfig[entry.module]?.label || entry.module,
       "Ação": actionConfig[entry.action]?.label || entry.action,
       "Tipo de Entidade": entry.entity_type,
