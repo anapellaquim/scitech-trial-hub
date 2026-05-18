@@ -810,6 +810,9 @@ export default function InvestigationalProducts() {
               <Button variant="outline" onClick={() => setSupplyImportOpen(true)}>
                 <Upload className="h-4 w-4 mr-1" /> Import
               </Button>
+              <Button variant="outline" onClick={handleDeleteAllSupply} disabled={supplies.length === 0} className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4 mr-1" /> Delete All
+              </Button>
               <Button onClick={openNewSupply}>
                 <Plus className="h-4 w-4 mr-1" /> New Movement
               </Button>
