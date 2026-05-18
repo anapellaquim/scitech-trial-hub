@@ -345,6 +345,21 @@ export default function PatientManagement() {
   const visitAppliesToPatient = (_p: Patient, pv: ProtocolVisit): boolean =>
     pv.site_id === null;
 
+  // Anchor date used to compute visit windows. The Procedure visit's actual date
+  // is the reference; if it hasn't been performed yet, fall back to enrollment_date.
+  const getAnchorDate = (p: Patient): string | null => {
+    const procDef = protocolVisits.find(pv =>
+      pv.site_id === null &&
+      pv.project_id === p.project_id &&
+      visitOrderIndex(pv.visit_name) === 0
+    );
+    if (procDef) {
+      const pv = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === procDef.id);
+      if (pv?.actual_date) return pv.actual_date;
+    }
+    return p.enrollment_date;
+  };
+
   // Returns the effective payment for a patient on a given visit definition,
   // applying any per-site override (matched by project + visit_name + patient site).
   const paymentForPatient = (p: Patient, pv: ProtocolVisit): { amount: number; is_paid: boolean } => {
