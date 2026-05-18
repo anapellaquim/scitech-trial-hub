@@ -1042,6 +1042,18 @@ export default function PatientManagement() {
             <div className="grid gap-2">
               <Label>Enrollment Date</Label>
               <Input type="date" value={patientForm.enrollment_date} onChange={e => setPatientForm({...patientForm, enrollment_date: e.target.value})} />
+            <div className="grid gap-2">
+              <Label>Randomization Group</Label>
+              <Select
+                value={patientForm.randomization_group || "__none__"}
+                onValueChange={(v) => setPatientForm({ ...patientForm, randomization_group: v === "__none__" ? "" : (v as RandomizationGroup) })}
+              >
+                <SelectTrigger><SelectValue placeholder="Select group" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Not randomized</SelectItem>
+                  {RANDOMIZATION_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label>Notes</Label>
