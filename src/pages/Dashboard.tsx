@@ -27,7 +27,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { format, addDays, differenceInDays, isAfter, isBefore, startOfToday, subDays, isWithinInterval } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 
 interface Project {
   id: string;
