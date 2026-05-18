@@ -3445,6 +3445,7 @@ export type Database = {
         Row: {
           actual_date: string | null
           actual_date_end: string | null
+          checklist: Json
           created_at: string
           created_by: string | null
           follow_up_actions: string | null
@@ -3466,6 +3467,7 @@ export type Database = {
         Insert: {
           actual_date?: string | null
           actual_date_end?: string | null
+          checklist?: Json
           created_at?: string
           created_by?: string | null
           follow_up_actions?: string | null
@@ -3487,6 +3489,7 @@ export type Database = {
         Update: {
           actual_date?: string | null
           actual_date_end?: string | null
+          checklist?: Json
           created_at?: string
           created_by?: string | null
           follow_up_actions?: string | null
