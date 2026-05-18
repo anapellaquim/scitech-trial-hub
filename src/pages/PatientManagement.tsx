@@ -90,6 +90,7 @@ export default function PatientManagement() {
   const [filterSite, setFilterSite] = useState<string>("all");
   const [filterPatientStatus, setFilterPatientStatus] = useState<string>("all");
   const [filterVisitStatus, setFilterVisitStatus] = useState<string>("all");
+  const [filterRandomGroup, setFilterRandomGroup] = useState<string>("all");
 
   // Dialog States
   const [patientDialogOpen, setPatientDialogOpen] = useState(false);
@@ -99,6 +100,7 @@ export default function PatientManagement() {
     site_id: "",
     status: "Screening" as PatientStatus,
     enrollment_date: "",
+    randomization_group: "" as RandomizationGroup | "",
     notes: ""
   });
 
