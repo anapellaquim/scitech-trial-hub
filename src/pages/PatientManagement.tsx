@@ -36,6 +36,7 @@ interface Patient {
   enrollment_date: string | null;
   randomization_date: string | null;
   randomization_group: RandomizationGroup | null;
+  exit_date: string | null;
   notes: string | null;
   site?: { code: string; name: string | null };
 }
