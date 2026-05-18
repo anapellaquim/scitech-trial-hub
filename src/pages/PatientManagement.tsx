@@ -1220,8 +1220,8 @@ export default function PatientManagement() {
                     <Label>Protocol Visit</Label>
                     <Select value={visitForm.protocol_visit_id} onValueChange={v => {
                       const pv = protocolVisits.find(x => x.id === v);
-                      const enroll = selectedPatientForVisits?.enrollment_date;
-                      const targetDate = pv && enroll ? format(addDays(new Date(enroll), pv.target_day), "yyyy-MM-dd") : visitForm.actual_date;
+                      const anchor = selectedPatientForVisits ? getAnchorDate(selectedPatientForVisits) : null;
+                      const targetDate = pv && anchor ? format(addDays(new Date(anchor), pv.target_day), "yyyy-MM-dd") : visitForm.actual_date;
                       setVisitForm({ ...visitForm, protocol_visit_id: v, actual_date: targetDate });
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>
