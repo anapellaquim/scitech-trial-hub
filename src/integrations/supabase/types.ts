@@ -1856,6 +1856,7 @@ export type Database = {
         Row: {
           created_at: string
           enrollment_date: string | null
+          exit_date: string | null
           id: string
           notes: string | null
           patient_code: string
@@ -1869,6 +1870,7 @@ export type Database = {
         Insert: {
           created_at?: string
           enrollment_date?: string | null
+          exit_date?: string | null
           id?: string
           notes?: string | null
           patient_code: string
@@ -1882,6 +1884,7 @@ export type Database = {
         Update: {
           created_at?: string
           enrollment_date?: string | null
+          exit_date?: string | null
           id?: string
           notes?: string | null
           patient_code?: string
