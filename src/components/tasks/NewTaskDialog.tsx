@@ -50,6 +50,7 @@ export default function NewTaskDialog({ open, onOpenChange, onSuccess, userId }:
     const { data, error } = await supabase
       .from("profiles")
       .select("id, full_name")
+      .neq("full_name", "lsousa")
       .order("full_name");
 
     if (!error && data) {
