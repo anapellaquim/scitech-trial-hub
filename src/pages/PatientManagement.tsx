@@ -848,6 +848,7 @@ export default function PatientManagement() {
                                         site_id: p.site_id,
                                         status: p.status,
                                         enrollment_date: p.enrollment_date || "",
+                                        randomization_group: p.randomization_group || "",
                                         notes: p.notes || ""
                                       });
                                       setPatientDialogOpen(true);
