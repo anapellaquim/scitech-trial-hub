@@ -1014,8 +1014,11 @@ export default function PatientManagement() {
 
       {/* Protocol Schedule Dialog */}
       <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Configure Visit</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Configure Visit</DialogTitle>
+            <DialogDescription>This visit applies to all patients. Set a default payment, then override per site if needed.</DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label>Visit Name</Label>
@@ -1024,52 +1027,95 @@ export default function PatientManagement() {
             <div className="grid grid-cols-3 gap-2">
               <div className="grid gap-2">
                 <Label>Target Day</Label>
-                <Input type="number" value={scheduleForm.target_day} onChange={e => setScheduleForm({...scheduleForm, target_day: parseInt(e.target.value)})} />
+                <Input type="number" value={scheduleForm.target_day} onChange={e => setScheduleForm({...scheduleForm, target_day: parseInt(e.target.value) || 0})} />
               </div>
               <div className="grid gap-2">
                 <Label>Window (-)</Label>
-                <Input type="number" value={scheduleForm.window_minus} onChange={e => setScheduleForm({...scheduleForm, window_minus: parseInt(e.target.value)})} />
+                <Input type="number" value={scheduleForm.window_minus} onChange={e => setScheduleForm({...scheduleForm, window_minus: parseInt(e.target.value) || 0})} />
               </div>
               <div className="grid gap-2">
                 <Label>Window (+)</Label>
-                <Input type="number" value={scheduleForm.window_plus} onChange={e => setScheduleForm({...scheduleForm, window_plus: parseInt(e.target.value)})} />
+                <Input type="number" value={scheduleForm.window_plus} onChange={e => setScheduleForm({...scheduleForm, window_plus: parseInt(e.target.value) || 0})} />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label>Payment Amount (BRL)</Label>
-              <Input type="number" value={scheduleForm.payment_amount} onChange={e => setScheduleForm({...scheduleForm, payment_amount: parseFloat(e.target.value)})} />
-            </div>
-            <div className="grid gap-2">
-              <Label>Site Selection</Label>
-              <div className="grid grid-cols-2 gap-2 border p-3 rounded-md max-h-[150px] overflow-y-auto">
-                <div className="flex items-center gap-2 col-span-2 pb-2 border-b mb-1">
-                  <Checkbox 
-                    id="site-global" 
-                    checked={(scheduleForm as any).site_ids.length === 0}
-                    onCheckedChange={(checked) => {
-                      if (checked) setScheduleForm({...scheduleForm, site_ids: []} as any);
-                    }}
+
+            <div className="border rounded-md p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold">Default payment (applies to all sites unless overridden)</Label>
+                <label className="flex items-center gap-2 text-xs">
+                  <Checkbox
+                    checked={scheduleForm.is_paid}
+                    onCheckedChange={(c) => setScheduleForm({ ...scheduleForm, is_paid: !!c })}
                   />
-                  <Label htmlFor="site-global" className="font-bold">Global Study-wide</Label>
-                </div>
-                {sites.map(s => (
-                  <div key={s.id} className="flex items-center gap-2">
-                    <Checkbox 
-                      id={`site-${s.id}`} 
-                      checked={(scheduleForm as any).site_ids.includes(s.id)}
-                      onCheckedChange={(checked) => {
-                        const currentSites = (scheduleForm as any).site_ids;
-                        const newSites = checked 
-                          ? [...currentSites, s.id]
-                          : currentSites.filter((id: string) => id !== s.id);
-                        setScheduleForm({...scheduleForm, site_ids: newSites} as any);
-                      }}
-                    />
-                    <Label htmlFor={`site-${s.id}`} className="text-xs">{s.code}</Label>
-                  </div>
-                ))}
+                  Paid
+                </label>
               </div>
-              <p className="text-[10px] text-muted-foreground">If none selected, visit is global.</p>
+              <Input
+                type="number"
+                step="0.01"
+                disabled={!scheduleForm.is_paid}
+                value={scheduleForm.payment_amount}
+                onChange={e => setScheduleForm({...scheduleForm, payment_amount: parseFloat(e.target.value) || 0})}
+                placeholder="0.00 (BRL)"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label className="font-semibold">Per-site overrides</Label>
+              <p className="text-[11px] text-muted-foreground">Enable a site to use a different amount or mark this visit as not paid for that site.</p>
+              <div className="border rounded-md max-h-[260px] overflow-y-auto">
+                {sites.length === 0 ? (
+                  <p className="text-xs text-muted-foreground p-3">No sites in this project.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[60px]">Use</TableHead>
+                        <TableHead>Site</TableHead>
+                        <TableHead className="w-[80px]">Paid</TableHead>
+                        <TableHead className="w-[140px]">Amount (BRL)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sites.map(s => {
+                        const idx = scheduleForm.site_overrides.findIndex(o => o.site_id === s.id);
+                        const o = idx >= 0 ? scheduleForm.site_overrides[idx] : { site_id: s.id, enabled: false, is_paid: true, payment_amount: scheduleForm.payment_amount };
+                        const update = (patch: Partial<SiteOverrideForm>) => {
+                          const next = [...scheduleForm.site_overrides];
+                          if (idx >= 0) next[idx] = { ...next[idx], ...patch };
+                          else next.push({ ...o, ...patch });
+                          setScheduleForm({ ...scheduleForm, site_overrides: next });
+                        };
+                        return (
+                          <TableRow key={s.id}>
+                            <TableCell>
+                              <Checkbox checked={o.enabled} onCheckedChange={(c) => update({ enabled: !!c })} />
+                            </TableCell>
+                            <TableCell className="text-xs">{s.code} {s.name ? `– ${s.name}` : ""}</TableCell>
+                            <TableCell>
+                              <Checkbox
+                                checked={o.is_paid}
+                                disabled={!o.enabled}
+                                onCheckedChange={(c) => update({ is_paid: !!c })}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                disabled={!o.enabled || !o.is_paid}
+                                value={o.payment_amount}
+                                onChange={e => update({ payment_amount: parseFloat(e.target.value) || 0 })}
+                                className="h-8"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
