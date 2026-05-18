@@ -94,3 +94,24 @@ export function todayDateOnly(): string {
 /** Alias for clarity at call sites that want the timezone in the name. */
 export const todayDateOnlyBrasilia = todayDateOnly;
 
+/**
+ * Manual parser for "YYYY-MM-DD" strings as LOCAL Brazil calendar dates.
+ * NEVER passes the string to `new Date(str)` which would interpret as UTC
+ * and shift the day in negative-offset timezones.
+ *
+ * Accepts:
+ *  - "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss..." → builds local Date from parts
+ *  - Date instance → returned as-is
+ *  - null/undefined/"" → Invalid Date
+ *
+ * Use this EVERYWHERE you need a Date from a date-only string field.
+ */
+export function parseBrazilDate(value: string | Date | null | undefined): Date {
+  if (value instanceof Date) return value;
+  if (value === null || value === undefined || value === "") return new Date(NaN);
+  const str = String(value);
+  const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return new Date(str);
+}
+
