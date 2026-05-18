@@ -33,6 +33,7 @@ import PMCFSurvey from "./pages/PMCFSurvey";
 import ClinicalEvaluation from "./pages/ClinicalEvaluation";
 import InvestigationalProducts from "./pages/InvestigationalProducts";
 import PatientManagement from "./pages/PatientManagement";
+import ProtheusContracts from "./pages/ProtheusContracts";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ function App() {
             <Route path="/clinical-evaluation" element={<ClinicalEvaluation />} />
             <Route path="/ip" element={<InvestigationalProducts />} />
             <Route path="/patient-management" element={<PatientManagement />} />
+            <Route path="/protheus-contracts" element={<ProtheusContracts />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

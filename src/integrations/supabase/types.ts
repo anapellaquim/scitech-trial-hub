@@ -2417,6 +2417,54 @@ export type Database = {
         }
         Relationships: []
       }
+      protheus_contracts: {
+        Row: {
+          contract_date: string | null
+          contract_number: string
+          created_at: string
+          delivered_quantity: number
+          description: string | null
+          id: string
+          product: string | null
+          quantity: number
+          status: string
+          supplier: string | null
+          total_value: number
+          unit_value: number
+          updated_at: string
+        }
+        Insert: {
+          contract_date?: string | null
+          contract_number: string
+          created_at?: string
+          delivered_quantity?: number
+          description?: string | null
+          id?: string
+          product?: string | null
+          quantity?: number
+          status?: string
+          supplier?: string | null
+          total_value?: number
+          unit_value?: number
+          updated_at?: string
+        }
+        Update: {
+          contract_date?: string | null
+          contract_number?: string
+          created_at?: string
+          delivered_quantity?: number
+          description?: string | null
+          id?: string
+          product?: string | null
+          quantity?: number
+          status?: string
+          supplier?: string | null
+          total_value?: number
+          unit_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       protocol_deviations: {
         Row: {
           category: string | null
