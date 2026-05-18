@@ -303,7 +303,16 @@ export default function PatientManagement() {
   };
 
   const deleteSchedule = async (id: string) => {
-    if (!confirm("Are you sure? This visit configuration and all related patient visits will be deleted.")) return;
+    if (!confirm("Are you sure? This visit configuration (and all its per-site overrides) and all related patient visits will be deleted.")) return;
+    const target = protocolVisits.find(v => v.id === id);
+    // If deleting a global definition, also delete all site-specific overrides with the same visit_name.
+    if (target && target.site_id === null) {
+      await supabase.from("protocol_visit_schedules")
+        .delete()
+        .eq("project_id", selectedProject)
+        .eq("visit_name", target.visit_name)
+        .not("site_id", "is", null);
+    }
     const { error } = await supabase.from("protocol_visit_schedules").delete().eq("id", id);
     if (error) toast.error("Error deleting visit configuration: " + error.message);
     else {
@@ -312,17 +321,33 @@ export default function PatientManagement() {
     }
   };
 
-  // Returns the protocol visits that apply to a given patient:
-  // global schedules (site_id = null) + schedules specific to the patient's site.
-  const getVisitsForPatient = (p: Patient): ProtocolVisit[] =>
-    protocolVisits.filter(pv => pv.site_id === null || pv.site_id === p.site_id);
+  // All patients receive ALL visit definitions (global rows, site_id = null).
+  const visitDefinitions = (): ProtocolVisit[] =>
+    protocolVisits.filter(pv => pv.site_id === null);
 
-  const visitAppliesToPatient = (p: Patient, pv: ProtocolVisit): boolean =>
-    pv.site_id === null || pv.site_id === p.site_id;
+  const getVisitsForPatient = (_p: Patient): ProtocolVisit[] => visitDefinitions();
 
-  // Sum of expected payment for all applicable visits of a patient.
+  const visitAppliesToPatient = (_p: Patient, pv: ProtocolVisit): boolean =>
+    pv.site_id === null;
+
+  // Returns the effective payment for a patient on a given visit definition,
+  // applying any per-site override (matched by project + visit_name + patient site).
+  const paymentForPatient = (p: Patient, pv: ProtocolVisit): { amount: number; is_paid: boolean } => {
+    const override = protocolVisits.find(o =>
+      o.site_id === p.site_id &&
+      o.visit_name === pv.visit_name &&
+      o.project_id === pv.project_id
+    );
+    const source = override ?? pv;
+    return {
+      amount: source.is_paid ? Number(source.payment_amount) || 0 : 0,
+      is_paid: source.is_paid,
+    };
+  };
+
+  // Sum of expected payment for all applicable visits of a patient (after overrides).
   const totalExpectedForPatient = (p: Patient): number =>
-    getVisitsForPatient(p).reduce((sum, pv) => sum + (Number(pv.payment_amount) || 0), 0);
+    getVisitsForPatient(p).reduce((sum, pv) => sum + paymentForPatient(p, pv).amount, 0);
 
   const computeVisitStatus = (p: Patient, pv: ProtocolVisit): string => {
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
