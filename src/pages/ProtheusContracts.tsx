@@ -209,53 +209,6 @@ export default function ProtheusContracts() {
             })()}
           </CardContent>
         </Card>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Number</TableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Unit</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Delivered</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-28">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rows.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="font-medium">{r.contract_number}</TableCell>
-                      <TableCell>{r.product || "-"}</TableCell>
-                      <TableCell>{r.supplier || "-"}</TableCell>
-                      <TableCell>{r.contract_date ? formatDateOnly(parseLocalDate(r.contract_date)) : "-"}</TableCell>
-                      <TableCell className="text-right">{Number(r.quantity)}</TableCell>
-                      <TableCell className="text-right">{fmtMoney(Number(r.unit_value))}</TableCell>
-                      <TableCell className="text-right">{fmtMoney(Number(r.total_value))}</TableCell>
-                      <TableCell className="text-right">{Number(r.delivered_quantity)}</TableCell>
-                      <TableCell>
-                        <Badge variant={r.status === "inactive" ? "secondary" : "default"}>
-                          {r.status === "inactive" ? "Inactive" : "Active"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" onClick={() => openEdit(r)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => remove(r.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="max-w-2xl">
