@@ -291,7 +291,7 @@ export default function Tasks() {
           const completed = scope.filter(t => t.status === "completed").length;
           const inProgress = scope.filter(t => t.status === "in_progress").length;
           const pending = scope.filter(t => t.status === "pending").length;
-          const overdue = scope.filter(t => t.end_date && t.status !== "completed" && t.status !== "cancelled" && new Date(t.end_date) < today).length;
+          const overdue = scope.filter(t => t.end_date && t.status !== "completed" && t.status !== "cancelled" && parseLocalDate(t.end_date) < today).length;
           const highPrio = scope.filter(t => t.priority === "high" && t.status !== "completed" && t.status !== "cancelled").length;
           const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
           return (

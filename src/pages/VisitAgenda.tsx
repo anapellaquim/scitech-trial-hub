@@ -592,8 +592,8 @@ export default function VisitAgenda() {
           const total = filteredVisits.length;
           const scheduled = filteredVisits.filter(v => v.status === "scheduled" || v.status === "planned").length;
           const completed = filteredVisits.filter(v => v.status === "completed").length;
-          const upcoming = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) >= today).length;
-          const overdue = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && new Date(v.scheduled_date) < today).length;
+          const upcoming = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && parseLocalDate(v.scheduled_date) >= today).length;
+          const overdue = filteredVisits.filter(v => (v.status === "scheduled" || v.status === "planned") && v.scheduled_date && parseLocalDate(v.scheduled_date) < today).length;
           
           return (
             <div className="mb-6">

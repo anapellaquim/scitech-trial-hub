@@ -1,3 +1,4 @@
+import { parseLocalDate } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback, useMemo, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import CTMSNav from "@/components/CTMSNav";
@@ -103,7 +104,7 @@ function computeNextReview(last: string | null, months: number): string | null {
 
 function reviewBadge(nextReview: string | null) {
   if (!nextReview) return null;
-  const days = differenceInDays(parseISO(nextReview), new Date());
+  const days = differenceInDays(parseLocalDate(nextReview), new Date());
   if (days < 0) return <Badge className="bg-red-100 text-red-800 gap-1"><AlertCircle className="h-3 w-3" />Overdue ({Math.abs(days)}d)</Badge>;
   if (days <= 30) return <Badge className="bg-orange-100 text-orange-800">Due in {days}d</Badge>;
   if (days <= 90) return <Badge className="bg-yellow-100 text-yellow-800">In {days}d</Badge>;
@@ -345,10 +346,10 @@ export default function ClinicalEvaluation() {
         const total = activeRecords.length;
         const approved = activeRecords.filter(r => r.status === "approved").length;
         const drafts = activeRecords.filter(r => r.status === "draft" || r.status === "under_review").length;
-        const overdue = activeRecords.filter(r => r.next_review_date && new Date(r.next_review_date) < today).length;
+        const overdue = activeRecords.filter(r => r.next_review_date && parseLocalDate(r.next_review_date) < today).length;
         const dueSoon = activeRecords.filter(r => {
           if (!r.next_review_date) return false;
-          const d = new Date(r.next_review_date);
+          const d = parseLocalDate(r.next_review_date);
           const diff = (d.getTime() - today.getTime()) / 86400000;
           return diff >= 0 && diff <= 60;
         }).length;

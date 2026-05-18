@@ -1,3 +1,4 @@
+import { parseLocalDate } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -222,7 +223,7 @@ export default function Qualifications() {
         const today = new Date(); today.setHours(0,0,0,0);
         const expiringSoon = records.filter(r => {
           if (!r.next_qualification_date) return false;
-          const d = new Date(r.next_qualification_date);
+          const d = parseLocalDate(r.next_qualification_date);
           const diff = (d.getTime() - today.getTime()) / 86400000;
           return diff >= 0 && diff <= 60;
         }).length;

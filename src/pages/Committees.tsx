@@ -1,3 +1,4 @@
+import { parseLocalDate } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -239,7 +240,7 @@ export default function Committees() {
         const completed = records.filter(r => r.status === "completed" || r.status === "finalized").length;
         const planned = records.filter(r => r.status === "planned").length;
         const minutesPending = records.filter(r => r.status === "minutes_pending").length;
-        const upcoming = records.filter(r => r.next_meeting_date && new Date(r.next_meeting_date) >= today).length;
+        const upcoming = records.filter(r => r.next_meeting_date && parseLocalDate(r.next_meeting_date) >= today).length;
         const totalLetters = letters.length;
         const pendingLetters = letters.filter(l => l.status === "pending_response" || l.status === "sent").length;
         return (

@@ -1,3 +1,4 @@
+import { parseLocalDate } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { formatInBrasilia, todayDateOnly } from "@/lib/dateUtils";
 import { useSearchParams, Link } from "react-router-dom";
@@ -541,7 +542,7 @@ export default function SiteMonitoring() {
             const todayMs = Date.now();
             const dueDays = openItems
               .filter(f => f.due_date)
-              .map(f => Math.round((new Date(f.due_date as string).getTime() - todayMs) / 86400000));
+              .map(f => Math.round((parseLocalDate(f.due_date as string).getTime() - todayMs) / 86400000));
             const avgDays = dueDays.length ? Math.round(dueDays.reduce((a, b) => a + b, 0) / dueDays.length) : null;
             const criticalOpen = openItems.filter(f => f.severity === "critical").length;
             return (
@@ -637,7 +638,7 @@ export default function SiteMonitoring() {
                             .map(f => {
                               const v = visits.find(x => x.id === f.monitoring_visit_id);
                               const daysLeft = f.due_date
-                                ? Math.round((new Date(f.due_date).getTime() - Date.now()) / 86400000)
+                                ? Math.round((parseLocalDate(f.due_date).getTime() - Date.now()) / 86400000)
                                 : null;
                               const isOpen = f.status === "open" || f.status === "in_progress";
                               const isExpanded = expandedFindingId === f.id;

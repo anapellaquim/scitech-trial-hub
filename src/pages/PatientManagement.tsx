@@ -385,7 +385,7 @@ export default function PatientManagement() {
     if (visit?.status === 'Lost Visit') return 'Lost Visit';
     const anchor = getAnchorDate(p);
     if (anchor) {
-      const targetDate = addDays(new Date(anchor), pv.target_day);
+      const targetDate = addDays(parseLocalDate(anchor), pv.target_day);
       const windowStart = addDays(targetDate, -pv.window_minus);
       const windowEnd = addDays(targetDate, pv.window_plus);
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -813,7 +813,7 @@ export default function PatientManagement() {
                                   } else {
                                     const anchor = getAnchorDate(p);
                                     if (anchor) {
-                                      const targetDate = addDays(new Date(anchor), pv.target_day);
+                                      const targetDate = addDays(parseLocalDate(anchor), pv.target_day);
                                       const windowStart = addDays(targetDate, -pv.window_minus);
                                       const windowEnd = addDays(targetDate, pv.window_plus);
                                       const today = new Date();
@@ -858,7 +858,7 @@ export default function PatientManagement() {
                                           if (!anchor) return null;
                                           return (
                                             <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
-                                              Window: {format(addDays(new Date(anchor), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(new Date(anchor), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
+                                              Window: {format(addDays(parseLocalDate(anchor), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(parseLocalDate(anchor), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
                                             </span>
                                           );
                                         })()}
@@ -1221,7 +1221,7 @@ export default function PatientManagement() {
                     <Select value={visitForm.protocol_visit_id} onValueChange={v => {
                       const pv = protocolVisits.find(x => x.id === v);
                       const anchor = selectedPatientForVisits ? getAnchorDate(selectedPatientForVisits) : null;
-                      const targetDate = pv && anchor ? format(addDays(new Date(anchor), pv.target_day), "yyyy-MM-dd") : visitForm.actual_date;
+                      const targetDate = pv && anchor ? format(addDays(parseLocalDate(anchor), pv.target_day), "yyyy-MM-dd") : visitForm.actual_date;
                       setVisitForm({ ...visitForm, protocol_visit_id: v, actual_date: targetDate });
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>

@@ -212,9 +212,9 @@ export default function SteeringDecisions() {
         const totalD = records.length;
         const pending = records.filter(r => r.status === "pending").length;
         const implemented = records.filter(r => r.status === "implemented").length;
-        const overdue = records.filter(r => r.status === "pending" && r.deadline && new Date(r.deadline) < today).length;
+        const overdue = records.filter(r => r.status === "pending" && r.deadline && parseLocalDate(r.deadline) < today).length;
         const totalM = meetings.length;
-        const upcoming = meetings.filter(m => m.status === "scheduled" && m.meeting_date && new Date(m.meeting_date) >= today).length;
+        const upcoming = meetings.filter(m => m.status === "scheduled" && m.meeting_date && parseLocalDate(m.meeting_date) >= today).length;
         return (
           <div className="mb-6">
             <KpiCards cols={6} items={[
