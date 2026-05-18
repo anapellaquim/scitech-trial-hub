@@ -264,6 +264,16 @@ export default function PatientManagement() {
     else loadProjectData();
   };
 
+  const deleteSchedule = async (id: string) => {
+    if (!confirm("Are you sure? This visit configuration and all related patient visits will be deleted.")) return;
+    const { error } = await supabase.from("protocol_visit_schedules").delete().eq("id", id);
+    if (error) toast.error("Error deleting visit configuration: " + error.message);
+    else {
+      toast.success("Visit configuration deleted");
+      loadProjectData();
+    }
+  };
+
   const computeVisitStatus = (p: Patient, pv: ProtocolVisit): string => {
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
     if (visit?.status === 'Completed' || visit?.status === 'Complete') return 'Completed';
@@ -793,6 +803,7 @@ export default function PatientManagement() {
                                   });
                                 setScheduleDialogOpen(true);
                               }}><Pencil className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteSchedule(v.id)}><Trash2 className="h-4 w-4" /></Button>
                             </TableCell>
                           </TableRow>
                         ))
