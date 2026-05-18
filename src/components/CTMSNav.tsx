@@ -29,6 +29,7 @@ import {
   Eye,
   ClipboardList,
   Package,
+  FileSignature,
   ChevronLeft,
   ChevronRight,
   Menu,
