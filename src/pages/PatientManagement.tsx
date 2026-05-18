@@ -383,6 +383,8 @@ export default function PatientManagement() {
     getVisitsForPatient(p).reduce((sum, pv) => sum + paymentForPatient(p, pv).amount, 0);
 
   const computeVisitStatus = (p: Patient, pv: ProtocolVisit): string => {
+    // Screen failure: patient never proceeds to procedures/visits.
+    if (p.status === 'Screen failure') return 'Screen Failure';
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
     if (visit?.status === 'Completed' || visit?.status === 'Complete') return 'Completed';
     if (visit?.status === 'Lost Visit') return 'Lost Visit';
