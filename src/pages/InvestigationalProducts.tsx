@@ -264,6 +264,24 @@ export default function InvestigationalProducts() {
     if (error) { toast.error("Delete failed: " + error.message); return; }
     toast.success("Deleted"); loadRecords();
   };
+  const handleDeleteAllIP = async () => {
+    const confirm1 = confirm(`Delete ALL ${records.length} IP inventory records? This cannot be undone.`);
+    if (!confirm1) return;
+    const typed = prompt('Type "DELETE ALL" to confirm:');
+    if (typed !== "DELETE ALL") { toast.error("Confirmation text did not match. Nothing was deleted."); return; }
+    const { error } = await supabase.from("investigational_products").delete().not("id", "is", null);
+    if (error) { toast.error("Delete failed: " + error.message); return; }
+    toast.success("All IP records deleted"); loadRecords();
+  };
+  const handleDeleteAllSupply = async () => {
+    const confirm1 = confirm(`Delete ALL ${supplyRecords.length} supply movements? This cannot be undone.`);
+    if (!confirm1) return;
+    const typed = prompt('Type "DELETE ALL" to confirm:');
+    if (typed !== "DELETE ALL") { toast.error("Confirmation text did not match. Nothing was deleted."); return; }
+    const { error } = await supabase.from("ip_supply").delete().not("id", "is", null);
+    if (error) { toast.error("Delete failed: " + error.message); return; }
+    toast.success("All supply records deleted"); loadRecords();
+  };
 
   // Inventory search across all columns + per-column filters
   const [invSearch, setInvSearch] = useState("");
