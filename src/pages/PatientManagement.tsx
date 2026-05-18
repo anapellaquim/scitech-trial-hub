@@ -1204,7 +1204,7 @@ export default function PatientManagement() {
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>
                       <SelectContent>
-                        {protocolVisits.map(pv => (
+                        {orderedVisitDefs.map(pv => (
                           <SelectItem key={pv.id} value={pv.id}>{pv.visit_name}</SelectItem>
                         ))}
                       </SelectContent>
