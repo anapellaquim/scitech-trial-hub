@@ -46,6 +46,14 @@ interface ProtocolVisit {
   window_plus: number;
   payment_amount: number;
   currency: string;
+  is_paid: boolean;
+}
+
+interface SiteOverrideForm {
+  site_id: string;
+  enabled: boolean;     // false = use default (no override row)
+  is_paid: boolean;
+  payment_amount: number;
 }
 
 interface PatientVisit {
@@ -90,14 +98,16 @@ export default function PatientManagement() {
     window_minus: number;
     window_plus: number;
     payment_amount: number;
-    site_ids: string[];
+    is_paid: boolean;
+    site_overrides: SiteOverrideForm[];
   }>({
     visit_name: "",
     target_day: 0,
     window_minus: 0,
     window_plus: 0,
     payment_amount: 0,
-    site_ids: [] // Can be empty for global study schedule
+    is_paid: true,
+    site_overrides: [],
   });
 
   const [visitDialogOpen, setVisitDialogOpen] = useState(false);
@@ -192,43 +202,62 @@ export default function PatientManagement() {
   };
 
   const handleSaveSchedule = async () => {
-    // If multiple sites are selected, we save one record for each.
-    // If none are selected, it's global (site_id = null).
-    const siteIdsToSave = (scheduleForm as any).site_ids.length > 0 ? (scheduleForm as any).site_ids : [null];
-    
-    const updates = siteIdsToSave.map((siteId: string | null) => ({
+    if (!scheduleForm.visit_name.trim()) {
+      toast.error("Visit name is required");
+      return;
+    }
+
+    // Save the GLOBAL definition row (site_id = null). This is what applies to ALL patients.
+    let globalId: string | null = editingSchedule?.id ?? null;
+    const globalPayload = {
       project_id: selectedProject,
-      site_id: siteId,
+      site_id: null as string | null,
       visit_name: scheduleForm.visit_name,
       target_day: scheduleForm.target_day,
       window_minus: scheduleForm.window_minus,
       window_plus: scheduleForm.window_plus,
-      payment_amount: scheduleForm.payment_amount
-    }));
+      payment_amount: scheduleForm.payment_amount,
+      is_paid: scheduleForm.is_paid,
+    };
 
-    let error;
-    if (editingSchedule) {
-      const { error: err } = await supabase.from("protocol_visit_schedules").update({
+    if (globalId) {
+      const { error } = await supabase.from("protocol_visit_schedules").update(globalPayload).eq("id", globalId);
+      if (error) { toast.error("Error saving visit: " + error.message); return; }
+    } else {
+      const { data, error } = await supabase.from("protocol_visit_schedules").insert(globalPayload).select("id").single();
+      if (error || !data) { toast.error("Error saving visit: " + (error?.message || "")); return; }
+      globalId = data.id;
+    }
+
+    // Sync per-site overrides: delete all existing site-specific rows for this (project, visit_name) then re-insert enabled ones.
+    await supabase
+      .from("protocol_visit_schedules")
+      .delete()
+      .eq("project_id", selectedProject)
+      .eq("visit_name", scheduleForm.visit_name)
+      .not("site_id", "is", null);
+
+    const overrideRows = scheduleForm.site_overrides
+      .filter(o => o.enabled)
+      .map(o => ({
+        project_id: selectedProject,
+        site_id: o.site_id,
         visit_name: scheduleForm.visit_name,
         target_day: scheduleForm.target_day,
         window_minus: scheduleForm.window_minus,
         window_plus: scheduleForm.window_plus,
-        payment_amount: scheduleForm.payment_amount,
-        site_id: updates[0].site_id
-      }).eq("id", editingSchedule.id);
-      error = err;
-    } else {
-      const { error: err } = await supabase.from("protocol_visit_schedules").insert(updates);
-      error = err;
+        payment_amount: o.payment_amount,
+        is_paid: o.is_paid,
+      }));
+
+    if (overrideRows.length > 0) {
+      const { error } = await supabase.from("protocol_visit_schedules").insert(overrideRows);
+      if (error) { toast.error("Error saving site overrides: " + error.message); return; }
     }
 
-    if (error) {
-      toast.error("Error saving schedule");
-    } else {
-      toast.success("Schedule updated");
-      setScheduleDialogOpen(false);
-      loadProjectData();
-    }
+    toast.success("Visit configuration saved");
+    setScheduleDialogOpen(false);
+    loadProjectData();
   };
 
   const handleSaveVisit = async () => {
@@ -274,7 +303,16 @@ export default function PatientManagement() {
   };
 
   const deleteSchedule = async (id: string) => {
-    if (!confirm("Are you sure? This visit configuration and all related patient visits will be deleted.")) return;
+    if (!confirm("Are you sure? This visit configuration (and all its per-site overrides) and all related patient visits will be deleted.")) return;
+    const target = protocolVisits.find(v => v.id === id);
+    // If deleting a global definition, also delete all site-specific overrides with the same visit_name.
+    if (target && target.site_id === null) {
+      await supabase.from("protocol_visit_schedules")
+        .delete()
+        .eq("project_id", selectedProject)
+        .eq("visit_name", target.visit_name)
+        .not("site_id", "is", null);
+    }
     const { error } = await supabase.from("protocol_visit_schedules").delete().eq("id", id);
     if (error) toast.error("Error deleting visit configuration: " + error.message);
     else {
@@ -283,17 +321,33 @@ export default function PatientManagement() {
     }
   };
 
-  // Returns the protocol visits that apply to a given patient:
-  // global schedules (site_id = null) + schedules specific to the patient's site.
-  const getVisitsForPatient = (p: Patient): ProtocolVisit[] =>
-    protocolVisits.filter(pv => pv.site_id === null || pv.site_id === p.site_id);
+  // All patients receive ALL visit definitions (global rows, site_id = null).
+  const visitDefinitions = (): ProtocolVisit[] =>
+    protocolVisits.filter(pv => pv.site_id === null);
 
-  const visitAppliesToPatient = (p: Patient, pv: ProtocolVisit): boolean =>
-    pv.site_id === null || pv.site_id === p.site_id;
+  const getVisitsForPatient = (_p: Patient): ProtocolVisit[] => visitDefinitions();
 
-  // Sum of expected payment for all applicable visits of a patient.
+  const visitAppliesToPatient = (_p: Patient, pv: ProtocolVisit): boolean =>
+    pv.site_id === null;
+
+  // Returns the effective payment for a patient on a given visit definition,
+  // applying any per-site override (matched by project + visit_name + patient site).
+  const paymentForPatient = (p: Patient, pv: ProtocolVisit): { amount: number; is_paid: boolean } => {
+    const override = protocolVisits.find(o =>
+      o.site_id === p.site_id &&
+      o.visit_name === pv.visit_name &&
+      o.project_id === pv.project_id
+    );
+    const source = override ?? pv;
+    return {
+      amount: source.is_paid ? Number(source.payment_amount) || 0 : 0,
+      is_paid: source.is_paid,
+    };
+  };
+
+  // Sum of expected payment for all applicable visits of a patient (after overrides).
   const totalExpectedForPatient = (p: Patient): number =>
-    getVisitsForPatient(p).reduce((sum, pv) => sum + (Number(pv.payment_amount) || 0), 0);
+    getVisitsForPatient(p).reduce((sum, pv) => sum + paymentForPatient(p, pv).amount, 0);
 
   const computeVisitStatus = (p: Patient, pv: ProtocolVisit): string => {
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
@@ -724,9 +778,16 @@ export default function PatientManagement() {
                                           {Icon && <Icon className="h-3 w-3" />}
                                           {computedStatus}
                                         </Badge>
-                                        <span className="text-[10px] font-semibold text-foreground mt-1">
-                                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: pv.currency || 'BRL' }).format(Number(pv.payment_amount) || 0)}
-                                        </span>
+                                        {(() => {
+                                          const pay = paymentForPatient(p, pv);
+                                          return pay.is_paid ? (
+                                            <span className="text-[10px] font-semibold text-foreground mt-1">
+                                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: pv.currency || 'BRL' }).format(pay.amount)}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[10px] font-semibold text-muted-foreground mt-1">Not paid</span>
+                                          );
+                                        })()}
                                         {visit?.actual_date ? (
                                           <span className="text-[10px] text-muted-foreground mt-1">
                                             {formatInBrasilia(visit.actual_date, "dd/MM/yyyy")}
@@ -796,11 +857,24 @@ export default function PatientManagement() {
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
                     <CardTitle>Visit Schedule Configuration</CardTitle>
-                    <CardDescription>Define target days, windows, and payments per visit</CardDescription>
+                    <CardDescription>Each visit applies to all patients. Set a default payment and override per site (amount or mark as not paid).</CardDescription>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => {
                     setEditingSchedule(null);
-                    setScheduleForm({ visit_name: "", target_day: 0, window_minus: 0, window_plus: 0, payment_amount: 0, site_ids: [] });
+                    setScheduleForm({
+                      visit_name: "",
+                      target_day: 0,
+                      window_minus: 0,
+                      window_plus: 0,
+                      payment_amount: 0,
+                      is_paid: true,
+                      site_overrides: sites.map(s => ({
+                        site_id: s.id,
+                        enabled: false,
+                        is_paid: true,
+                        payment_amount: 0,
+                      })),
+                    });
                     setScheduleDialogOpen(true);
                   }}>
                     <Plus className="h-4 w-4 mr-2" /> Add Visit Type
@@ -813,41 +887,72 @@ export default function PatientManagement() {
                         <TableHead>Visit Name</TableHead>
                         <TableHead>Target Day</TableHead>
                         <TableHead>Window (-/+)</TableHead>
-                        <TableHead>Payment (BRL)</TableHead>
-                        <TableHead>Scope</TableHead>
+                        <TableHead>Default Payment</TableHead>
+                        <TableHead>Per-site overrides</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {protocolVisits.length === 0 ? (
+                      {visitDefinitions().length === 0 ? (
                         <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No protocol visits defined.</TableCell></TableRow>
                       ) : (
-                        protocolVisits.map(v => (
-                          <TableRow key={v.id}>
-                            <TableCell className="font-medium">{v.visit_name}</TableCell>
-                            <TableCell>Day {v.target_day}</TableCell>
-                            <TableCell>-{v.window_minus} / +{v.window_plus} days</TableCell>
-                            <TableCell className="font-mono">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v.payment_amount)}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{v.site_id ? "Site Specific" : "Global"}</Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon" onClick={() => {
-                                setEditingSchedule(v);
+                        visitDefinitions().map(v => {
+                          const overrides = protocolVisits.filter(o => o.site_id !== null && o.visit_name === v.visit_name && o.project_id === v.project_id);
+                          return (
+                            <TableRow key={v.id}>
+                              <TableCell className="font-medium">{v.visit_name}</TableCell>
+                              <TableCell>Day {v.target_day}</TableCell>
+                              <TableCell>-{v.window_minus} / +{v.window_plus} days</TableCell>
+                              <TableCell className="font-mono">
+                                {v.is_paid
+                                  ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v.payment_amount)
+                                  : <span className="text-muted-foreground">Not paid</span>}
+                              </TableCell>
+                              <TableCell>
+                                {overrides.length === 0 ? (
+                                  <span className="text-xs text-muted-foreground">All sites use default</span>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1">
+                                    {overrides.map(o => {
+                                      const site = sites.find(s => s.id === o.site_id);
+                                      return (
+                                        <Badge key={o.id} variant="outline" className="text-[10px]">
+                                          {site?.code || "?"}: {o.is_paid
+                                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(o.payment_amount)
+                                            : "Not paid"}
+                                        </Badge>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => {
+                                  setEditingSchedule(v);
                                   setScheduleForm({
                                     visit_name: v.visit_name,
                                     target_day: v.target_day,
                                     window_minus: v.window_minus,
                                     window_plus: v.window_plus,
                                     payment_amount: v.payment_amount,
-                                    site_ids: v.site_id ? [v.site_id] : []
+                                    is_paid: v.is_paid,
+                                    site_overrides: sites.map(s => {
+                                      const o = overrides.find(x => x.site_id === s.id);
+                                      return {
+                                        site_id: s.id,
+                                        enabled: !!o,
+                                        is_paid: o ? o.is_paid : true,
+                                        payment_amount: o ? Number(o.payment_amount) : v.payment_amount,
+                                      };
+                                    }),
                                   });
-                                setScheduleDialogOpen(true);
-                              }}><Pencil className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteSchedule(v.id)}><Trash2 className="h-4 w-4" /></Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                                  setScheduleDialogOpen(true);
+                                }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteSchedule(v.id)}><Trash2 className="h-4 w-4" /></Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -909,8 +1014,11 @@ export default function PatientManagement() {
 
       {/* Protocol Schedule Dialog */}
       <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Configure Visit</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Configure Visit</DialogTitle>
+            <DialogDescription>This visit applies to all patients. Set a default payment, then override per site if needed.</DialogDescription>
+          </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label>Visit Name</Label>
@@ -919,52 +1027,95 @@ export default function PatientManagement() {
             <div className="grid grid-cols-3 gap-2">
               <div className="grid gap-2">
                 <Label>Target Day</Label>
-                <Input type="number" value={scheduleForm.target_day} onChange={e => setScheduleForm({...scheduleForm, target_day: parseInt(e.target.value)})} />
+                <Input type="number" value={scheduleForm.target_day} onChange={e => setScheduleForm({...scheduleForm, target_day: parseInt(e.target.value) || 0})} />
               </div>
               <div className="grid gap-2">
                 <Label>Window (-)</Label>
-                <Input type="number" value={scheduleForm.window_minus} onChange={e => setScheduleForm({...scheduleForm, window_minus: parseInt(e.target.value)})} />
+                <Input type="number" value={scheduleForm.window_minus} onChange={e => setScheduleForm({...scheduleForm, window_minus: parseInt(e.target.value) || 0})} />
               </div>
               <div className="grid gap-2">
                 <Label>Window (+)</Label>
-                <Input type="number" value={scheduleForm.window_plus} onChange={e => setScheduleForm({...scheduleForm, window_plus: parseInt(e.target.value)})} />
+                <Input type="number" value={scheduleForm.window_plus} onChange={e => setScheduleForm({...scheduleForm, window_plus: parseInt(e.target.value) || 0})} />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label>Payment Amount (BRL)</Label>
-              <Input type="number" value={scheduleForm.payment_amount} onChange={e => setScheduleForm({...scheduleForm, payment_amount: parseFloat(e.target.value)})} />
-            </div>
-            <div className="grid gap-2">
-              <Label>Site Selection</Label>
-              <div className="grid grid-cols-2 gap-2 border p-3 rounded-md max-h-[150px] overflow-y-auto">
-                <div className="flex items-center gap-2 col-span-2 pb-2 border-b mb-1">
-                  <Checkbox 
-                    id="site-global" 
-                    checked={(scheduleForm as any).site_ids.length === 0}
-                    onCheckedChange={(checked) => {
-                      if (checked) setScheduleForm({...scheduleForm, site_ids: []} as any);
-                    }}
+
+            <div className="border rounded-md p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold">Default payment (applies to all sites unless overridden)</Label>
+                <label className="flex items-center gap-2 text-xs">
+                  <Checkbox
+                    checked={scheduleForm.is_paid}
+                    onCheckedChange={(c) => setScheduleForm({ ...scheduleForm, is_paid: !!c })}
                   />
-                  <Label htmlFor="site-global" className="font-bold">Global Study-wide</Label>
-                </div>
-                {sites.map(s => (
-                  <div key={s.id} className="flex items-center gap-2">
-                    <Checkbox 
-                      id={`site-${s.id}`} 
-                      checked={(scheduleForm as any).site_ids.includes(s.id)}
-                      onCheckedChange={(checked) => {
-                        const currentSites = (scheduleForm as any).site_ids;
-                        const newSites = checked 
-                          ? [...currentSites, s.id]
-                          : currentSites.filter((id: string) => id !== s.id);
-                        setScheduleForm({...scheduleForm, site_ids: newSites} as any);
-                      }}
-                    />
-                    <Label htmlFor={`site-${s.id}`} className="text-xs">{s.code}</Label>
-                  </div>
-                ))}
+                  Paid
+                </label>
               </div>
-              <p className="text-[10px] text-muted-foreground">If none selected, visit is global.</p>
+              <Input
+                type="number"
+                step="0.01"
+                disabled={!scheduleForm.is_paid}
+                value={scheduleForm.payment_amount}
+                onChange={e => setScheduleForm({...scheduleForm, payment_amount: parseFloat(e.target.value) || 0})}
+                placeholder="0.00 (BRL)"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label className="font-semibold">Per-site overrides</Label>
+              <p className="text-[11px] text-muted-foreground">Enable a site to use a different amount or mark this visit as not paid for that site.</p>
+              <div className="border rounded-md max-h-[260px] overflow-y-auto">
+                {sites.length === 0 ? (
+                  <p className="text-xs text-muted-foreground p-3">No sites in this project.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[60px]">Use</TableHead>
+                        <TableHead>Site</TableHead>
+                        <TableHead className="w-[80px]">Paid</TableHead>
+                        <TableHead className="w-[140px]">Amount (BRL)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sites.map(s => {
+                        const idx = scheduleForm.site_overrides.findIndex(o => o.site_id === s.id);
+                        const o = idx >= 0 ? scheduleForm.site_overrides[idx] : { site_id: s.id, enabled: false, is_paid: true, payment_amount: scheduleForm.payment_amount };
+                        const update = (patch: Partial<SiteOverrideForm>) => {
+                          const next = [...scheduleForm.site_overrides];
+                          if (idx >= 0) next[idx] = { ...next[idx], ...patch };
+                          else next.push({ ...o, ...patch });
+                          setScheduleForm({ ...scheduleForm, site_overrides: next });
+                        };
+                        return (
+                          <TableRow key={s.id}>
+                            <TableCell>
+                              <Checkbox checked={o.enabled} onCheckedChange={(c) => update({ enabled: !!c })} />
+                            </TableCell>
+                            <TableCell className="text-xs">{s.code} {s.name ? `– ${s.name}` : ""}</TableCell>
+                            <TableCell>
+                              <Checkbox
+                                checked={o.is_paid}
+                                disabled={!o.enabled}
+                                onCheckedChange={(c) => update({ is_paid: !!c })}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                disabled={!o.enabled || !o.is_paid}
+                                value={o.payment_amount}
+                                onChange={e => update({ payment_amount: parseFloat(e.target.value) || 0 })}
+                                className="h-8"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>

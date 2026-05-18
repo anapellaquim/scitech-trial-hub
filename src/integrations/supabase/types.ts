@@ -2488,6 +2488,7 @@ export type Database = {
           created_at: string
           currency: string | null
           id: string
+          is_paid: boolean
           is_required: boolean | null
           payment_amount: number | null
           project_id: string
@@ -2502,6 +2503,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           id?: string
+          is_paid?: boolean
           is_required?: boolean | null
           payment_amount?: number | null
           project_id: string
@@ -2516,6 +2518,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           id?: string
+          is_paid?: boolean
           is_required?: boolean | null
           payment_amount?: number | null
           project_id?: string
