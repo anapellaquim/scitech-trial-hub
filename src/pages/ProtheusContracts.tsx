@@ -185,6 +185,7 @@ export default function ProtheusContracts() {
                       {list.map((r) => (
                         <TableRow key={r.id}>
                           <TableCell className="font-medium">{r.contract_number}</TableCell>
+                          <TableCell className="max-w-xs truncate" title={r.description || ""}>{r.description || "-"}</TableCell>
                           <TableCell>{r.product || "-"}</TableCell>
                           <TableCell>{r.supplier || "-"}</TableCell>
                           <TableCell>{r.contract_date ? formatDateOnly(parseLocalDate(r.contract_date)) : "-"}</TableCell>
