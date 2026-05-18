@@ -33,6 +33,7 @@ import PMCFSurvey from "./pages/PMCFSurvey";
 import ClinicalEvaluation from "./pages/ClinicalEvaluation";
 import InvestigationalProducts from "./pages/InvestigationalProducts";
 import PatientManagement from "./pages/PatientManagement";
+import ProtheusContracts from "./pages/ProtheusContracts";
 
 const queryClient = new QueryClient();
 
