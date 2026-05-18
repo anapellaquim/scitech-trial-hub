@@ -778,9 +778,16 @@ export default function PatientManagement() {
                                           {Icon && <Icon className="h-3 w-3" />}
                                           {computedStatus}
                                         </Badge>
-                                        <span className="text-[10px] font-semibold text-foreground mt-1">
-                                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: pv.currency || 'BRL' }).format(Number(pv.payment_amount) || 0)}
-                                        </span>
+                                        {(() => {
+                                          const pay = paymentForPatient(p, pv);
+                                          return pay.is_paid ? (
+                                            <span className="text-[10px] font-semibold text-foreground mt-1">
+                                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: pv.currency || 'BRL' }).format(pay.amount)}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[10px] font-semibold text-muted-foreground mt-1">Not paid</span>
+                                          );
+                                        })()}
                                         {visit?.actual_date ? (
                                           <span className="text-[10px] text-muted-foreground mt-1">
                                             {formatInBrasilia(visit.actual_date, "dd/MM/yyyy")}
