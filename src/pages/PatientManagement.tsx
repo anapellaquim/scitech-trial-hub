@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { formatInBrasilia, todayDateOnly } from "@/lib/dateUtils";
+import { formatInBrasilia, todayDateOnly, parseLocalDate } from "@/lib/dateUtils";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as XLSX from "xlsx";
