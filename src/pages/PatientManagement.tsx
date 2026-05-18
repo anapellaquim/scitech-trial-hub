@@ -383,8 +383,9 @@ export default function PatientManagement() {
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
     if (visit?.status === 'Completed' || visit?.status === 'Complete') return 'Completed';
     if (visit?.status === 'Lost Visit') return 'Lost Visit';
-    if (p.enrollment_date) {
-      const targetDate = addDays(new Date(p.enrollment_date), pv.target_day);
+    const anchor = getAnchorDate(p);
+    if (anchor) {
+      const targetDate = addDays(new Date(anchor), pv.target_day);
       const windowStart = addDays(targetDate, -pv.window_minus);
       const windowEnd = addDays(targetDate, pv.window_plus);
       const today = new Date(); today.setHours(0, 0, 0, 0);
