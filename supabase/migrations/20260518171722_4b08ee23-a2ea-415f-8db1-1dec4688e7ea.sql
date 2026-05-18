@@ -1,0 +1,1 @@
+ALTER TABLE public.site_monitoring_visits ADD COLUMN IF NOT EXISTS checklist JSONB NOT NULL DEFAULT '{}'::jsonb;
