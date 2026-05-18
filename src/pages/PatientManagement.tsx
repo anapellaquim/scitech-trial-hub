@@ -736,7 +736,8 @@ export default function PatientManagement() {
                           <TableHead className="min-w-[120px]">Patient Code</TableHead>
                           <TableHead className="min-w-[150px]">Site</TableHead>
                           <TableHead className="min-w-[120px]">Status</TableHead>
-                          {protocolVisits.map(pv => (
+                          <TableHead className="min-w-[160px]">Random</TableHead>
+                          {orderedVisitDefs.map(pv => (
                             <TableHead key={pv.id} className="text-center min-w-[150px]">
                               {pv.visit_name}
                             </TableHead>
@@ -748,9 +749,9 @@ export default function PatientManagement() {
                       </TableHeader>
                       <TableBody>
                         {loading ? (
-                          <TableRow><TableCell colSpan={protocolVisits.length + 6} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={orderedVisitDefs.length + 7} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
                         ) : filteredPatients.length === 0 ? (
-                          <TableRow><TableCell colSpan={protocolVisits.length + 6} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={orderedVisitDefs.length + 7} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
                         ) : (
                           filteredPatients.map(p => {
                             const applicableVisits = getVisitsForPatient(p);
@@ -765,8 +766,13 @@ export default function PatientManagement() {
                                 <TableCell className="font-bold">{p.patient_code}</TableCell>
                                 <TableCell>{p.site?.code} - {p.site?.name}</TableCell>
                                 <TableCell>{getStatusBadge(p.status)}</TableCell>
-                                
-                                {protocolVisits.map(pv => {
+                                <TableCell>
+                                  {p.randomization_group
+                                    ? <Badge variant="outline" className="text-[11px]">{p.randomization_group}</Badge>
+                                    : <span className="text-xs text-muted-foreground">—</span>}
+                                </TableCell>
+
+                                {orderedVisitDefs.map(pv => {
                                   if (!visitAppliesToPatient(p, pv)) {
                                     return (
                                       <TableCell key={pv.id} className="text-center text-muted-foreground">
