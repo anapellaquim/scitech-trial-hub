@@ -44,13 +44,14 @@ export default function ProtheusContracts() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("protheus_contracts")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
     else setRows((data as Contract[]) || []);
     setLoading(false);
