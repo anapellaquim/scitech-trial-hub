@@ -1917,7 +1917,7 @@ export default function Payments() {
                                     else {
                                       const anchor = getAnchorDate(p);
                                       if (anchor) {
-                                        const target = addDays(new Date(anchor), pv.target_day);
+                                        const target = addDays(parseLocalDate(anchor), pv.target_day);
                                         const wStart = addDays(target, -(pv.window_minus || 0));
                                         const wEnd = addDays(target, pv.window_plus || 0);
                                         const today = new Date(); today.setHours(0,0,0,0);
