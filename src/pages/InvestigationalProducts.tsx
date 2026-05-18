@@ -264,6 +264,24 @@ export default function InvestigationalProducts() {
     if (error) { toast.error("Delete failed: " + error.message); return; }
     toast.success("Deleted"); loadRecords();
   };
+  const handleDeleteAllIP = async () => {
+    const confirm1 = confirm(`Delete ALL ${records.length} IP inventory records? This cannot be undone.`);
+    if (!confirm1) return;
+    const typed = prompt('Type "DELETE ALL" to confirm:');
+    if (typed !== "DELETE ALL") { toast.error("Confirmation text did not match. Nothing was deleted."); return; }
+    const { error } = await supabase.from("investigational_products").delete().not("id", "is", null);
+    if (error) { toast.error("Delete failed: " + error.message); return; }
+    toast.success("All IP records deleted"); loadRecords();
+  };
+  const handleDeleteAllSupply = async () => {
+    const confirm1 = confirm(`Delete ALL ${supplies.length} supply movements? This cannot be undone.`);
+    if (!confirm1) return;
+    const typed = prompt('Type "DELETE ALL" to confirm:');
+    if (typed !== "DELETE ALL") { toast.error("Confirmation text did not match. Nothing was deleted."); return; }
+    const { error } = await supabase.from("ip_supply").delete().not("id", "is", null);
+    if (error) { toast.error("Delete failed: " + error.message); return; }
+    toast.success("All supply records deleted"); loadRecords();
+  };
 
   // Inventory search across all columns + per-column filters
   const [invSearch, setInvSearch] = useState("");
@@ -456,6 +474,9 @@ export default function InvestigationalProducts() {
               </Button>
               <Button variant="outline" onClick={() => setItemsDialogOpen(true)}>
                 <Settings2 className="h-4 w-4 mr-1" /> Configure Items
+              </Button>
+              <Button variant="outline" onClick={handleDeleteAllIP} disabled={records.length === 0} className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4 mr-1" /> Delete All
               </Button>
               <Button onClick={openNew}>
                 <Plus className="h-4 w-4 mr-1" /> New IP
@@ -788,6 +809,9 @@ export default function InvestigationalProducts() {
               <ExcelExportButton data={supplyExportData} fileName="ip-supply" />
               <Button variant="outline" onClick={() => setSupplyImportOpen(true)}>
                 <Upload className="h-4 w-4 mr-1" /> Import
+              </Button>
+              <Button variant="outline" onClick={handleDeleteAllSupply} disabled={supplies.length === 0} className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4 mr-1" /> Delete All
               </Button>
               <Button onClick={openNewSupply}>
                 <Plus className="h-4 w-4 mr-1" /> New Movement
