@@ -52,7 +52,7 @@ export default function ProtheusContracts() {
     const { data, error } = await (supabase as any)
       .from("protheus_contracts")
       .select("*")
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRows((data as Contract[]) || []);
     setLoading(false);
