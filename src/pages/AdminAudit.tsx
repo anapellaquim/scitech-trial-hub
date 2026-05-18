@@ -516,7 +516,7 @@ const AdminAudit = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-sm">
-                            {format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
+                            {formatInBrasilia(entry.created_at, "dd/MM/yyyy HH:mm:ss")}
                           </TableCell>
                           <TableCell>{getModuleBadge(entry.module)}</TableCell>
                           <TableCell>{getActionBadge(entry.action)}</TableCell>
