@@ -379,13 +379,26 @@ export default function PatientManagement() {
     return 'Scheduled';
   };
 
+  // Ordered visit definitions for the Participants List columns.
+  const orderedVisitDefs = useMemo(
+    () => [...visitDefinitions()].sort((a, b) => {
+      const ia = visitOrderIndex(a.visit_name);
+      const ib = visitOrderIndex(b.visit_name);
+      if (ia !== ib) return ia - ib;
+      return a.target_day - b.target_day;
+    }),
+    [protocolVisits]
+  );
+
   const filteredPatients = patients.filter(p => {
     const term = searchTerm.toLowerCase();
     const matchesSearch = !term || p.patient_code.toLowerCase().includes(term) || p.site?.code.toLowerCase().includes(term);
     const matchesSite = filterSite === "all" || p.site_id === filterSite;
     const matchesStatus = filterPatientStatus === "all" || p.status === filterPatientStatus;
+    const matchesRandom = filterRandomGroup === "all"
+      || (filterRandomGroup === "none" ? !p.randomization_group : p.randomization_group === filterRandomGroup);
     const matchesVisitStatus = filterVisitStatus === "all" || getVisitsForPatient(p).some(pv => computeVisitStatus(p, pv) === filterVisitStatus);
-    return matchesSearch && matchesSite && matchesStatus && matchesVisitStatus;
+    return matchesSearch && matchesSite && matchesStatus && matchesRandom && matchesVisitStatus;
   });
 
   const getStatusBadge = (status: PatientStatus) => {
