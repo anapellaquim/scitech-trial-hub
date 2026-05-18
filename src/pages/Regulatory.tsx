@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Search, FileText, Clock, AlertTriangle, CheckCircle, Calendar, Upload, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { format, differenceInDays, isPast, isWithinInterval, addDays } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 import NewSubmissionDialog from "@/components/regulatory/NewSubmissionDialog";
 import NewReportDialog from "@/components/regulatory/NewReportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
@@ -513,7 +513,7 @@ export default function Regulatory() {
                             <TableCell>
                               {deadlineDate ? (
                                 <div className="flex flex-col gap-0.5">
-                                  <span>{format(parseLocalDate(deadlineDate), "dd/MM/yyyy", { locale: enUS })}</span>
+                                  <span>{format(parseLocalDate(deadlineDate), "dd/MM/yyyy", { locale: ptBR })}</span>
                                   {deadlineStatus && (sub.status === "pending" || sub.status === "revision_required") && (
                                     <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
                                       <deadlineStatus.icon className="h-4 w-4" />
@@ -524,7 +524,7 @@ export default function Regulatory() {
                               ) : "-"}
                             </TableCell>
                             <TableCell>
-                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                              {effectiveSubmitted ? format(parseLocalDate(effectiveSubmitted), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell>{hasReq ? "Yes" : "No"}</TableCell>
                             <TableCell>
@@ -533,7 +533,7 @@ export default function Regulatory() {
                                 const showCounter = !sub.requirement_submitted_date && sub.status !== "approved" && sub.status !== "rejected";
                                 return (
                                   <div className="flex flex-col gap-0.5">
-                                    <span>{format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: enUS })}</span>
+                                    <span>{format(parseLocalDate(sub.requirement_due_date), "dd/MM/yyyy", { locale: ptBR })}</span>
                                     {reqDeadlineStatus && showCounter && (
                                       <div className={`flex items-center gap-1 ${reqDeadlineStatus.color}`}>
                                         <reqDeadlineStatus.icon className="h-4 w-4" />
@@ -545,7 +545,7 @@ export default function Regulatory() {
                               })() : "-"}
                             </TableCell>
                             <TableCell>
-                              {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                              {sub.approval_date ? format(parseLocalDate(sub.approval_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[sub.status]}>
@@ -604,7 +604,7 @@ export default function Regulatory() {
                             <TableCell>
                               {rep.due_date ? (
                                 <div className="flex flex-col gap-0.5">
-                                  <span>{format(parseLocalDate(rep.due_date), "dd/MM/yyyy", { locale: enUS })}</span>
+                                  <span>{format(parseLocalDate(rep.due_date), "dd/MM/yyyy", { locale: ptBR })}</span>
                                   {deadlineStatus && (rep.status === "pending" || rep.status === "revision_required") && (
                                     <div className={`flex items-center gap-1 ${deadlineStatus.color}`}>
                                       <deadlineStatus.icon className="h-4 w-4" />
@@ -615,10 +615,10 @@ export default function Regulatory() {
                               ) : "-"}
                             </TableCell>
                             <TableCell>
-                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                              {rep.submitted_date ? format(parseLocalDate(rep.submitted_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell>
-                              {rep.approval_date ? format(parseLocalDate(rep.approval_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                              {rep.approval_date ? format(parseLocalDate(rep.approval_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                             </TableCell>
                             <TableCell>
                               <Badge className={statusColors[rep.status]}>
