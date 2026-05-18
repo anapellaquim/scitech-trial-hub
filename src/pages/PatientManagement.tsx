@@ -194,8 +194,9 @@ export default function PatientManagement() {
                patientForm.status === 'Lost to FUP' ? 'Lost to Follow-up' :
                patientForm.status === 'Early exit' ? 'Early Exit' : patientForm.status) as any,
       enrollment_date: patientForm.enrollment_date || null,
+      randomization_group: patientForm.randomization_group || null,
       notes: patientForm.notes
-    };
+    } as any;
 
     let error;
     if (editingPatient) {
