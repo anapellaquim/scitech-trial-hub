@@ -154,7 +154,7 @@ export default function PatientManagement() {
     try {
       const [sitesRes, patientsRes, protocolRes, visitsRes] = await Promise.all([
         supabase.from("research_centers").select("id, code, name").eq("project_id", selectedProject),
-        supabase.from("patients").select("*, site:research_centers(code, name)").eq("project_id", selectedProject),
+        supabase.from("patients").select("*, site:research_centers(code, name)").eq("project_id", selectedProject).order("created_at", { ascending: true }),
         supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject).order("target_day"),
         supabase.from("patient_visits").select("*, protocol_visit:protocol_visit_schedules(*)").order("actual_date")
       ]);
@@ -345,6 +345,21 @@ export default function PatientManagement() {
   const visitAppliesToPatient = (_p: Patient, pv: ProtocolVisit): boolean =>
     pv.site_id === null;
 
+  // Anchor date used to compute visit windows. The Procedure visit's actual date
+  // is the reference; if it hasn't been performed yet, fall back to enrollment_date.
+  const getAnchorDate = (p: Patient): string | null => {
+    const procDef = protocolVisits.find(pv =>
+      pv.site_id === null &&
+      pv.project_id === p.project_id &&
+      visitOrderIndex(pv.visit_name) === 0
+    );
+    if (procDef) {
+      const pv = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === procDef.id);
+      if (pv?.actual_date) return pv.actual_date;
+    }
+    return p.enrollment_date;
+  };
+
   // Returns the effective payment for a patient on a given visit definition,
   // applying any per-site override (matched by project + visit_name + patient site).
   const paymentForPatient = (p: Patient, pv: ProtocolVisit): { amount: number; is_paid: boolean } => {
@@ -368,8 +383,9 @@ export default function PatientManagement() {
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
     if (visit?.status === 'Completed' || visit?.status === 'Complete') return 'Completed';
     if (visit?.status === 'Lost Visit') return 'Lost Visit';
-    if (p.enrollment_date) {
-      const targetDate = addDays(new Date(p.enrollment_date), pv.target_day);
+    const anchor = getAnchorDate(p);
+    if (anchor) {
+      const targetDate = addDays(new Date(anchor), pv.target_day);
       const windowStart = addDays(targetDate, -pv.window_minus);
       const windowEnd = addDays(targetDate, pv.window_plus);
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -794,22 +810,24 @@ export default function PatientManagement() {
                                     computedStatus = 'Lost Visit';
                                     statusColor = 'bg-slate-500 text-white';
                                     Icon = X;
-                                  } else if (p.enrollment_date) {
-                                    const enrollmentDate = new Date(p.enrollment_date);
-                                    const targetDate = addDays(enrollmentDate, pv.target_day);
-                                    const windowStart = addDays(targetDate, -pv.window_minus);
-                                    const windowEnd = addDays(targetDate, pv.window_plus);
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
+                                  } else {
+                                    const anchor = getAnchorDate(p);
+                                    if (anchor) {
+                                      const targetDate = addDays(new Date(anchor), pv.target_day);
+                                      const windowStart = addDays(targetDate, -pv.window_minus);
+                                      const windowEnd = addDays(targetDate, pv.window_plus);
+                                      const today = new Date();
+                                      today.setHours(0, 0, 0, 0);
 
-                                    if (today > windowEnd) {
-                                      computedStatus = 'Overdue';
-                                      statusColor = 'bg-red-500 text-white';
-                                      Icon = AlertTriangle;
-                                    } else if (today >= windowStart && today <= windowEnd) {
-                                      computedStatus = 'Window';
-                                      statusColor = 'bg-amber-500 text-white';
-                                      Icon = Clock;
+                                      if (today > windowEnd) {
+                                        computedStatus = 'Overdue';
+                                        statusColor = 'bg-red-500 text-white';
+                                        Icon = AlertTriangle;
+                                      } else if (today >= windowStart && today <= windowEnd) {
+                                        computedStatus = 'Window';
+                                        statusColor = 'bg-amber-500 text-white';
+                                        Icon = Clock;
+                                      }
                                     }
                                   }
 
@@ -835,11 +853,15 @@ export default function PatientManagement() {
                                             {formatInBrasilia(visit.actual_date, "dd/MM/yyyy")}
                                           </span>
                                         ) : null}
-                                        {p.enrollment_date && (
-                                         <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
-                                           Window: {format(addDays(new Date(p.enrollment_date), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(new Date(p.enrollment_date), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
-                                         </span>
-                                       )}
+                                        {(() => {
+                                          const anchor = getAnchorDate(p);
+                                          if (!anchor) return null;
+                                          return (
+                                            <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
+                                              Window: {format(addDays(new Date(anchor), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(new Date(anchor), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
+                                            </span>
+                                          );
+                                        })()}
                                       </div>
                                     </TableCell>
                                   );
@@ -1198,8 +1220,8 @@ export default function PatientManagement() {
                     <Label>Protocol Visit</Label>
                     <Select value={visitForm.protocol_visit_id} onValueChange={v => {
                       const pv = protocolVisits.find(x => x.id === v);
-                      const enroll = selectedPatientForVisits?.enrollment_date;
-                      const targetDate = pv && enroll ? format(addDays(new Date(enroll), pv.target_day), "yyyy-MM-dd") : visitForm.actual_date;
+                      const anchor = selectedPatientForVisits ? getAnchorDate(selectedPatientForVisits) : null;
+                      const targetDate = pv && anchor ? format(addDays(new Date(anchor), pv.target_day), "yyyy-MM-dd") : visitForm.actual_date;
                       setVisitForm({ ...visitForm, protocol_visit_id: v, actual_date: targetDate });
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select visit..." /></SelectTrigger>
