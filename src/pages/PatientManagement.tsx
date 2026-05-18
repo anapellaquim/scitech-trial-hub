@@ -1069,6 +1069,19 @@ export default function PatientManagement() {
               <Label>Enrollment Date</Label>
               <Input type="date" value={patientForm.enrollment_date} onChange={e => setPatientForm({...patientForm, enrollment_date: e.target.value})} />
             </div>
+            {patientForm.status === 'Early exit' && (
+              <div className="grid gap-2">
+                <Label>Exit Date *</Label>
+                <Input
+                  type="date"
+                  value={patientForm.exit_date}
+                  onChange={e => setPatientForm({...patientForm, exit_date: e.target.value})}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Visits whose target date falls after this exit date will be marked as Lost (participant exited the study).
+                </p>
+              </div>
+            )}
             <div className="grid gap-2">
               <Label>Randomization Group</Label>
               <Select
