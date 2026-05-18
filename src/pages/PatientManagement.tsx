@@ -652,17 +652,24 @@ export default function PatientManagement() {
                             </TableHead>
                           ))}
                           <TableHead className="text-center min-w-[100px]">Visits</TableHead>
+                          <TableHead className="text-right min-w-[130px]">Expected Value</TableHead>
                           <TableHead className="text-right min-w-[120px]">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {loading ? (
-                          <TableRow><TableCell colSpan={protocolVisits.length + 5} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={protocolVisits.length + 6} className="text-center py-10 text-muted-foreground">Loading patients...</TableCell></TableRow>
                         ) : filteredPatients.length === 0 ? (
-                          <TableRow><TableCell colSpan={protocolVisits.length + 5} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={protocolVisits.length + 6} className="text-center py-10 text-muted-foreground">No patients found.</TableCell></TableRow>
                         ) : (
                           filteredPatients.map(p => {
-                            const completedVisitsCount = patientVisits.filter(v => v.patient_id === p.id && v.status === 'Completed').length;
+                            const applicableVisits = getVisitsForPatient(p);
+                            const completedVisitsCount = patientVisits.filter(v =>
+                              v.patient_id === p.id &&
+                              v.status === 'Completed' &&
+                              applicableVisits.some(pv => pv.id === v.protocol_visit_id)
+                            ).length;
+                            const totalApplicable = applicableVisits.length;
                             return (
                               <TableRow key={p.id}>
                                 <TableCell className="font-bold">{p.patient_code}</TableCell>
@@ -670,6 +677,13 @@ export default function PatientManagement() {
                                 <TableCell>{getStatusBadge(p.status)}</TableCell>
                                 
                                 {protocolVisits.map(pv => {
+                                  if (!visitAppliesToPatient(p, pv)) {
+                                    return (
+                                      <TableCell key={pv.id} className="text-center text-muted-foreground">
+                                        <span title="Not configured for this site">—</span>
+                                      </TableCell>
+                                    );
+                                  }
                                   const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
                                   
                                   let computedStatus = visit?.status || 'Scheduled';
@@ -710,6 +724,9 @@ export default function PatientManagement() {
                                           {Icon && <Icon className="h-3 w-3" />}
                                           {computedStatus}
                                         </Badge>
+                                        <span className="text-[10px] font-semibold text-foreground mt-1">
+                                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: pv.currency || 'BRL' }).format(Number(pv.payment_amount) || 0)}
+                                        </span>
                                         {visit?.actual_date ? (
                                           <span className="text-[10px] text-muted-foreground mt-1">
                                             {formatInBrasilia(visit.actual_date, "dd/MM/yyyy")}
@@ -727,14 +744,17 @@ export default function PatientManagement() {
 
                                 <TableCell className="text-center">
                                   <div className="flex flex-col items-center">
-                                    <span className="font-semibold">{completedVisitsCount}/{protocolVisits.length}</span>
+                                    <span className="font-semibold">{completedVisitsCount}/{totalApplicable}</span>
                                     <div className="w-20 h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
                                       <div 
                                         className="h-full bg-primary transition-all" 
-                                        style={{ width: `${protocolVisits.length > 0 ? (completedVisitsCount / protocolVisits.length) * 100 : 0}%` }}
+                                        style={{ width: `${totalApplicable > 0 ? (completedVisitsCount / totalApplicable) * 100 : 0}%` }}
                                       />
                                     </div>
                                   </div>
+                                </TableCell>
+                                <TableCell className="text-right font-mono font-semibold">
+                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalExpectedForPatient(p))}
                                 </TableCell>
                                 <TableCell className="text-right">
                                   <div className="flex justify-end gap-2">
