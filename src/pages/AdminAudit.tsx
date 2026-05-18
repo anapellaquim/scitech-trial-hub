@@ -200,7 +200,7 @@ const AdminAudit = () => {
     doc.text(`Total de registros: ${totalCount}`, 14, 36);
 
     const tableData = auditEntries.map(entry => [
-      format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm"),
+      formatInBrasilia(entry.created_at, "dd/MM/yyyy HH:mm"),
       moduleConfig[entry.module]?.label || entry.module,
       actionConfig[entry.action]?.label || entry.action,
       entry.entity_type,
