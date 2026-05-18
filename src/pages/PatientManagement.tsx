@@ -824,17 +824,25 @@ export default function PatientManagement() {
                                       const targetDate = addDays(parseLocalDate(anchor), pv.target_day);
                                       const windowStart = addDays(targetDate, -pv.window_minus);
                                       const windowEnd = addDays(targetDate, pv.window_plus);
-                                      const today = new Date();
-                                      today.setHours(0, 0, 0, 0);
+                                      const exit = p.exit_date ? parseLocalDate(p.exit_date) : null;
 
-                                      if (today > windowEnd) {
-                                        computedStatus = 'Overdue';
-                                        statusColor = 'bg-red-500 text-white';
-                                        Icon = AlertTriangle;
-                                      } else if (today >= windowStart && today <= windowEnd) {
-                                        computedStatus = 'Window';
-                                        statusColor = 'bg-amber-500 text-white';
-                                        Icon = Clock;
+                                      if (exit && targetDate > exit) {
+                                        computedStatus = 'Lost (Exited)';
+                                        statusColor = 'bg-slate-500 text-white';
+                                        Icon = X;
+                                      } else {
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0);
+
+                                        if (today > windowEnd) {
+                                          computedStatus = 'Overdue';
+                                          statusColor = 'bg-red-500 text-white';
+                                          Icon = AlertTriangle;
+                                        } else if (today >= windowStart && today <= windowEnd) {
+                                          computedStatus = 'Window';
+                                          statusColor = 'bg-amber-500 text-white';
+                                          Icon = Clock;
+                                        }
                                       }
                                     }
                                   }
