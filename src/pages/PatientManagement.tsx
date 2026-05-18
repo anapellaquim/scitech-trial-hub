@@ -858,7 +858,7 @@ export default function PatientManagement() {
                                           if (!anchor) return null;
                                           return (
                                             <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
-                                              Window: {formatInBrasilia(addDays(parseLocalDate(anchor), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {formatInBrasilia(addDays(parseLocalDate(anchor), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
+                                              Window: {format(addDays(parseLocalDate(anchor), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(parseLocalDate(anchor), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
                                             </span>
                                           );
                                         })()}
