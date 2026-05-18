@@ -857,11 +857,24 @@ export default function PatientManagement() {
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
                     <CardTitle>Visit Schedule Configuration</CardTitle>
-                    <CardDescription>Define target days, windows, and payments per visit</CardDescription>
+                    <CardDescription>Each visit applies to all patients. Set a default payment and override per site (amount or mark as not paid).</CardDescription>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => {
                     setEditingSchedule(null);
-                    setScheduleForm({ visit_name: "", target_day: 0, window_minus: 0, window_plus: 0, payment_amount: 0, site_ids: [] });
+                    setScheduleForm({
+                      visit_name: "",
+                      target_day: 0,
+                      window_minus: 0,
+                      window_plus: 0,
+                      payment_amount: 0,
+                      is_paid: true,
+                      site_overrides: sites.map(s => ({
+                        site_id: s.id,
+                        enabled: false,
+                        is_paid: true,
+                        payment_amount: 0,
+                      })),
+                    });
                     setScheduleDialogOpen(true);
                   }}>
                     <Plus className="h-4 w-4 mr-2" /> Add Visit Type
@@ -874,41 +887,72 @@ export default function PatientManagement() {
                         <TableHead>Visit Name</TableHead>
                         <TableHead>Target Day</TableHead>
                         <TableHead>Window (-/+)</TableHead>
-                        <TableHead>Payment (BRL)</TableHead>
-                        <TableHead>Scope</TableHead>
+                        <TableHead>Default Payment</TableHead>
+                        <TableHead>Per-site overrides</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {protocolVisits.length === 0 ? (
+                      {visitDefinitions().length === 0 ? (
                         <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No protocol visits defined.</TableCell></TableRow>
                       ) : (
-                        protocolVisits.map(v => (
-                          <TableRow key={v.id}>
-                            <TableCell className="font-medium">{v.visit_name}</TableCell>
-                            <TableCell>Day {v.target_day}</TableCell>
-                            <TableCell>-{v.window_minus} / +{v.window_plus} days</TableCell>
-                            <TableCell className="font-mono">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v.payment_amount)}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{v.site_id ? "Site Specific" : "Global"}</Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="icon" onClick={() => {
-                                setEditingSchedule(v);
+                        visitDefinitions().map(v => {
+                          const overrides = protocolVisits.filter(o => o.site_id !== null && o.visit_name === v.visit_name && o.project_id === v.project_id);
+                          return (
+                            <TableRow key={v.id}>
+                              <TableCell className="font-medium">{v.visit_name}</TableCell>
+                              <TableCell>Day {v.target_day}</TableCell>
+                              <TableCell>-{v.window_minus} / +{v.window_plus} days</TableCell>
+                              <TableCell className="font-mono">
+                                {v.is_paid
+                                  ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v.payment_amount)
+                                  : <span className="text-muted-foreground">Not paid</span>}
+                              </TableCell>
+                              <TableCell>
+                                {overrides.length === 0 ? (
+                                  <span className="text-xs text-muted-foreground">All sites use default</span>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1">
+                                    {overrides.map(o => {
+                                      const site = sites.find(s => s.id === o.site_id);
+                                      return (
+                                        <Badge key={o.id} variant="outline" className="text-[10px]">
+                                          {site?.code || "?"}: {o.is_paid
+                                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(o.payment_amount)
+                                            : "Not paid"}
+                                        </Badge>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => {
+                                  setEditingSchedule(v);
                                   setScheduleForm({
                                     visit_name: v.visit_name,
                                     target_day: v.target_day,
                                     window_minus: v.window_minus,
                                     window_plus: v.window_plus,
                                     payment_amount: v.payment_amount,
-                                    site_ids: v.site_id ? [v.site_id] : []
+                                    is_paid: v.is_paid,
+                                    site_overrides: sites.map(s => {
+                                      const o = overrides.find(x => x.site_id === s.id);
+                                      return {
+                                        site_id: s.id,
+                                        enabled: !!o,
+                                        is_paid: o ? o.is_paid : true,
+                                        payment_amount: o ? Number(o.payment_amount) : v.payment_amount,
+                                      };
+                                    }),
                                   });
-                                setScheduleDialogOpen(true);
-                              }}><Pencil className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteSchedule(v.id)}><Trash2 className="h-4 w-4" /></Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                                  setScheduleDialogOpen(true);
+                                }}><Pencil className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteSchedule(v.id)}><Trash2 className="h-4 w-4" /></Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
