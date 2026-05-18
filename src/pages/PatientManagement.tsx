@@ -98,14 +98,16 @@ export default function PatientManagement() {
     window_minus: number;
     window_plus: number;
     payment_amount: number;
-    site_ids: string[];
+    is_paid: boolean;
+    site_overrides: SiteOverrideForm[];
   }>({
     visit_name: "",
     target_day: 0,
     window_minus: 0,
     window_plus: 0,
     payment_amount: 0,
-    site_ids: [] // Can be empty for global study schedule
+    is_paid: true,
+    site_overrides: [],
   });
 
   const [visitDialogOpen, setVisitDialogOpen] = useState(false);
