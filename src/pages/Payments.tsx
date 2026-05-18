@@ -490,7 +490,7 @@ export default function Payments() {
     // Load patients from the new Patient Management module (oldest first)
     const { data: patientsBase } = await supabase
       .from("patients")
-      .select("id, patient_code, site_id, status, enrollment_date, created_at")
+      .select("id, patient_code, site_id, status, enrollment_date, exit_date, created_at")
       .eq("project_id", selectedProject)
       .order("created_at", { ascending: true });
     setPatientsFull((patientsBase || []).map(p => ({
