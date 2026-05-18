@@ -810,22 +810,24 @@ export default function PatientManagement() {
                                     computedStatus = 'Lost Visit';
                                     statusColor = 'bg-slate-500 text-white';
                                     Icon = X;
-                                  } else if (p.enrollment_date) {
-                                    const enrollmentDate = new Date(p.enrollment_date);
-                                    const targetDate = addDays(enrollmentDate, pv.target_day);
-                                    const windowStart = addDays(targetDate, -pv.window_minus);
-                                    const windowEnd = addDays(targetDate, pv.window_plus);
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
+                                  } else {
+                                    const anchor = getAnchorDate(p);
+                                    if (anchor) {
+                                      const targetDate = addDays(new Date(anchor), pv.target_day);
+                                      const windowStart = addDays(targetDate, -pv.window_minus);
+                                      const windowEnd = addDays(targetDate, pv.window_plus);
+                                      const today = new Date();
+                                      today.setHours(0, 0, 0, 0);
 
-                                    if (today > windowEnd) {
-                                      computedStatus = 'Overdue';
-                                      statusColor = 'bg-red-500 text-white';
-                                      Icon = AlertTriangle;
-                                    } else if (today >= windowStart && today <= windowEnd) {
-                                      computedStatus = 'Window';
-                                      statusColor = 'bg-amber-500 text-white';
-                                      Icon = Clock;
+                                      if (today > windowEnd) {
+                                        computedStatus = 'Overdue';
+                                        statusColor = 'bg-red-500 text-white';
+                                        Icon = AlertTriangle;
+                                      } else if (today >= windowStart && today <= windowEnd) {
+                                        computedStatus = 'Window';
+                                        statusColor = 'bg-amber-500 text-white';
+                                        Icon = Clock;
+                                      }
                                     }
                                   }
 
