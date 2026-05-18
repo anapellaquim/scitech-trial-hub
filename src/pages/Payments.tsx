@@ -1709,7 +1709,7 @@ export default function Payments() {
                                     <TableCell>
                                       {payment.paid_at ? (
                                         <span className="text-sm text-green-600">
-                                          {format(parseLocalDate(payment.paid_at), "dd/MM/yyyy", { locale: ptBR })}
+                                          {formatInBrasilia(payment.paid_at, "dd/MM/yyyy")}
                                         </span>
                                       ) : (
                                         <span className="text-muted-foreground">-</span>
@@ -2087,7 +2087,7 @@ export default function Payments() {
                                     <TableCell>
                                       {payment.paid_at ? (
                                         <span className="text-sm text-green-600">
-                                          {format(parseLocalDate(payment.paid_at), "dd/MM/yyyy", { locale: ptBR })}
+                                          {formatInBrasilia(payment.paid_at, "dd/MM/yyyy")}
                                         </span>
                                       ) : (
                                         <span className="text-muted-foreground">-</span>

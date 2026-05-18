@@ -200,7 +200,7 @@ const AdminAudit = () => {
     doc.text(`Total de registros: ${totalCount}`, 14, 36);
 
     const tableData = auditEntries.map(entry => [
-      format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm"),
+      formatInBrasilia(entry.created_at, "dd/MM/yyyy HH:mm"),
       moduleConfig[entry.module]?.label || entry.module,
       actionConfig[entry.action]?.label || entry.action,
       entry.entity_type,
@@ -222,7 +222,7 @@ const AdminAudit = () => {
 
   const exportToExcel = () => {
     const data = auditEntries.map(entry => ({
-      "Data/Hora": format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm:ss"),
+      "Data/Hora": formatInBrasilia(entry.created_at, "dd/MM/yyyy HH:mm:ss"),
       "Módulo": moduleConfig[entry.module]?.label || entry.module,
       "Ação": actionConfig[entry.action]?.label || entry.action,
       "Tipo de Entidade": entry.entity_type,
@@ -516,7 +516,7 @@ const AdminAudit = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-sm">
-                            {format(parseLocalDate(entry.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
+                            {formatInBrasilia(entry.created_at, "dd/MM/yyyy HH:mm:ss")}
                           </TableCell>
                           <TableCell>{getModuleBadge(entry.module)}</TableCell>
                           <TableCell>{getActionBadge(entry.action)}</TableCell>

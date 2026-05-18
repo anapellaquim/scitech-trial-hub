@@ -1,4 +1,4 @@
-import { parseLocalDate, formatDateOnly, todayDateOnly } from "@/lib/dateUtils";
+import { parseLocalDate, formatDateOnly, todayDateOnly, formatInBrasilia } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -155,9 +155,7 @@ const VersionHistoryDialog = ({
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {format(parseLocalDate(version.created_at), "dd MMM yyyy 'às' HH:mm", {
-                              locale: ptBR,
-                            })}
+                            {formatInBrasilia(version.created_at, "dd MMM yyyy 'às' HH:mm")}
                           </div>
                           {version.created_by && profiles[version.created_by] && (
                             <div className="flex items-center gap-1">

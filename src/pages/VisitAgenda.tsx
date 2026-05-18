@@ -15,7 +15,7 @@ import KpiCards from "@/components/shared/KpiCards";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfYear, endOfYear, addYears, subYears, eachMonthOfInterval, isSameMonth } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 import NewVisitDialog from "@/components/visits/NewVisitDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -625,7 +625,7 @@ export default function VisitAgenda() {
               <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-4 space-y-4 md:space-y-0">
                 <div className="flex flex-col md:flex-row items-center gap-4">
                   <CardTitle className="text-lg min-w-[150px]">
-                    {timeRange === "month" && format(currentDate, "MMMM yyyy", { locale: enUS })}
+                    {timeRange === "month" && format(currentDate, "MMMM yyyy", { locale: ptBR })}
                     {timeRange === "semester" && `${format(currentDate, "yyyy")} - ${currentDate.getMonth() < 6 ? '1st Semester' : '2nd Semester'}`}
                     {timeRange === "year" && format(currentDate, "yyyy")}
                   </CardTitle>
@@ -687,7 +687,7 @@ export default function VisitAgenda() {
                             <div key={month.toISOString()} className="space-y-4">
                               <h3 className="text-base font-bold text-foreground px-1 capitalize flex items-center gap-2">
                                 <CalendarIcon className="h-4 w-4 text-primary" />
-                                {format(month, "MMMM yyyy", { locale: enUS })}
+                                {format(month, "MMMM yyyy", { locale: ptBR })}
                               </h3>
                               <div className="grid grid-cols-7 gap-px bg-muted/30 border rounded-xl overflow-hidden shadow-sm">
                                 {["D", "S", "T", "Q", "Q", "S", "S"].map((day) => (
@@ -808,8 +808,8 @@ export default function VisitAgenda() {
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          {format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: enUS })}
-                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM/yyyy", { locale: enUS })}`}
+                          {format(parseLocalDate(visit.scheduled_date), "dd/MM/yyyy", { locale: ptBR })}
+                          {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM/yyyy", { locale: ptBR })}`}
                         </span>
                         {visit.scheduled_time && (
                           <>
@@ -861,8 +861,8 @@ export default function VisitAgenda() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        {format(parseLocalDate(visit.scheduled_date), "MM/dd", { locale: enUS })}
-                        {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "MM/dd", { locale: enUS })}`}
+                        {format(parseLocalDate(visit.scheduled_date), "dd/MM", { locale: ptBR })}
+                        {visit.scheduled_date_end && ` - ${format(parseLocalDate(visit.scheduled_date_end), "dd/MM", { locale: ptBR })}`}
                       </p>
                       {visit.scheduled_time && (
                         <p className="text-xs text-muted-foreground">{visit.scheduled_time.slice(0, 5)}</p>

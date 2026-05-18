@@ -27,7 +27,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { format, addDays, differenceInDays, isAfter, isBefore, startOfToday, subDays, isWithinInterval } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 
 interface Project {
   id: string;
@@ -69,9 +69,9 @@ interface UpcomingItem {
 
 type PeriodPreset = "7d" | "30d" | "90d" | "custom";
 
-const locale = enUS;
+const locale = ptBR;
 const dateFormat = "dd/MM/yyyy";
-const shortDateFormat = "MM/dd";
+const shortDateFormat = "dd/MM";
 
 const Dashboard = () => {
   const navigate = useNavigate();

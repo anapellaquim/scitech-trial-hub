@@ -19,7 +19,7 @@ import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportD
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import RiskIndicatorsTab from "@/components/risks/RiskIndicatorsTab";
 import { format } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 
 interface Risk {
   id: string;
@@ -461,7 +461,7 @@ export default function RiskManagement() {
                           <TableCell><Badge className={statusColors[r.status] || ""}>{STATUSES.find(s => s.value === r.status)?.label || r.status}</Badge></TableCell>
                           <TableCell className="text-xs">{r.responsible || "-"}</TableCell>
                           <TableCell className={overdue ? "text-red-600 font-medium" : ""}>
-                            {r.next_review_date ? format(parseLocalDate(r.next_review_date), "dd/MM/yyyy", { locale: enUS }) : "-"}
+                            {r.next_review_date ? format(parseLocalDate(r.next_review_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
