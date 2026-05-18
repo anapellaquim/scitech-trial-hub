@@ -69,9 +69,9 @@ interface UpcomingItem {
 
 type PeriodPreset = "7d" | "30d" | "90d" | "custom";
 
-const locale = enUS;
+const locale = ptBR;
 const dateFormat = "dd/MM/yyyy";
-const shortDateFormat = "MM/dd";
+const shortDateFormat = "dd/MM";
 
 const Dashboard = () => {
   const navigate = useNavigate();
