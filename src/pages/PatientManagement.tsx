@@ -259,9 +259,18 @@ export default function PatientManagement() {
 
   const deletePatient = async (id: string) => {
     if (!confirm("Are you sure? All related visits will be deleted.")) return;
-    const { error } = await supabase.from("patients").delete().eq("id", id);
-    if (error) toast.error("Error deleting patient");
-    else loadProjectData();
+    const { error, count } = await supabase
+      .from("patients")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) {
+      toast.error("Error deleting participant: " + error.message);
+    } else if (!count) {
+      toast.error("Participant could not be deleted (no permission or not found)");
+    } else {
+      toast.success("Participant deleted");
+      loadProjectData();
+    }
   };
 
   const deleteSchedule = async (id: string) => {
