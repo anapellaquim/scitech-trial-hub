@@ -283,6 +283,18 @@ export default function PatientManagement() {
     }
   };
 
+  // Returns the protocol visits that apply to a given patient:
+  // global schedules (site_id = null) + schedules specific to the patient's site.
+  const getVisitsForPatient = (p: Patient): ProtocolVisit[] =>
+    protocolVisits.filter(pv => pv.site_id === null || pv.site_id === p.site_id);
+
+  const visitAppliesToPatient = (p: Patient, pv: ProtocolVisit): boolean =>
+    pv.site_id === null || pv.site_id === p.site_id;
+
+  // Sum of expected payment for all applicable visits of a patient.
+  const totalExpectedForPatient = (p: Patient): number =>
+    getVisitsForPatient(p).reduce((sum, pv) => sum + (Number(pv.payment_amount) || 0), 0);
+
   const computeVisitStatus = (p: Patient, pv: ProtocolVisit): string => {
     const visit = patientVisits.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
     if (visit?.status === 'Completed' || visit?.status === 'Complete') return 'Completed';
@@ -303,7 +315,7 @@ export default function PatientManagement() {
     const matchesSearch = !term || p.patient_code.toLowerCase().includes(term) || p.site?.code.toLowerCase().includes(term);
     const matchesSite = filterSite === "all" || p.site_id === filterSite;
     const matchesStatus = filterPatientStatus === "all" || p.status === filterPatientStatus;
-    const matchesVisitStatus = filterVisitStatus === "all" || protocolVisits.some(pv => computeVisitStatus(p, pv) === filterVisitStatus);
+    const matchesVisitStatus = filterVisitStatus === "all" || getVisitsForPatient(p).some(pv => computeVisitStatus(p, pv) === filterVisitStatus);
     return matchesSearch && matchesSite && matchesStatus && matchesVisitStatus;
   });
 
