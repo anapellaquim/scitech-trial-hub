@@ -1042,6 +1042,7 @@ export default function PatientManagement() {
             <div className="grid gap-2">
               <Label>Enrollment Date</Label>
               <Input type="date" value={patientForm.enrollment_date} onChange={e => setPatientForm({...patientForm, enrollment_date: e.target.value})} />
+            </div>
             <div className="grid gap-2">
               <Label>Randomization Group</Label>
               <Select
