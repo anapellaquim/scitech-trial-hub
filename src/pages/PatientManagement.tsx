@@ -102,6 +102,7 @@ export default function PatientManagement() {
     status: "Screening" as PatientStatus,
     enrollment_date: "",
     randomization_group: "" as RandomizationGroup | "",
+    exit_date: "",
     notes: ""
   });
 
