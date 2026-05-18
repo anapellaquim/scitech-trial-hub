@@ -202,43 +202,62 @@ export default function PatientManagement() {
   };
 
   const handleSaveSchedule = async () => {
-    // If multiple sites are selected, we save one record for each.
-    // If none are selected, it's global (site_id = null).
-    const siteIdsToSave = (scheduleForm as any).site_ids.length > 0 ? (scheduleForm as any).site_ids : [null];
-    
-    const updates = siteIdsToSave.map((siteId: string | null) => ({
+    if (!scheduleForm.visit_name.trim()) {
+      toast.error("Visit name is required");
+      return;
+    }
+
+    // Save the GLOBAL definition row (site_id = null). This is what applies to ALL patients.
+    let globalId: string | null = editingSchedule?.id ?? null;
+    const globalPayload = {
       project_id: selectedProject,
-      site_id: siteId,
+      site_id: null as string | null,
       visit_name: scheduleForm.visit_name,
       target_day: scheduleForm.target_day,
       window_minus: scheduleForm.window_minus,
       window_plus: scheduleForm.window_plus,
-      payment_amount: scheduleForm.payment_amount
-    }));
+      payment_amount: scheduleForm.payment_amount,
+      is_paid: scheduleForm.is_paid,
+    };
 
-    let error;
-    if (editingSchedule) {
-      const { error: err } = await supabase.from("protocol_visit_schedules").update({
+    if (globalId) {
+      const { error } = await supabase.from("protocol_visit_schedules").update(globalPayload).eq("id", globalId);
+      if (error) { toast.error("Error saving visit: " + error.message); return; }
+    } else {
+      const { data, error } = await supabase.from("protocol_visit_schedules").insert(globalPayload).select("id").single();
+      if (error || !data) { toast.error("Error saving visit: " + (error?.message || "")); return; }
+      globalId = data.id;
+    }
+
+    // Sync per-site overrides: delete all existing site-specific rows for this (project, visit_name) then re-insert enabled ones.
+    await supabase
+      .from("protocol_visit_schedules")
+      .delete()
+      .eq("project_id", selectedProject)
+      .eq("visit_name", scheduleForm.visit_name)
+      .not("site_id", "is", null);
+
+    const overrideRows = scheduleForm.site_overrides
+      .filter(o => o.enabled)
+      .map(o => ({
+        project_id: selectedProject,
+        site_id: o.site_id,
         visit_name: scheduleForm.visit_name,
         target_day: scheduleForm.target_day,
         window_minus: scheduleForm.window_minus,
         window_plus: scheduleForm.window_plus,
-        payment_amount: scheduleForm.payment_amount,
-        site_id: updates[0].site_id
-      }).eq("id", editingSchedule.id);
-      error = err;
-    } else {
-      const { error: err } = await supabase.from("protocol_visit_schedules").insert(updates);
-      error = err;
+        payment_amount: o.payment_amount,
+        is_paid: o.is_paid,
+      }));
+
+    if (overrideRows.length > 0) {
+      const { error } = await supabase.from("protocol_visit_schedules").insert(overrideRows);
+      if (error) { toast.error("Error saving site overrides: " + error.message); return; }
     }
 
-    if (error) {
-      toast.error("Error saving schedule");
-    } else {
-      toast.success("Schedule updated");
-      setScheduleDialogOpen(false);
-      loadProjectData();
-    }
+    toast.success("Visit configuration saved");
+    setScheduleDialogOpen(false);
+    loadProjectData();
   };
 
   const handleSaveVisit = async () => {
