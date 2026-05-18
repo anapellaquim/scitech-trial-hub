@@ -633,7 +633,7 @@ export default function PatientManagement() {
             </Select>
             <Button onClick={() => {
               setEditingPatient(null);
-              setPatientForm({ patient_code: "", site_id: sites[0]?.id || "", status: "Screening", enrollment_date: "", notes: "" });
+              setPatientForm({ patient_code: "", site_id: sites[0]?.id || "", status: "Screening", enrollment_date: "", randomization_group: "", notes: "" });
               setPatientDialogOpen(true);
             }} disabled={!selectedProject}>
               <Plus className="h-4 w-4 mr-2" />
