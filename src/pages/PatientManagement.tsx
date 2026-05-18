@@ -853,11 +853,15 @@ export default function PatientManagement() {
                                             {formatInBrasilia(visit.actual_date, "dd/MM/yyyy")}
                                           </span>
                                         ) : null}
-                                        {p.enrollment_date && (
-                                         <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
-                                           Window: {format(addDays(new Date(p.enrollment_date), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(new Date(p.enrollment_date), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
-                                         </span>
-                                       )}
+                                        {(() => {
+                                          const anchor = getAnchorDate(p);
+                                          if (!anchor) return null;
+                                          return (
+                                            <span className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
+                                              Window: {format(addDays(new Date(anchor), pv.target_day - pv.window_minus), "dd/MM/yyyy")} – {format(addDays(new Date(anchor), pv.target_day + pv.window_plus), "dd/MM/yyyy")}
+                                            </span>
+                                          );
+                                        })()}
                                       </div>
                                     </TableCell>
                                   );
