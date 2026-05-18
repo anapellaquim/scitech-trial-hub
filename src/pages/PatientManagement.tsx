@@ -197,6 +197,7 @@ export default function PatientManagement() {
                patientForm.status === 'Early exit' ? 'Early Exit' : patientForm.status) as any,
       enrollment_date: patientForm.enrollment_date || null,
       randomization_group: patientForm.randomization_group || null,
+      exit_date: patientForm.status === 'Early exit' ? (patientForm.exit_date || null) : null,
       notes: patientForm.notes
     } as any;
 
