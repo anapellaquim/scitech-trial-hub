@@ -1,3 +1,4 @@
+import { parseLocalDate } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { formatInBrasilia, todayDateOnly } from "@/lib/dateUtils";
 import { useSearchParams, Link } from "react-router-dom";
