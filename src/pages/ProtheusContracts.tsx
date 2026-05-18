@@ -44,13 +44,14 @@ export default function ProtheusContracts() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState("");
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("protheus_contracts")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
     if (error) toast.error(error.message);
     else setRows((data as Contract[]) || []);
     setLoading(false);
@@ -139,12 +140,26 @@ export default function ProtheusContracts() {
           <CardHeader>
             <CardTitle>Contracts</CardTitle>
           </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            ) : rows.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No contracts yet.</p>
-            ) : (
+          <CardContent className="space-y-4">
+            <Input
+              placeholder="Search by supplier, contract number, description or product..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-md"
+            />
+            {(() => {
+              const term = search.trim().toLowerCase();
+              const filtered = term
+                ? rows.filter((r) =>
+                    [r.supplier, r.contract_number, r.description, r.product]
+                      .some((v) => (v ?? "").toString().toLowerCase().includes(term))
+                  )
+                : rows;
+              return loading ? (
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              ) : filtered.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No contracts found.</p>
+              ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -161,7 +176,7 @@ export default function ProtheusContracts() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r) => (
+                  {filtered.map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="font-medium">{r.contract_number}</TableCell>
                       <TableCell>{r.product || "-"}</TableCell>
@@ -190,7 +205,8 @@ export default function ProtheusContracts() {
                   ))}
                 </TableBody>
               </Table>
-            )}
+              );
+            })()}
           </CardContent>
         </Card>
 
