@@ -29,6 +29,13 @@ import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 import { parseLocalDate, todayDateOnly, formatDateOnly , formatInBrasilia } from "@/lib/dateUtils";
 
 
+const VISIT_ORDER = ["procedure", "1 month", "3 month", "6 month", "12 month", "18 month", "24 month"];
+const visitOrderIndex = (name: string): number => {
+  const n = (name || "").toLowerCase();
+  const i = VISIT_ORDER.findIndex(k => n.includes(k));
+  return i === -1 ? 999 : i;
+};
+
 interface Project {
   id: string;
   title: string;
@@ -460,7 +467,7 @@ export default function Payments() {
     // Load protocol visit schedules from Patient Management module
     const { data: protocolSchedulesData } = await supabase
       .from("protocol_visit_schedules")
-      .select("id, visit_name, target_day, payment_amount, site_id, window_minus, window_plus")
+      .select("id, visit_name, target_day, payment_amount, site_id, window_minus, window_plus, is_paid, project_id")
       .eq("project_id", selectedProject)
       .order("target_day");
 
@@ -480,11 +487,12 @@ export default function Payments() {
       .order("code");
     setSitesFull(centers || []);
 
-    // Load patients from the new Patient Management module
+    // Load patients from the new Patient Management module (oldest first)
     const { data: patientsBase } = await supabase
       .from("patients")
-      .select("id, patient_code, site_id, status, enrollment_date")
-      .eq("project_id", selectedProject);
+      .select("id, patient_code, site_id, status, enrollment_date, created_at")
+      .eq("project_id", selectedProject)
+      .order("created_at", { ascending: true });
     setPatientsFull((patientsBase || []).map(p => ({
       ...p,
       site: centers?.find(c => c.id === p.site_id) || null,
@@ -1807,8 +1815,41 @@ export default function Payments() {
                     </div>
                     {(() => {
                       const term = participantSearch.toLowerCase();
-                      const visitsForPatient = (p: any) =>
-                        protocolSchedules.filter(ps => !ps.site_id || ps.site_id === p.site_id);
+
+                      // Global visit definitions only (site_id = null), ordered: procedure, 1, 3, 6, 12, 18, 24
+                      const orderedVisitDefs = [...protocolSchedules]
+                        .filter(ps => ps.site_id === null)
+                        .sort((a, b) => {
+                          const ia = visitOrderIndex(a.visit_name);
+                          const ib = visitOrderIndex(b.visit_name);
+                          if (ia !== ib) return ia - ib;
+                          return (a.target_day || 0) - (b.target_day || 0);
+                        });
+
+                      // Effective payment for a patient on a visit definition, applying per-site override.
+                      const paymentForPatient = (p: any, pv: any): { amount: number; is_paid: boolean } => {
+                        const override = protocolSchedules.find(o =>
+                          o.site_id && o.site_id === p.site_id &&
+                          o.visit_name === pv.visit_name &&
+                          o.project_id === pv.project_id
+                        );
+                        const source = override ?? pv;
+                        return {
+                          amount: source.is_paid ? Number(source.payment_amount) || 0 : 0,
+                          is_paid: !!source.is_paid,
+                        };
+                      };
+
+                      // Anchor date: actual procedure date if recorded, else enrollment_date
+                      const getAnchorDate = (p: any): string | null => {
+                        const procDef = orderedVisitDefs.find(pv => visitOrderIndex(pv.visit_name) === 0);
+                        if (procDef) {
+                          const pv = patientVisitsRaw.find(v => v.patient_id === p.id && v.protocol_visit_id === procDef.id);
+                          if (pv?.actual_date) return pv.actual_date;
+                        }
+                        return p.enrollment_date || null;
+                      };
+
                       const filtered = patientsFull.filter(p => {
                         const matchesSearch = !term ||
                           p.patient_code.toLowerCase().includes(term) ||
@@ -1816,14 +1857,18 @@ export default function Payments() {
                         const matchesSite = participantFilterSite === "all" || p.site_id === participantFilterSite;
                         let matchesPayment = true;
                         if (participantFilterPayment !== "all") {
-                          const completedVisits = visitsForPatient(p)
-                            .map(pv => patientVisitsRaw.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id))
-                            .filter(v => v && (v.status === "Completed" || v.status === "Complete"));
-                          const paidCount = completedVisits.filter(v => (v!.payment_status || "").toLowerCase() === "paid").length;
-                          const pendingCount = completedVisits.length - paidCount;
+                          const completedVisits = orderedVisitDefs
+                            .map(pv => {
+                              const v = patientVisitsRaw.find(x => x.patient_id === p.id && x.protocol_visit_id === pv.id);
+                              return v && (v.status === "Completed" || v.status === "Complete") ? { v, pv } : null;
+                            })
+                            .filter(Boolean) as { v: any; pv: any }[];
+                          const payableCompleted = completedVisits.filter(({ pv }) => paymentForPatient(p, pv).is_paid);
+                          const paidCount = payableCompleted.filter(({ v }) => (v.payment_status || "").toLowerCase() === "paid").length;
+                          const pendingCount = payableCompleted.length - paidCount;
                           if (participantFilterPayment === "pending") matchesPayment = pendingCount > 0;
                           else if (participantFilterPayment === "paid") matchesPayment = paidCount > 0;
-                          else if (participantFilterPayment === "all_paid") matchesPayment = completedVisits.length > 0 && pendingCount === 0;
+                          else if (participantFilterPayment === "all_paid") matchesPayment = payableCompleted.length > 0 && pendingCount === 0;
                           else if (participantFilterPayment === "none") matchesPayment = completedVisits.length === 0;
                         }
                         return matchesSearch && matchesSite && matchesPayment;
@@ -1837,7 +1882,7 @@ export default function Payments() {
                                 <TableHead className="min-w-[120px]">Patient Code</TableHead>
                                 <TableHead className="min-w-[160px]">Site</TableHead>
                                 <TableHead className="min-w-[120px]">Status</TableHead>
-                                {protocolSchedules.map(pv => (
+                                {orderedVisitDefs.map(pv => (
                                   <TableHead key={pv.id} className="text-center min-w-[170px]">
                                     {pv.visit_name}
                                   </TableHead>
@@ -1847,7 +1892,7 @@ export default function Payments() {
                             <TableBody>
                               {filtered.length === 0 ? (
                                 <TableRow>
-                                  <TableCell colSpan={protocolSchedules.length + 3} className="text-center py-10 text-muted-foreground">
+                                  <TableCell colSpan={orderedVisitDefs.length + 3} className="text-center py-10 text-muted-foreground">
                                     Nenhum paciente encontrado.
                                   </TableCell>
                                 </TableRow>
@@ -1856,30 +1901,29 @@ export default function Payments() {
                                   <TableCell className="font-bold">{p.patient_code}</TableCell>
                                   <TableCell>{p.site?.code} {p.site?.name ? `- ${p.site.name}` : ""}</TableCell>
                                   <TableCell><Badge variant="outline">{p.status}</Badge></TableCell>
-                                  {protocolSchedules.map(pv => {
-                                    const applicable = visitsForPatient(p).some(x => x.id === pv.id);
-                                    if (!applicable) {
-                                      return <TableCell key={pv.id} className="text-center text-muted-foreground text-xs">—</TableCell>;
-                                    }
+                                  {orderedVisitDefs.map(pv => {
                                     const visit = patientVisitsRaw.find(v => v.patient_id === p.id && v.protocol_visit_id === pv.id);
                                     const status = visit?.status || 'Scheduled';
                                     const isCompleted = status === 'Completed' || status === 'Complete';
                                     const isLost = status === 'Lost Visit';
                                     const isPaid = (visit?.payment_status || '').toLowerCase() === 'paid';
+                                    const pay = paymentForPatient(p, pv);
 
                                     let statusColor = 'bg-slate-100 text-slate-800';
                                     let Icon: any = null;
                                     let display = status;
                                     if (isCompleted) { statusColor = 'bg-green-500 text-white'; Icon = CheckCircle2; display = 'Completed'; }
                                     else if (isLost) { statusColor = 'bg-slate-500 text-white'; Icon = X; display = 'Lost Visit'; }
-                                    else if (p.enrollment_date) {
-                                      const enroll = new Date(p.enrollment_date);
-                                      const target = addDays(enroll, pv.target_day);
-                                      const wStart = addDays(target, -(pv.window_minus || 0));
-                                      const wEnd = addDays(target, pv.window_plus || 0);
-                                      const today = new Date(); today.setHours(0,0,0,0);
-                                      if (today > wEnd) { display = 'Overdue'; statusColor = 'bg-red-500 text-white'; Icon = AlertTriangle; }
-                                      else if (today >= wStart && today <= wEnd) { display = 'Window'; statusColor = 'bg-amber-500 text-white'; Icon = Clock; }
+                                    else {
+                                      const anchor = getAnchorDate(p);
+                                      if (anchor) {
+                                        const target = addDays(new Date(anchor), pv.target_day);
+                                        const wStart = addDays(target, -(pv.window_minus || 0));
+                                        const wEnd = addDays(target, pv.window_plus || 0);
+                                        const today = new Date(); today.setHours(0,0,0,0);
+                                        if (today > wEnd) { display = 'Overdue'; statusColor = 'bg-red-500 text-white'; Icon = AlertTriangle; }
+                                        else if (today >= wStart && today <= wEnd) { display = 'Window'; statusColor = 'bg-amber-500 text-white'; Icon = Clock; }
+                                      }
                                     }
 
                                     return (
@@ -1889,10 +1933,14 @@ export default function Payments() {
                                             {Icon && <Icon className="h-3 w-3" />}
                                             {display}
                                           </Badge>
-                                          <span className="text-[11px] font-mono">
-                                            {formatCurrency(Number(pv.payment_amount) || 0)}
-                                          </span>
-                                          {isCompleted && visit ? (
+                                          {pay.is_paid ? (
+                                            <span className="text-[11px] font-mono">
+                                              {formatCurrency(pay.amount)}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[10px] text-muted-foreground italic">Não pago neste centro</span>
+                                          )}
+                                          {isCompleted && visit && pay.is_paid ? (
                                             <label className="flex items-center gap-1 text-[10px] cursor-pointer mt-0.5">
                                               <Checkbox
                                                 checked={isPaid}
