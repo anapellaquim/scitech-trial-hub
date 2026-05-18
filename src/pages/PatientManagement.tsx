@@ -154,7 +154,7 @@ export default function PatientManagement() {
     try {
       const [sitesRes, patientsRes, protocolRes, visitsRes] = await Promise.all([
         supabase.from("research_centers").select("id, code, name").eq("project_id", selectedProject),
-        supabase.from("patients").select("*, site:research_centers(code, name)").eq("project_id", selectedProject),
+        supabase.from("patients").select("*, site:research_centers(code, name)").eq("project_id", selectedProject).order("created_at", { ascending: true }),
         supabase.from("protocol_visit_schedules").select("*").eq("project_id", selectedProject).order("target_day"),
         supabase.from("patient_visits").select("*, protocol_visit:protocol_visit_schedules(*)").order("actual_date")
       ]);
