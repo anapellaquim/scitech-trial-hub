@@ -812,7 +812,11 @@ export default function PatientManagement() {
                                   let statusColor = 'bg-slate-100 text-slate-800';
                                   let Icon = null;
 
-                                  if (visit?.status === 'Completed' || visit?.status === 'Complete') {
+                                  if (p.status === 'Screen failure') {
+                                    computedStatus = 'Screen Failure';
+                                    statusColor = 'bg-red-500 text-white';
+                                    Icon = X;
+                                  } else if (visit?.status === 'Completed' || visit?.status === 'Complete') {
                                     computedStatus = 'Completed';
                                     statusColor = 'bg-green-500 text-white';
                                     Icon = CheckCircle2;
