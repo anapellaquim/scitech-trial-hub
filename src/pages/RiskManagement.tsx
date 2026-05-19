@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, Grid3X3, Upload, AlertTriangle, ArrowUpCircle } from "lucide-react";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
-import RiskIndicatorsTab from "@/components/risks/RiskIndicatorsTab";
+
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -388,7 +388,6 @@ export default function RiskManagement() {
         <TabsList className="mb-4">
           <TabsTrigger value="list">Risk Register</TabsTrigger>
           <TabsTrigger value="matrix">Risk Matrix 5×5</TabsTrigger>
-          <TabsTrigger value="indicators">KPIs / KRIs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list">
@@ -534,10 +533,6 @@ export default function RiskManagement() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="indicators">
-          {selectedProject && <RiskIndicatorsTab projectId={selectedProject} />}
         </TabsContent>
       </Tabs>
 
