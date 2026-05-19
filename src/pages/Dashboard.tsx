@@ -286,17 +286,87 @@ const Dashboard = () => {
       });
       upcoming.sort((a, b) => parseLocalDate(a.dueDate).getTime() - parseLocalDate(b.dueDate).getTime());
 
+      // ====== Cross-module KPIs ======
+      const regSubs = (regSubsRes.data || []) as any[];
+      let regReports = (regReportsRes.data || []) as any[];
+      if (pid) regReports = regReports.filter(r => r.submission?.project_id === pid);
+      let payments = (paymentsRes.data || []) as any[];
+      const budget = (budgetRes.data || []) as any[];
+      const risks = (risksRes.data || []) as any[];
+      const ccs = (ccRes.data || []) as any[];
+      const steering = (steeringRes.data || []) as any[];
+      const ips = (ipRes.data || []) as any[];
+      const trainings = (trainingsRes.data || []) as any[];
+      const quals = (qualRes.data || []) as any[];
+      let notifs = (notifRes.data || []) as any[];
+      if (pid) notifs = notifs.filter(n => n.project_id === pid);
+      const phases = (phasesRes.data || []) as any[];
+
+      const regOpenSubmissions = regSubs.filter(s => s.status !== "approved" && s.status !== "completed").length;
+      const regUpcoming30d = regSubs.filter(s => s.planned_date && !s.submission_date && isAfter(parseLocalDate(s.planned_date), today) && isBefore(parseLocalDate(s.planned_date), in30Days)).length;
+      const regReportsOverdue = regReports.filter(r => r.due_date && !r.submitted_date && isBefore(parseLocalDate(r.due_date), today)).length;
+
+      const budgetTotal = budget.reduce((sum, b) => sum + Number(b.total_value || 0), 0);
+      const paidAmount = payments.filter(p => p.status === "paid" || p.paid_at).reduce((s, p) => s + Number(p.amount || 0), 0);
+      const pendingPayments = payments.filter(p => p.status !== "paid" && !p.paid_at).length;
+      const overduePayments = payments.filter(p => p.status !== "paid" && !p.paid_at && p.payment_date && isBefore(parseLocalDate(p.payment_date), today)).length;
+
+      const highRisks = risks.filter(r => r.status !== "closed" && r.status !== "mitigated" && Number(r.risk_score || 0) >= 15).length;
+      const openChangeControls = ccs.filter(c => c.status !== "closed" && c.status !== "implemented").length;
+      const pendingSteeringDecisions = steering.filter(d => d.status !== "completed" && d.status !== "closed").length;
+      const ipLotsExpiring60d = ips.filter(i => i.expiration_date && isAfter(parseLocalDate(i.expiration_date), today) && isBefore(parseLocalDate(i.expiration_date), addDays(today, 60))).length;
+
+      const qualificationsPending = quals.filter(q => q.qualification_status && q.qualification_status !== "qualified" && q.qualification_status !== "approved").length;
+      const trainingsOverdue = trainings.filter(t => t.status !== "completed" && t.due_date && isBefore(parseLocalDate(t.due_date), today)).length;
+      const trainingsNext30d = trainings.filter(t => t.status !== "completed" && t.due_date && isAfter(parseLocalDate(t.due_date), today) && isBefore(parseLocalDate(t.due_date), in30Days)).length;
+
+      const unreadCriticalNotifications = notifs.filter(n => !n.dismissed && !n.is_read && n.severity === "critical").length;
+
+      // ====== Per-project health ======
+      const allProjects = (projectsRes.data || []) as any[];
+      const scopedProjects = pid ? allProjects.filter(p => p.id === pid) : allProjects.filter(p => p.status === "active").slice(0, 8);
+      const health: ProjectHealth[] = scopedProjects.map(p => {
+        const pTasks = tasks.filter((t: any) => t.project_id === p.id);
+        const pVisits = visits.filter((v: any) => v.project_id === p.id);
+        const pFindings = findings.filter((f: any) => f.visit?.project_id === p.id);
+        const pPayments = payments.filter(pay => pay.project_id === p.id);
+        const pSubs = regSubs.filter(s => s.project_id === p.id);
+        const pRisks = risks.filter(r => r.project_id === p.id);
+        const pPhases = phases.filter(ph => ph.project_id === p.id);
+        const od = pTasks.filter((t: any) => t.status !== "completed" && t.due_date && isBefore(parseLocalDate(t.due_date), today)).length;
+        const ov = pVisits.filter((v: any) => v.status !== "completed" && v.status !== "cancelled" && isBefore(parseLocalDate(v.scheduled_date), today)).length;
+        const cf = pFindings.filter((f: any) => f.status === "open" && f.severity === "critical").length;
+        const op = pPayments.filter(pay => pay.status !== "paid" && !pay.paid_at && pay.payment_date && isBefore(parseLocalDate(pay.payment_date), today)).length;
+        const os = pSubs.filter(s => s.planned_date && !s.submission_date && isBefore(parseLocalDate(s.planned_date), today)).length;
+        const hr = pRisks.filter(r => r.status !== "closed" && r.status !== "mitigated" && Number(r.risk_score || 0) >= 15).length;
+        const sc = pPhases.length > 0 ? Math.round((pPhases.filter(ph => ph.status === "completed").length / pPhases.length) * 100) : 0;
+        let healthColor: "green" | "yellow" | "red" = "green";
+        if (cf > 0 || op > 0 || os > 0) healthColor = "red";
+        else if (od > 0 || hr > 0 || ov > 0) healthColor = "yellow";
+        return {
+          id: p.id, title: p.title, protocol: p.protocol_number, status: p.status,
+          overdueTasks: od, overdueVisits: ov, criticalFindings: cf, overduePayments: op,
+          overdueSubmissions: os, highRisks: hr, scheduleCompletion: sc, health: healthColor,
+        };
+      });
+      setProjectHealth(health);
+
       setStats({
         totalProjects: projectsData.length, activeProjects: projectsData.filter(s => s.status === "active").length,
         totalTasks: tasksInRange.length, overdueTasks: overdueTasks.length,
         tasksNext7Days: tasksNext7Days.length, tasksNext30Days: tasksNext30Days.length,
         totalVisits: visitsInRange.length, overdueVisits: overdueVisits.length,
         visitsNext7Days: visitsNext7Days.length, visitsNext30Days: visitsNext30Days.length,
-        completedVisits: (patientVisitsRes.data || []).filter(v => v.status === "Completed").length, 
+        completedVisits: (patientVisitsRes.data || []).filter(v => v.status === "Completed").length,
         openFindings: openFindings.length, criticalFindings: criticalFindings.length,
         totalPatients: patientsData.length,
         randomizedPatients: patientsData.filter(p => p.status === 'Randomized').length,
         findingsAging, siteChecklistCompletion,
+        regOpenSubmissions, regUpcoming30d, regReportsOverdue,
+        budgetTotal, paidAmount, pendingPayments, overduePayments,
+        highRisks, openChangeControls, pendingSteeringDecisions, ipLotsExpiring60d,
+        qualificationsPending, trainingsOverdue, trainingsNext30d,
+        unreadCriticalNotifications,
       });
       setUpcomingItems(upcoming.slice(0, 8));
     } catch (error) {
