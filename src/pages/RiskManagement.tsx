@@ -534,10 +534,6 @@ export default function RiskManagement() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="indicators">
-          {selectedProject && <RiskIndicatorsTab projectId={selectedProject} />}
-        </TabsContent>
       </Tabs>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
