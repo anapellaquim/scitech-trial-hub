@@ -524,7 +524,157 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            )}
+        )}
+
+        {/* Project Health Score */}
+        {projectHealth.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" />
+                Study Health
+              </CardTitle>
+              <CardDescription>
+                {selectedProject !== "all" ? "Health snapshot for the selected study" : "Top active studies — color reflects open issues"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                {projectHealth.map(p => {
+                  const color = p.health === "red" ? "border-destructive/60 bg-destructive/5" : p.health === "yellow" ? "border-warning/60 bg-warning/5" : "border-success/60 bg-success/5";
+                  const dot = p.health === "red" ? "bg-destructive" : p.health === "yellow" ? "bg-warning" : "bg-success";
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => { setSelectedProject(p.id); }}
+                      className={cn("text-left rounded-lg border-2 p-3 transition-smooth hover:shadow-elevated", color)}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{p.protocol || p.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{p.title}</p>
+                        </div>
+                        <span className={cn("h-3 w-3 rounded-full shrink-0 mt-1", dot)} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Schedule</span>
+                          <span className="font-medium">{p.scheduleCompletion}%</span>
+                        </div>
+                        <Progress value={p.scheduleCompletion} className="h-1.5" />
+                        <div className="grid grid-cols-3 gap-1 text-[11px] pt-1">
+                          <div className="text-center">
+                            <p className={cn("font-bold", p.overdueTasks > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overdueTasks}</p>
+                            <p className="text-muted-foreground">Tasks</p>
+                          </div>
+                          <div className="text-center">
+                            <p className={cn("font-bold", p.criticalFindings > 0 ? "text-destructive" : "text-muted-foreground")}>{p.criticalFindings}</p>
+                            <p className="text-muted-foreground">Crit.</p>
+                          </div>
+                          <div className="text-center">
+                            <p className={cn("font-bold", p.overduePayments > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overduePayments}</p>
+                            <p className="text-muted-foreground">Pay</p>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* KPI Groups by Area */}
+        <div className="grid gap-4 lg:grid-cols-4 mb-6">
+          {/* Regulatory */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/regulatory")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" /> Regulatory
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Open submissions</span><span className="font-bold">{stats.regOpenSubmissions}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Due in 30d</span><span className="font-bold text-warning">{stats.regUpcoming30d}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Reports overdue</span><span className={cn("font-bold", stats.regReportsOverdue > 0 ? "text-destructive" : "")}>{stats.regReportsOverdue}</span></div>
+            </CardContent>
+          </Card>
+
+          {/* Financial */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/payments")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-primary" /> Financial
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Budget total</span><span className="font-bold">{stats.budgetTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Paid</span><span className="font-bold text-success">{stats.paidAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Pending / Overdue</span><span className="font-bold">{stats.pendingPayments} / <span className={stats.overduePayments > 0 ? "text-destructive" : ""}>{stats.overduePayments}</span></span></div>
+            </CardContent>
+          </Card>
+
+          {/* Risk & Quality */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/risk-management")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-primary" /> Risk & Quality
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">High risks</span><span className={cn("font-bold", stats.highRisks > 0 ? "text-warning" : "")}>{stats.highRisks}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Open change controls</span><span className="font-bold">{stats.openChangeControls}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Steering pending</span><span className="font-bold">{stats.pendingSteeringDecisions}</span></div>
+            </CardContent>
+          </Card>
+
+          {/* Operations */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/trainings")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <GraduationCap className="h-4 w-4 text-primary" /> Operations
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Trainings overdue</span><span className={cn("font-bold", stats.trainingsOverdue > 0 ? "text-destructive" : "")}>{stats.trainingsOverdue}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Trainings in 30d</span><span className="font-bold">{stats.trainingsNext30d}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Qualifications pending</span><span className="font-bold">{stats.qualificationsPending}</span></div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Secondary KPI row */}
+        <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/investigational-products")}>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="p-3 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-bold">{stats.ipLotsExpiring60d}</p>
+                <p className="text-xs text-muted-foreground">IP lots expiring in 60d</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/communications")}>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="p-3 rounded-lg bg-primary/10"><Bell className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-bold">{stats.unreadCriticalNotifications}</p>
+                <p className="text-xs text-muted-foreground">Critical unread notifications</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/steering-decisions")}>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="p-3 rounded-lg bg-primary/10"><Gavel className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-bold">{stats.pendingSteeringDecisions}</p>
+                <p className="text-xs text-muted-foreground">Pending steering decisions</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
             {stats.criticalFindings > 0 && (
               <Card className="border-destructive/50 bg-destructive/5">
                 <CardContent className="flex items-center gap-4 p-4">
