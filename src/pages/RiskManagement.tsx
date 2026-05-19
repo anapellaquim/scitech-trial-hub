@@ -388,7 +388,6 @@ export default function RiskManagement() {
         <TabsList className="mb-4">
           <TabsTrigger value="list">Risk Register</TabsTrigger>
           <TabsTrigger value="matrix">Risk Matrix 5×5</TabsTrigger>
-          <TabsTrigger value="indicators">KPIs / KRIs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list">
