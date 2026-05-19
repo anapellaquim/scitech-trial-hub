@@ -498,7 +498,7 @@ const Dashboard = () => {
 
         {/* Alert Cards */}
         {(stats.overdueTasks > 0 || stats.overdueVisits > 0 || stats.criticalFindings > 0) && (
-          <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <div className="grid gap-4 md:grid-cols-3 mb-6 items-stretch">
             {stats.overdueTasks > 0 && (
               <Card className="border-destructive/50 bg-destructive/5">
                 <CardContent className="flex items-center gap-4 p-4">
@@ -586,9 +586,9 @@ const Dashboard = () => {
         )}
 
         {/* KPI Groups by Area */}
-        <div className="grid gap-4 lg:grid-cols-4 mb-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6 items-stretch">
           {/* Regulatory */}
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/regulatory")}>
+          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/regulatory")}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" /> Regulatory
@@ -602,7 +602,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Financial */}
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/payments")}>
+          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/payments")}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-primary" /> Financial
@@ -616,7 +616,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Risk & Quality */}
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/risks")}>
+          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/risks")}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4 text-primary" /> Risk & Quality
@@ -630,7 +630,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Operations */}
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/trainings")}>
+          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/trainings")}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <GraduationCap className="h-4 w-4 text-primary" /> Operations
@@ -646,7 +646,7 @@ const Dashboard = () => {
 
         {/* Secondary KPI row */}
         <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/ip")}>
+          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/ip")}>
             <CardContent className="flex items-center gap-4 p-4">
               <div className="p-3 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
               <div>
@@ -655,7 +655,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/communications")}>
+          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/communications")}>
             <CardContent className="flex items-center gap-4 p-4">
               <div className="p-3 rounded-lg bg-primary/10"><Bell className="h-5 w-5 text-primary" /></div>
               <div>
@@ -664,7 +664,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/steering")}>
+          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/steering")}>
             <CardContent className="flex items-center gap-4 p-4">
               <div className="p-3 rounded-lg bg-primary/10"><Gavel className="h-5 w-5 text-primary" /></div>
               <div>
