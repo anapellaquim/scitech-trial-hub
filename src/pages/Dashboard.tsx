@@ -594,10 +594,10 @@ const Dashboard = () => {
                 <FileText className="h-4 w-4 text-primary" /> Regulatory
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1.5">
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Open submissions</span><span className="font-bold">{stats.regOpenSubmissions}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Due in 30d</span><span className="font-bold text-warning">{stats.regUpcoming30d}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Reports overdue</span><span className={cn("font-bold", stats.regReportsOverdue > 0 ? "text-destructive" : "")}>{stats.regReportsOverdue}</span></div>
+            <CardContent className="space-y-3">
+              <div><p className="text-xs text-muted-foreground">Open submissions</p><p className="text-xl font-bold">{stats.regOpenSubmissions}</p></div>
+              <div><p className="text-xs text-muted-foreground">Due in 30d</p><p className="text-xl font-bold text-warning">{stats.regUpcoming30d}</p></div>
+              <div><p className="text-xs text-muted-foreground">Reports overdue</p><p className={cn("text-xl font-bold", stats.regReportsOverdue > 0 ? "text-destructive" : "")}>{stats.regReportsOverdue}</p></div>
             </CardContent>
           </Card>
 
@@ -608,10 +608,13 @@ const Dashboard = () => {
                 <DollarSign className="h-4 w-4 text-primary" /> Financial
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1.5">
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Budget total</span><span className="font-bold">{stats.budgetTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Paid</span><span className="font-bold text-success">{stats.paidAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Pending / Overdue</span><span className="font-bold">{stats.pendingPayments} / <span className={stats.overduePayments > 0 ? "text-destructive" : ""}>{stats.overduePayments}</span></span></div>
+            <CardContent className="space-y-3">
+              <div><p className="text-xs text-muted-foreground">Budget total</p><p className="text-xl font-bold break-words">{stats.budgetTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</p></div>
+              <div><p className="text-xs text-muted-foreground">Paid</p><p className="text-xl font-bold text-success break-words">{stats.paidAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</p></div>
+              <div>
+                <p className="text-xs text-muted-foreground">Pending / Overdue</p>
+                <p className="text-xl font-bold">{stats.pendingPayments} / <span className={stats.overduePayments > 0 ? "text-destructive" : ""}>{stats.overduePayments}</span></p>
+              </div>
             </CardContent>
           </Card>
 
@@ -622,10 +625,10 @@ const Dashboard = () => {
                 <ShieldAlert className="h-4 w-4 text-primary" /> Risk & Quality
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1.5">
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">High risks</span><span className={cn("font-bold", stats.highRisks > 0 ? "text-warning" : "")}>{stats.highRisks}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Open change controls</span><span className="font-bold">{stats.openChangeControls}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Steering pending</span><span className="font-bold">{stats.pendingSteeringDecisions}</span></div>
+            <CardContent className="space-y-3">
+              <div><p className="text-xs text-muted-foreground">High risks</p><p className={cn("text-xl font-bold", stats.highRisks > 0 ? "text-warning" : "")}>{stats.highRisks}</p></div>
+              <div><p className="text-xs text-muted-foreground">Open change controls</p><p className="text-xl font-bold">{stats.openChangeControls}</p></div>
+              <div><p className="text-xs text-muted-foreground">Steering pending</p><p className="text-xl font-bold">{stats.pendingSteeringDecisions}</p></div>
             </CardContent>
           </Card>
 
@@ -636,10 +639,10 @@ const Dashboard = () => {
                 <GraduationCap className="h-4 w-4 text-primary" /> Operations
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-1.5">
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Trainings overdue</span><span className={cn("font-bold", stats.trainingsOverdue > 0 ? "text-destructive" : "")}>{stats.trainingsOverdue}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Trainings in 30d</span><span className="font-bold">{stats.trainingsNext30d}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Qualifications pending</span><span className="font-bold">{stats.qualificationsPending}</span></div>
+            <CardContent className="space-y-3">
+              <div><p className="text-xs text-muted-foreground">Trainings overdue</p><p className={cn("text-xl font-bold", stats.trainingsOverdue > 0 ? "text-destructive" : "")}>{stats.trainingsOverdue}</p></div>
+              <div><p className="text-xs text-muted-foreground">Trainings in 30d</p><p className="text-xl font-bold">{stats.trainingsNext30d}</p></div>
+              <div><p className="text-xs text-muted-foreground">Qualifications pending</p><p className="text-xl font-bold">{stats.qualificationsPending}</p></div>
             </CardContent>
           </Card>
         </div>
