@@ -648,7 +648,7 @@ export default function RiskManagement() {
         </DialogContent>
       </Dialog>
 
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="risks" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="risks" entityLabel="Risks" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }

@@ -403,7 +403,15 @@ export default function SteeringDecisions() {
         </DialogContent>
       </Dialog>
 
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="steering_decisions" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        tableName={activeTab === "decisions" ? "steering_decisions" : "steering_meetings"}
+        entityLabel={activeTab === "decisions" ? "Steering Decisions" : "Steering Meetings"}
+        projectId={selectedProject}
+        columns={importColumns}
+        onSuccess={() => { loadData(); loadMeetings(); }}
+      />
     </ModulePageLayout>
   );
 }

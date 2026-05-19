@@ -544,7 +544,7 @@ export default function Committees() {
         </DialogContent>
       </Dialog>
 
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="committees" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="committees" entityLabel="Committee Meetings" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }

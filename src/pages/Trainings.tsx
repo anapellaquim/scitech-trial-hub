@@ -459,7 +459,7 @@ export default function Trainings() {
           <DialogFooter><Button variant="outline" onClick={() => setRecordDialogOpen(false)}>Cancel</Button><Button onClick={handleSaveRecord}>{editingRecord ? "Update" : "Add"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="trainings" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="trainings" entityLabel="Trainings" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }
