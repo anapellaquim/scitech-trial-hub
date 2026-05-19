@@ -54,6 +54,41 @@ interface DashboardStats {
   randomizedPatients: number;
   findingsAging: { range: string; count: number }[];
   siteChecklistCompletion: { siteCode: string; siteName: string; completion: number; total: number; completed: number }[];
+  // Regulatory
+  regOpenSubmissions: number;
+  regUpcoming30d: number;
+  regReportsOverdue: number;
+  // Financial
+  budgetTotal: number;
+  paidAmount: number;
+  pendingPayments: number;
+  overduePayments: number;
+  // Risk & Quality
+  highRisks: number;
+  openChangeControls: number;
+  pendingSteeringDecisions: number;
+  ipLotsExpiring60d: number;
+  // Operations
+  qualificationsPending: number;
+  trainingsOverdue: number;
+  trainingsNext30d: number;
+  // Communications
+  unreadCriticalNotifications: number;
+}
+
+interface ProjectHealth {
+  id: string;
+  title: string;
+  protocol: string | null;
+  status: string;
+  overdueTasks: number;
+  overdueVisits: number;
+  criticalFindings: number;
+  overduePayments: number;
+  overdueSubmissions: number;
+  highRisks: number;
+  scheduleCompletion: number;
+  health: "green" | "yellow" | "red";
 }
 
 interface UpcomingItem {
