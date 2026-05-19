@@ -110,31 +110,31 @@ function excelDate(v: any): string | null {
 }
 
 const IP_IMPORT_COLUMNS: ColumnMapping[] = [
-  { excelHeader: "Code", dbColumn: "code", required: true },
-  { excelHeader: "Description", dbColumn: "description" },
-  { excelHeader: "Lot#", dbColumn: "lot_number" },
-  { excelHeader: "Expiration", dbColumn: "expiration_date", transform: excelDate },
-  { excelHeader: "Quantity", dbColumn: "quantity", transform: (v) => (v === "" || v == null ? null : Number(v)) },
-  { excelHeader: "Site", dbColumn: "site" },
+  { excelHeader: "Code", dbColumn: "code", required: true, example: "IP-001" },
+  { excelHeader: "Description", dbColumn: "description", example: "Tablet 50mg" },
+  { excelHeader: "Lot#", dbColumn: "lot_number", example: "LOT12345" },
+  { excelHeader: "Expiration", dbColumn: "expiration_date", type: "date", example: "31/12/2026" },
+  { excelHeader: "Quantity", dbColumn: "quantity", type: "integer", example: 100 },
+  { excelHeader: "Site", dbColumn: "site", example: "Site 01" },
   { excelHeader: "Invoice", dbColumn: "invoice" },
   { excelHeader: "Correction Invoice", dbColumn: "correction_invoice" },
-  { excelHeader: "Delivery date", dbColumn: "delivery_date", transform: excelDate },
+  { excelHeader: "Delivery date", dbColumn: "delivery_date", type: "date", example: "15/01/2025" },
   { excelHeader: "Usage", dbColumn: "usage" },
-  { excelHeader: "Usage date", dbColumn: "usage_date", transform: excelDate },
+  { excelHeader: "Usage date", dbColumn: "usage_date", type: "date" },
   { excelHeader: "Return", dbColumn: "return_info" },
   { excelHeader: "Note", dbColumn: "note" },
 ];
 
 const SUPPLY_IMPORT_COLUMNS: ColumnMapping[] = [
-  { excelHeader: "Operation", dbColumn: "operation", required: true },
-  { excelHeader: "Date", dbColumn: "date", transform: excelDate },
+  { excelHeader: "Operation", dbColumn: "operation", required: true, type: "enum", enumValues: ["receipt", "dispense", "return", "destroy", "adjust"], example: "receipt" },
+  { excelHeader: "Date", dbColumn: "date", type: "date", example: "15/01/2025" },
   { excelHeader: "Invoice", dbColumn: "invoice" },
   { excelHeader: "Description", dbColumn: "description" },
   { excelHeader: "Lot#", dbColumn: "lot_number" },
-  { excelHeader: "Expiration", dbColumn: "expiration_date", transform: excelDate },
-  { excelHeader: "Quantity", dbColumn: "quantity", transform: (v) => (v === "" || v == null ? null : Number(v)) },
+  { excelHeader: "Expiration", dbColumn: "expiration_date", type: "date" },
+  { excelHeader: "Quantity", dbColumn: "quantity", type: "integer", example: 10 },
   { excelHeader: "Site", dbColumn: "site" },
-  { excelHeader: "Value (R$)", dbColumn: "value", transform: (v) => (v === "" || v == null ? null : Number(v)) },
+  { excelHeader: "Value (R$)", dbColumn: "value", type: "number", example: 1250.5 },
   { excelHeader: "Note", dbColumn: "note" },
 ];
 
@@ -1059,6 +1059,7 @@ export default function InvestigationalProducts() {
           open={importOpen}
           onOpenChange={setImportOpen}
           tableName="investigational_products"
+          entityLabel="Investigational Products"
           columns={IP_IMPORT_COLUMNS}
           onSuccess={loadRecords}
         />
@@ -1066,6 +1067,7 @@ export default function InvestigationalProducts() {
           open={supplyImportOpen}
           onOpenChange={setSupplyImportOpen}
           tableName="ip_supply"
+          entityLabel="IP Supply"
           columns={SUPPLY_IMPORT_COLUMNS}
           onSuccess={loadRecords}
         />

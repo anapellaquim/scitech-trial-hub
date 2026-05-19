@@ -735,7 +735,7 @@ export default function VisitAgenda() {
                                           
                                           return (
                                             <div 
-                                              key={visit.id}
+                                               key={`${visit.source ?? 'visit'}-${visit.id}`}
                                               onClick={() => openEdit(visit)}
                                               className={cn(
                                                 "text-[9px] leading-tight px-2 py-1 rounded-md cursor-pointer truncate font-semibold border shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]",
@@ -789,7 +789,7 @@ export default function VisitAgenda() {
               ) : (
                 filteredVisits.map((visit) => (
                   <Card
-                    key={visit.id}
+                    key={`${visit.source ?? 'visit'}-${visit.id}`}
                     className="cursor-pointer hover:shadow-elevated transition-smooth"
                     onClick={() => openEdit(visit)}
                   >
@@ -848,7 +848,7 @@ export default function VisitAgenda() {
               <div className="space-y-3">
                 {upcomingVisits.map((visit) => (
                   <div
-                    key={visit.id}
+                    key={`${visit.source ?? 'visit'}-${visit.id}`}
                     onClick={() => openEdit(visit)}
                     className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
                   >

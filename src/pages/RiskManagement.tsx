@@ -153,21 +153,21 @@ export default function RiskManagement() {
   const [form, setForm] = useState(blankForm);
 
   const importColumns: ColumnMapping[] = [
-    { excelHeader: "Risk Code", dbColumn: "risk_code", required: true },
-    { excelHeader: "Description", dbColumn: "description", required: true },
-    { excelHeader: "Category", dbColumn: "category", transform: (v: any) => v || "operational" },
-    { excelHeader: "Probability", dbColumn: "probability", required: true, transform: (v: any) => parseInt(v) || 3 },
-    { excelHeader: "Impact", dbColumn: "impact", required: true, transform: (v: any) => parseInt(v) || 3 },
+    { excelHeader: "Risk Code", dbColumn: "risk_code", required: true, example: "RSK-001" },
+    { excelHeader: "Description", dbColumn: "description", required: true, example: "Low enrollment rate" },
+    { excelHeader: "Category", dbColumn: "category", type: "enum", enumValues: ["operational", "regulatory", "safety", "data", "financial", "other"], example: "operational" },
+    { excelHeader: "Probability", dbColumn: "probability", required: true, type: "integer", example: 3 },
+    { excelHeader: "Impact", dbColumn: "impact", required: true, type: "integer", example: 4 },
     { excelHeader: "Potential Impact", dbColumn: "potential_impact" },
     { excelHeader: "Mitigation Plan", dbColumn: "mitigation_plan" },
     { excelHeader: "Contingency Plan", dbColumn: "contingency_plan" },
     { excelHeader: "Monitoring Method", dbColumn: "monitoring_method" },
-    { excelHeader: "Responsible", dbColumn: "responsible" },
-    { excelHeader: "Escalation Owner", dbColumn: "escalation_owner" },
-    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "open" },
-    { excelHeader: "Identified At", dbColumn: "identified_at", transform: (v: any) => v || todayDateOnly() },
-    { excelHeader: "Review Frequency", dbColumn: "review_frequency", transform: (v: any) => v || "quarterly" },
-    { excelHeader: "Next Review Date", dbColumn: "next_review_date" },
+    { excelHeader: "Responsible", dbColumn: "responsible", example: "Dr. Silva" },
+    { excelHeader: "Escalation Owner", dbColumn: "escalation_owner", example: "Sponsor PM" },
+    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: ["open", "mitigated", "materialized", "closed"], example: "open" },
+    { excelHeader: "Identified At", dbColumn: "identified_at", type: "date", example: "15/01/2025" },
+    { excelHeader: "Review Frequency", dbColumn: "review_frequency", type: "enum", enumValues: ["weekly", "monthly", "quarterly", "semiannual", "annual"], example: "quarterly" },
+    { excelHeader: "Next Review Date", dbColumn: "next_review_date", type: "date", example: "15/04/2025" },
   ];
 
   useEffect(() => {
@@ -648,7 +648,7 @@ export default function RiskManagement() {
         </DialogContent>
       </Dialog>
 
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="risks" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="risks" entityLabel="Risks" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }

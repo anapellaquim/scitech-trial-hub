@@ -90,17 +90,28 @@ export default function SteeringDecisions() {
     location: "", attendees: "", agenda: "", minutes: "", next_meeting_date: "", status: "scheduled",
   });
 
-  const importColumns: ColumnMapping[] = [
-    { excelHeader: "Decision Code", dbColumn: "decision_code", required: true },
-    { excelHeader: "Description", dbColumn: "description", required: true },
-    { excelHeader: "Meeting Origin", dbColumn: "meeting_origin" },
-    { excelHeader: "Decision Date", dbColumn: "decision_date", transform: (v: any) => v || todayDateOnly() },
-    { excelHeader: "Impacted Area", dbColumn: "impacted_area" },
-    { excelHeader: "Responsible", dbColumn: "responsible" },
-    { excelHeader: "Deadline", dbColumn: "deadline" },
-    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "pending" },
+  const decisionImportColumns: ColumnMapping[] = [
+    { excelHeader: "Decision Code", dbColumn: "decision_code", required: true, example: "DEC-001" },
+    { excelHeader: "Description", dbColumn: "description", required: true, example: "Approve protocol amendment v2" },
+    { excelHeader: "Meeting Origin", dbColumn: "meeting_origin", example: "Steering Q1/2025" },
+    { excelHeader: "Decision Date", dbColumn: "decision_date", type: "date", example: "15/01/2025" },
+    { excelHeader: "Impacted Area", dbColumn: "impacted_area", example: "Clinical Operations" },
+    { excelHeader: "Responsible", dbColumn: "responsible", example: "Dr. Silva" },
+    { excelHeader: "Deadline", dbColumn: "deadline", type: "date", example: "28/02/2025" },
+    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: ["pending", "in_progress", "implemented", "cancelled"], example: "pending" },
     { excelHeader: "Observations", dbColumn: "observations" },
   ];
+  const meetingImportColumns: ColumnMapping[] = [
+    { excelHeader: "Meeting Code", dbColumn: "meeting_code", required: true, example: "STC-2025-Q1" },
+    { excelHeader: "Meeting Date", dbColumn: "meeting_date", required: true, type: "date", example: "15/01/2025" },
+    { excelHeader: "Location", dbColumn: "location", example: "São Paulo / Remote" },
+    { excelHeader: "Attendees", dbColumn: "attendees", example: "PI, Sponsor, CRO" },
+    { excelHeader: "Agenda", dbColumn: "agenda" },
+    { excelHeader: "Minutes", dbColumn: "minutes" },
+    { excelHeader: "Next Meeting Date", dbColumn: "next_meeting_date", type: "date", example: "15/04/2025" },
+    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: ["scheduled", "completed", "cancelled"], example: "scheduled" },
+  ];
+  const importColumns = activeTab === "decisions" ? decisionImportColumns : meetingImportColumns;
 
   useEffect(() => { const check = async () => { const { data: { session } } = await supabase.auth.getSession(); if (!session) navigate("/auth"); }; check(); }, []);
   useEffect(() => { if (selectedProject) { setProjectId(selectedProject); loadData(); loadMeetings(); } }, [selectedProject]);
@@ -392,7 +403,15 @@ export default function SteeringDecisions() {
         </DialogContent>
       </Dialog>
 
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="steering_decisions" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        tableName={activeTab === "decisions" ? "steering_decisions" : "steering_meetings"}
+        entityLabel={activeTab === "decisions" ? "Steering Decisions" : "Steering Meetings"}
+        projectId={selectedProject}
+        columns={importColumns}
+        onSuccess={() => { loadData(); loadMeetings(); }}
+      />
     </ModulePageLayout>
   );
 }

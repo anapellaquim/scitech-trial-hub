@@ -129,16 +129,16 @@ export default function ChangeControl() {
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
 
   const importColumns: ColumnMapping[] = [
-    { excelHeader: "Change Code", dbColumn: "change_code", required: true },
-    { excelHeader: "Description", dbColumn: "description", required: true },
-    { excelHeader: "Type", dbColumn: "change_type", transform: (v: any) => v || "operational" },
-    { excelHeader: "Requester", dbColumn: "requester" },
+    { excelHeader: "Change Code", dbColumn: "change_code", required: true, example: "CC-001" },
+    { excelHeader: "Description", dbColumn: "description", required: true, example: "Update Investigator's Brochure" },
+    { excelHeader: "Type", dbColumn: "change_type", type: "enum", enumValues: ["protocol", "regulatory", "operational", "system", "other"], example: "operational" },
+    { excelHeader: "Requester", dbColumn: "requester", example: "Dr. Silva" },
     { excelHeader: "Change Reason", dbColumn: "change_reason" },
     { excelHeader: "Affected Documents/Processes", dbColumn: "affected_documents" },
-    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "open" },
-    { excelHeader: "Responsible", dbColumn: "responsible" },
-    { excelHeader: "Opened At", dbColumn: "opened_at", transform: (v: any) => v || todayDateOnly() },
-    { excelHeader: "Resolved At", dbColumn: "resolved_at" },
+    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: ["open", "in_progress", "approved", "rejected", "closed"], example: "open" },
+    { excelHeader: "Responsible", dbColumn: "responsible", example: "Quality Manager" },
+    { excelHeader: "Opened At", dbColumn: "opened_at", type: "date", example: "15/01/2025" },
+    { excelHeader: "Resolved At", dbColumn: "resolved_at", type: "date" },
   ];
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState(emptyForm);
@@ -606,7 +606,7 @@ export default function ChangeControl() {
           <DialogFooter><Button variant="outline" onClick={() => setApprovalDialogOpen(false)}>Cancel</Button><Button onClick={handleAddApproval}>Add</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="change_controls" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="change_controls" entityLabel="Change Controls" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
     </ModulePageLayout>
   );
 }
