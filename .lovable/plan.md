@@ -1,92 +1,110 @@
-## Goal
 
-Eliminar bugs reais e padronizar Import/Export do sistema, garantindo que **o template baixado, o arquivo exportado e a tabela visível na tela** representem o mesmo conjunto de colunas em cada painel.
+# Dashboard Executivo — Visão Geral do Sistema
 
----
+Hoje o Dashboard cobre apenas Estudos, Tarefas, Visitas, Findings e Pacientes. Os demais módulos (Regulatório, Pagamentos, Riscos, Qualificações, Treinamentos, Change Control, Comitês, Comunicações, IPs, PMCF, Steering, Site Monitoring) não têm presença, o que enfraquece o papel do Dashboard como cockpit do CTMS.
 
-## 1. Correções de bugs reais
+A proposta abaixo o transforma em uma central única, mantendo a barra de filtros atual (estudo + período) e o Health Score por estudo.
 
-- **VisitAgenda — chave duplicada no console**
-  Trocar `key={visit.id}` por `key={`${visit.source}-${visit.id}`}` nos loops dos modos calendário e lista (linhas ~738, 792, 851). A lista combina `study_visits` + `site_monitoring_visits` e ocasionalmente colide IDs.
+## Estrutura proposta da página
 
-- **RiskManagement — limpeza pós-remoção da aba KPIs/KRIs**
-  Conferir e remover qualquer referência residual a `RiskIndicatorsTab` / `indicators` no arquivo.
+```text
+[ Filtros: Estudo • Período • Limpar ]
 
----
+[ Linha Hero — Health Score por estudo ]
+  Cards com semáforo (verde/amarelo/vermelho) por projeto:
+  protocolo • status • % conclusão cronograma • # alertas críticos • próxima visita
 
-## 2. Upgrade do componente `BulkImportDialog`
+[ Alertas críticos ] (já existe — manter)
 
-Tornar o componente mais robusto e didático para o usuário final:
+[ KPIs principais — 4 colunas x 2 linhas, agrupados ]
+  Operação     | Regulatório | Financeiro  | Risco/Qualidade
+  -------------|-------------|-------------|----------------
+  Tarefas      | Submissões  | Orçamento   | Riscos altos
+  Visitas      | Pendências  | Pago/Previsto| Findings críticos
+  Pacientes    | Próx. prazo | Atrasados   | CAPAs abertos
+  Treinamentos | Reports due | Forecast    | Change controls
 
-- **Tipagem de coluna** estendida: `type?: "text" | "number" | "integer" | "date" | "boolean" | "enum"`, `enumValues?: string[]`, `example?: string`.
-- **Parsing automático**:
-  - `date` aceita `dd/MM/yyyy` (formato BR) e converte para `yyyy-MM-dd` (Postgres) usando `parseBrazilDate` de `@/lib/dateUtils`.
-  - `number`/`integer` faz `parseFloat`/`parseInt` com fallback para `null`.
-  - `boolean` aceita "Sim/Não", "Yes/No", "true/false", "1/0".
-  - `enum` valida contra `enumValues` e gera erro com lista permitida.
-- **Validação pré-importação** com contagem de erros por tipo e linha.
-- **Template enriquecido**:
-  - Linha 1: cabeçalhos.
-  - Linha 2: exemplo preenchido (`example` por coluna).
-  - Aba secundária "Instructions" com tipo esperado, obrigatório/opcional e valores válidos para enums.
-  - `sheetName` derivado do `tableName` (ex.: "Trainings" em vez de "Data").
-- **Botão "Download Template"** segue funcionando sem `templateData`/`templateSheets` (gera automaticamente a partir do `columns`).
-- API mantém compatibilidade retroativa: páginas atuais continuam funcionando enquanto migramos.
+[ Linha de gráficos ]
+  - Funil de pacientes (Screened → Randomized → Completed)
+  - Burndown de tarefas (planejadas vs concluídas no período)
+  - Aging de Findings (já existe)
+  - Conclusão de checklist por site (já existe)
 
----
+[ Próximas ações (14 dias) ]  [ Decisões Steering recentes ]
+  tarefas + visitas + submissões + pagamentos + reports
+```
 
-## 3. Upgrade do `ExcelExportButton`
+## KPIs por área (novos)
 
-- Aceitar `sheetName` opcional já existe; passar nomes específicos por página.
-- Garantir que o `data` chegue **na ordem das colunas da tabela visível** (não da ordem alfabética do objeto). Isso será resolvido reescrevendo cada `exportData` para usar objetos com chaves na ordem correta — JS preserva ordem de inserção.
+**Operacional**
+- Estudos ativos, em setup, encerrados
+- Sites ativos / total, sites com qualificação pendente
+- Pacientes: screened, randomizados, ativos, drop-out rate
+- Treinamentos vencidos / próximos 30 d
 
----
+**Regulatório**
+- Submissões abertas por status (Submitted / Approved / Pending)
+- Próximas datas regulatórias (≤ 30 d)
+- Reports periódicos em atraso
 
-## 4. Padronização página a página
+**Financeiro (Payments + Budget)**
+- Orçamento total vs realizado (% executado)
+- Pagamentos pendentes (R$ e quantidade)
+- Pagamentos atrasados
+- Previsão dos próximos 30/90 d
 
-Para cada página com Import e/ou Export, alinhar **template ↔ export ↔ tabela**. Campos calculados/derivados (score automático, contagens, status agregado, chave estrangeira não-editável) ficam **apenas** na tabela e no export, **nunca** no template de import.
+**Risco & Qualidade**
+- Riscos por nível (Low/Med/High/Critical) — usar score já existente
+- Findings abertos por severidade e aging (já existe)
+- Change Controls em andamento
+- Decisões de Steering Committee pendentes
+- IP: lotes vencendo ≤ 60 d
 
-### Páginas a ajustar
+**Comunicações**
+- Notificações não lidas críticas (do hook `useNotifications`)
+- Stakeholders com pendência de contato
 
-| Página | Ação |
-|---|---|
-| **Trainings** | Template e export reduzidos ao conjunto exibido (Title, Type, Required, Planned Date, Due Date, Status, Instructor, Duration). Description vira coluna opcional visível. |
-| **Committees** | Template ganha "Location"; export ganha "Attendees" como contagem. Página tem 3 abas (Meetings, Submissions, Cohorts) — cada uma com seu Import/Export próprio. |
-| **SteeringDecisions** | Hoje o template só cobre `decisions`. Adicionar segundo template para `meetings` e trocar dinamicamente com `activeTab`. |
-| **Qualifications** | Remover "Documents URL" e "Notes" do template (não exibidos) OU adicioná-los à tabela. Decisão: remover do template (manter tabela enxuta). |
-| **ChangeControl** | OK na tabela principal; garantir que `exportData` siga a ordem das colunas. |
-| **RiskManagement** | Template enxuto: manter só campos editáveis principais (Code, Description, Category, Probability, Impact, Responsible, Status, Identified At, Next Review). Demais (Mitigation, Contingency, Monitoring, Escalation) ficam em modo "avançado" — opcional na 2ª aba de template. |
-| **Regulatory** | Página tem submissions + reports — verificar se há dois Import/Export distintos; se não, adicionar. |
-| **Communications** | Hoje export único de notifications. Adicionar Export específico por aba (Plans / Stakeholders / Occurrences já possuem ExcelExportButton internos em `StakeholderList` e `CommunicationPlanList`; conferir consistência). |
-| **InvestigationalProducts** | Já tem 2 Import + 2 Export (products e supply). Conferir alinhamento de colunas em cada par. |
-| **PMCFSurvey, SiteMonitoring** | Só têm Export. Garantir que `exportData` reflita exatamente as colunas da tabela visível. |
+## Health Score do estudo
 
----
+Card no topo por projeto, com cor determinada por regra simples:
+- vermelho: ≥ 1 finding crítico aberto, ou ≥ 1 visita atrasada > 7 d, ou pagamento atrasado > 30 d
+- amarelo: tarefas atrasadas > 0, riscos altos abertos, ou submissão regulatória em atraso
+- verde: nenhum dos anteriores
 
-## 5. Critério de aceite
+Métricas exibidas: protocolo, % cronograma concluído, próxima visita, # alertas.
 
-- Console limpo na VisitAgenda (sem warning de keys).
-- Em cada página com Import: baixar template, preencher, importar — sem erros de tipo.
-- Em cada página com Export: o arquivo gerado tem as mesmas colunas (mesma ordem e mesmos nomes) que a tabela exibida na tela.
-- Mesma página com múltiplas abas/tabelas: cada aba expõe seu próprio par Import/Export quando aplicável.
+## Personalização leve
 
----
+- Manter filtro global (estudo + período).
+- Adicionar toggle "Minhas pendências" usando `auth.uid()` para filtrar por owner.
+- Cada card de KPI vira link clicável para o módulo correspondente, já filtrado pelo estudo selecionado.
 
 ## Detalhes técnicos
 
-- Sem mudanças de schema do banco — apenas frontend.
-- `BulkImportDialog` mantém a assinatura atual (props existentes continuam funcionando); novos props são opcionais.
-- `parseBrazilDate` (já em `src/lib/dateUtils`) será o único conversor de datas no import.
-- Não criar novos componentes globais além de helpers internos ao `BulkImportDialog`.
+- Reaproveitar `src/components/shared/KpiCards.tsx` para a grade de KPIs (já existe e segue o design system).
+- Reaproveitar `StatCard` para o hero de Health Score.
+- Adicionar queries em `loadDashboardData()`:
+  - `regulatory_submissions`, `regulatory_reports`
+  - `payments` (somar `amount`, comparar com `due_date` e `paid_at` usando `parseLocalDate`/`formatInBrasilia` conforme tipo do campo)
+  - `study_risks` (já tem score), `change_controls`, `committees`/`steering_decisions`
+  - `trainings`, `qualifications`, `investigational_product_lots`
+  - `notifications` (criticidade e dismissed)
+- Todas as queries devem respeitar o filtro de `selectedProject` (já implementado para tarefas/visitas/pacientes).
+- Datas: usar exclusivamente `src/lib/dateUtils` — `parseLocalDate` para date-only, `formatInBrasilia` para timestamptz, formato `dd/MM/yyyy`.
+- Performance: agrupar queries num único `Promise.all`; aplicar `count: 'exact', head: true` quando só precisar de contagem.
+- Roles: respeitar `usePermission` — esconder cards de módulos sem permissão de leitura.
+- Mobile: KPIs em 2 colunas; Health Score em coluna única; gráficos em `recharts` responsivos.
 
----
+## Critério de aceite
 
-## Entrega
+- Dashboard exibe pelo menos 1 KPI de cada módulo ativo do CTMS.
+- Health Score por estudo no topo com cor coerente com regras acima.
+- Cards de KPI navegam para o módulo correspondente com o estudo já filtrado.
+- Filtros existentes continuam funcionando para todos os novos blocos.
+- Sem regressões: alertas, aging de findings e checklist por site continuam exibidos.
 
-Por ser um conjunto grande de edições (10+ arquivos), entrego em **3 commits lógicos**:
+## Escopo opcional (fase 2)
 
-1. Bugs reais (VisitAgenda + RiskManagement residual).
-2. Upgrade do `BulkImportDialog` (com retrocompatibilidade) + ajuste do `ExcelExportButton`.
-3. Padronização página a página de Import/Export.
-
-Ao final, faço um checklist marcando cada página validada.
+- Salvar layout/cards favoritos por usuário (`user_dashboard_preferences`).
+- Exportar snapshot do dashboard em PDF.
+- Tendências (variação % vs período anterior) nos KPIs principais.

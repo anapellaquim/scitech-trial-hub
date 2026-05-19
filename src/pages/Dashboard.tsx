@@ -25,6 +25,16 @@ import {
   Filter,
   X,
   UserCheck,
+  FileText,
+  DollarSign,
+  ShieldAlert,
+  GitBranch,
+  Gavel,
+  Package,
+  GraduationCap,
+  Award,
+  Bell,
+  Activity,
 } from "lucide-react";
 import { format, addDays, differenceInDays, isAfter, isBefore, startOfToday, subDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -54,6 +64,41 @@ interface DashboardStats {
   randomizedPatients: number;
   findingsAging: { range: string; count: number }[];
   siteChecklistCompletion: { siteCode: string; siteName: string; completion: number; total: number; completed: number }[];
+  // Regulatory
+  regOpenSubmissions: number;
+  regUpcoming30d: number;
+  regReportsOverdue: number;
+  // Financial
+  budgetTotal: number;
+  paidAmount: number;
+  pendingPayments: number;
+  overduePayments: number;
+  // Risk & Quality
+  highRisks: number;
+  openChangeControls: number;
+  pendingSteeringDecisions: number;
+  ipLotsExpiring60d: number;
+  // Operations
+  qualificationsPending: number;
+  trainingsOverdue: number;
+  trainingsNext30d: number;
+  // Communications
+  unreadCriticalNotifications: number;
+}
+
+interface ProjectHealth {
+  id: string;
+  title: string;
+  protocol: string | null;
+  status: string;
+  overdueTasks: number;
+  overdueVisits: number;
+  criticalFindings: number;
+  overduePayments: number;
+  overdueSubmissions: number;
+  highRisks: number;
+  scheduleCompletion: number;
+  health: "green" | "yellow" | "red";
 }
 
 interface UpcomingItem {
@@ -92,7 +137,13 @@ const Dashboard = () => {
     visitsNext7Days: 0, visitsNext30Days: 0, completedVisits: 0,
     openFindings: 0, criticalFindings: 0, totalPatients: 0, randomizedPatients: 0,
     findingsAging: [], siteChecklistCompletion: [],
+    regOpenSubmissions: 0, regUpcoming30d: 0, regReportsOverdue: 0,
+    budgetTotal: 0, paidAmount: 0, pendingPayments: 0, overduePayments: 0,
+    highRisks: 0, openChangeControls: 0, pendingSteeringDecisions: 0, ipLotsExpiring60d: 0,
+    qualificationsPending: 0, trainingsOverdue: 0, trainingsNext30d: 0,
+    unreadCriticalNotifications: 0,
   });
+  const [projectHealth, setProjectHealth] = useState<ProjectHealth[]>([]);
   const [upcomingItems, setUpcomingItems] = useState<UpcomingItem[]>([]);
 
   useEffect(() => { checkAuth(); }, []);
@@ -150,10 +201,32 @@ const Dashboard = () => {
         patientsQuery = patientsQuery.eq("project_id", selectedProject);
       }
 
-      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes, patientVisitsRes] = await Promise.all([
-        supabase.from("projects").select("id, status"),
+      const pid = selectedProject !== "all" ? selectedProject : null;
+      const mk = <T,>(builder: () => any) => builder();
+      const regSubsQ = pid ? supabase.from("regulatory_submissions").select("id, project_id, status, planned_date, submission_date").eq("project_id", pid) : supabase.from("regulatory_submissions").select("id, project_id, status, planned_date, submission_date");
+      const paymentsQ = pid ? supabase.from("vendor_payments").select("id, project_id, amount, status, payment_date, paid_at").eq("project_id", pid) : supabase.from("vendor_payments").select("id, project_id, amount, status, payment_date, paid_at");
+      const budgetQ = pid ? supabase.from("project_budget_items").select("project_id, total_value").eq("project_id", pid) : supabase.from("project_budget_items").select("project_id, total_value");
+      const risksQ = pid ? supabase.from("risks").select("id, project_id, status, risk_score").eq("project_id", pid) : supabase.from("risks").select("id, project_id, status, risk_score");
+      const ccQ = pid ? supabase.from("change_controls").select("id, project_id, status").eq("project_id", pid) : supabase.from("change_controls").select("id, project_id, status");
+      const steeringQ = pid ? supabase.from("steering_decisions").select("id, project_id, status, deadline").eq("project_id", pid) : supabase.from("steering_decisions").select("id, project_id, status, deadline");
+      const ipQ = pid ? supabase.from("investigational_products").select("id, project_id, expiration_date").eq("project_id", pid) : supabase.from("investigational_products").select("id, project_id, expiration_date");
+      const trainingsQ = pid ? supabase.from("trainings").select("id, project_id, status, due_date").eq("project_id", pid) : supabase.from("trainings").select("id, project_id, status, due_date");
+      const qualQ = pid ? supabase.from("site_vendor_qualifications").select("id, project_id, qualification_status").eq("project_id", pid) : supabase.from("site_vendor_qualifications").select("id, project_id, qualification_status");
+      const phasesQ = pid ? supabase.from("project_phases").select("project_id, status").eq("project_id", pid) : supabase.from("project_phases").select("project_id, status");
+
+      const [
+        projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes, patientVisitsRes,
+        regSubsRes, regReportsRes, paymentsRes, budgetRes, risksRes, ccRes,
+        steeringRes, ipRes, trainingsRes, qualRes, notifRes, phasesRes,
+      ] = await Promise.all([
+        supabase.from("projects").select("id, title, protocol_number, status"),
         tasksQuery, visitsQuery, findingsQuery, checklistQuery, patientsQuery,
-        supabase.from("patient_visits").select("id, status")
+        supabase.from("patient_visits").select("id, status"),
+        regSubsQ,
+        supabase.from("regulatory_reports").select("id, status, due_date, submitted_date, submission_id, submission:regulatory_submissions(project_id)"),
+        paymentsQ, budgetQ, risksQ, ccQ, steeringQ, ipQ, trainingsQ, qualQ,
+        supabase.from("notifications").select("id, severity, is_read, dismissed, project_id"),
+        phasesQ,
       ]);
 
       let projectsData = projectsRes.data || [];
@@ -223,17 +296,87 @@ const Dashboard = () => {
       });
       upcoming.sort((a, b) => parseLocalDate(a.dueDate).getTime() - parseLocalDate(b.dueDate).getTime());
 
+      // ====== Cross-module KPIs ======
+      const regSubs = (regSubsRes.data || []) as any[];
+      let regReports = (regReportsRes.data || []) as any[];
+      if (pid) regReports = regReports.filter(r => r.submission?.project_id === pid);
+      let payments = (paymentsRes.data || []) as any[];
+      const budget = (budgetRes.data || []) as any[];
+      const risks = (risksRes.data || []) as any[];
+      const ccs = (ccRes.data || []) as any[];
+      const steering = (steeringRes.data || []) as any[];
+      const ips = (ipRes.data || []) as any[];
+      const trainings = (trainingsRes.data || []) as any[];
+      const quals = (qualRes.data || []) as any[];
+      let notifs = (notifRes.data || []) as any[];
+      if (pid) notifs = notifs.filter(n => n.project_id === pid);
+      const phases = (phasesRes.data || []) as any[];
+
+      const regOpenSubmissions = regSubs.filter(s => s.status !== "approved" && s.status !== "completed").length;
+      const regUpcoming30d = regSubs.filter(s => s.planned_date && !s.submission_date && isAfter(parseLocalDate(s.planned_date), today) && isBefore(parseLocalDate(s.planned_date), in30Days)).length;
+      const regReportsOverdue = regReports.filter(r => r.due_date && !r.submitted_date && isBefore(parseLocalDate(r.due_date), today)).length;
+
+      const budgetTotal = budget.reduce((sum, b) => sum + Number(b.total_value || 0), 0);
+      const paidAmount = payments.filter(p => p.status === "paid" || p.paid_at).reduce((s, p) => s + Number(p.amount || 0), 0);
+      const pendingPayments = payments.filter(p => p.status !== "paid" && !p.paid_at).length;
+      const overduePayments = payments.filter(p => p.status !== "paid" && !p.paid_at && p.payment_date && isBefore(parseLocalDate(p.payment_date), today)).length;
+
+      const highRisks = risks.filter(r => r.status !== "closed" && r.status !== "mitigated" && Number(r.risk_score || 0) >= 15).length;
+      const openChangeControls = ccs.filter(c => c.status !== "closed" && c.status !== "implemented").length;
+      const pendingSteeringDecisions = steering.filter(d => d.status !== "completed" && d.status !== "closed").length;
+      const ipLotsExpiring60d = ips.filter(i => i.expiration_date && isAfter(parseLocalDate(i.expiration_date), today) && isBefore(parseLocalDate(i.expiration_date), addDays(today, 60))).length;
+
+      const qualificationsPending = quals.filter(q => q.qualification_status && q.qualification_status !== "qualified" && q.qualification_status !== "approved").length;
+      const trainingsOverdue = trainings.filter(t => t.status !== "completed" && t.due_date && isBefore(parseLocalDate(t.due_date), today)).length;
+      const trainingsNext30d = trainings.filter(t => t.status !== "completed" && t.due_date && isAfter(parseLocalDate(t.due_date), today) && isBefore(parseLocalDate(t.due_date), in30Days)).length;
+
+      const unreadCriticalNotifications = notifs.filter(n => !n.dismissed && !n.is_read && n.severity === "critical").length;
+
+      // ====== Per-project health ======
+      const allProjects = (projectsRes.data || []) as any[];
+      const scopedProjects = pid ? allProjects.filter(p => p.id === pid) : allProjects.filter(p => p.status === "active").slice(0, 8);
+      const health: ProjectHealth[] = scopedProjects.map(p => {
+        const pTasks = tasks.filter((t: any) => t.project_id === p.id);
+        const pVisits = visits.filter((v: any) => v.project_id === p.id);
+        const pFindings = findings.filter((f: any) => f.visit?.project_id === p.id);
+        const pPayments = payments.filter(pay => pay.project_id === p.id);
+        const pSubs = regSubs.filter(s => s.project_id === p.id);
+        const pRisks = risks.filter(r => r.project_id === p.id);
+        const pPhases = phases.filter(ph => ph.project_id === p.id);
+        const od = pTasks.filter((t: any) => t.status !== "completed" && t.due_date && isBefore(parseLocalDate(t.due_date), today)).length;
+        const ov = pVisits.filter((v: any) => v.status !== "completed" && v.status !== "cancelled" && isBefore(parseLocalDate(v.scheduled_date), today)).length;
+        const cf = pFindings.filter((f: any) => f.status === "open" && f.severity === "critical").length;
+        const op = pPayments.filter(pay => pay.status !== "paid" && !pay.paid_at && pay.payment_date && isBefore(parseLocalDate(pay.payment_date), today)).length;
+        const os = pSubs.filter(s => s.planned_date && !s.submission_date && isBefore(parseLocalDate(s.planned_date), today)).length;
+        const hr = pRisks.filter(r => r.status !== "closed" && r.status !== "mitigated" && Number(r.risk_score || 0) >= 15).length;
+        const sc = pPhases.length > 0 ? Math.round((pPhases.filter(ph => ph.status === "completed").length / pPhases.length) * 100) : 0;
+        let healthColor: "green" | "yellow" | "red" = "green";
+        if (cf > 0 || op > 0 || os > 0) healthColor = "red";
+        else if (od > 0 || hr > 0 || ov > 0) healthColor = "yellow";
+        return {
+          id: p.id, title: p.title, protocol: p.protocol_number, status: p.status,
+          overdueTasks: od, overdueVisits: ov, criticalFindings: cf, overduePayments: op,
+          overdueSubmissions: os, highRisks: hr, scheduleCompletion: sc, health: healthColor,
+        };
+      });
+      setProjectHealth(health);
+
       setStats({
         totalProjects: projectsData.length, activeProjects: projectsData.filter(s => s.status === "active").length,
         totalTasks: tasksInRange.length, overdueTasks: overdueTasks.length,
         tasksNext7Days: tasksNext7Days.length, tasksNext30Days: tasksNext30Days.length,
         totalVisits: visitsInRange.length, overdueVisits: overdueVisits.length,
         visitsNext7Days: visitsNext7Days.length, visitsNext30Days: visitsNext30Days.length,
-        completedVisits: (patientVisitsRes.data || []).filter(v => v.status === "Completed").length, 
+        completedVisits: (patientVisitsRes.data || []).filter(v => v.status === "Completed").length,
         openFindings: openFindings.length, criticalFindings: criticalFindings.length,
         totalPatients: patientsData.length,
         randomizedPatients: patientsData.filter(p => p.status === 'Randomized').length,
         findingsAging, siteChecklistCompletion,
+        regOpenSubmissions, regUpcoming30d, regReportsOverdue,
+        budgetTotal, paidAmount, pendingPayments, overduePayments,
+        highRisks, openChangeControls, pendingSteeringDecisions, ipLotsExpiring60d,
+        qualificationsPending, trainingsOverdue, trainingsNext30d,
+        unreadCriticalNotifications,
       });
       setUpcomingItems(upcoming.slice(0, 8));
     } catch (error) {
@@ -381,7 +524,157 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            )}
+        )}
+
+        {/* Project Health Score */}
+        {projectHealth.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-primary" />
+                Study Health
+              </CardTitle>
+              <CardDescription>
+                {selectedProject !== "all" ? "Health snapshot for the selected study" : "Top active studies — color reflects open issues"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                {projectHealth.map(p => {
+                  const color = p.health === "red" ? "border-destructive/60 bg-destructive/5" : p.health === "yellow" ? "border-warning/60 bg-warning/5" : "border-success/60 bg-success/5";
+                  const dot = p.health === "red" ? "bg-destructive" : p.health === "yellow" ? "bg-warning" : "bg-success";
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => { setSelectedProject(p.id); }}
+                      className={cn("text-left rounded-lg border-2 p-3 transition-smooth hover:shadow-elevated", color)}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{p.protocol || p.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{p.title}</p>
+                        </div>
+                        <span className={cn("h-3 w-3 rounded-full shrink-0 mt-1", dot)} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Schedule</span>
+                          <span className="font-medium">{p.scheduleCompletion}%</span>
+                        </div>
+                        <Progress value={p.scheduleCompletion} className="h-1.5" />
+                        <div className="grid grid-cols-3 gap-1 text-[11px] pt-1">
+                          <div className="text-center">
+                            <p className={cn("font-bold", p.overdueTasks > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overdueTasks}</p>
+                            <p className="text-muted-foreground">Tasks</p>
+                          </div>
+                          <div className="text-center">
+                            <p className={cn("font-bold", p.criticalFindings > 0 ? "text-destructive" : "text-muted-foreground")}>{p.criticalFindings}</p>
+                            <p className="text-muted-foreground">Crit.</p>
+                          </div>
+                          <div className="text-center">
+                            <p className={cn("font-bold", p.overduePayments > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overduePayments}</p>
+                            <p className="text-muted-foreground">Pay</p>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* KPI Groups by Area */}
+        <div className="grid gap-4 lg:grid-cols-4 mb-6">
+          {/* Regulatory */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/regulatory")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" /> Regulatory
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Open submissions</span><span className="font-bold">{stats.regOpenSubmissions}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Due in 30d</span><span className="font-bold text-warning">{stats.regUpcoming30d}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Reports overdue</span><span className={cn("font-bold", stats.regReportsOverdue > 0 ? "text-destructive" : "")}>{stats.regReportsOverdue}</span></div>
+            </CardContent>
+          </Card>
+
+          {/* Financial */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/payments")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-primary" /> Financial
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Budget total</span><span className="font-bold">{stats.budgetTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Paid</span><span className="font-bold text-success">{stats.paidAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Pending / Overdue</span><span className="font-bold">{stats.pendingPayments} / <span className={stats.overduePayments > 0 ? "text-destructive" : ""}>{stats.overduePayments}</span></span></div>
+            </CardContent>
+          </Card>
+
+          {/* Risk & Quality */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/risks")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-primary" /> Risk & Quality
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">High risks</span><span className={cn("font-bold", stats.highRisks > 0 ? "text-warning" : "")}>{stats.highRisks}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Open change controls</span><span className="font-bold">{stats.openChangeControls}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Steering pending</span><span className="font-bold">{stats.pendingSteeringDecisions}</span></div>
+            </CardContent>
+          </Card>
+
+          {/* Operations */}
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/trainings")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <GraduationCap className="h-4 w-4 text-primary" /> Operations
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Trainings overdue</span><span className={cn("font-bold", stats.trainingsOverdue > 0 ? "text-destructive" : "")}>{stats.trainingsOverdue}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Trainings in 30d</span><span className="font-bold">{stats.trainingsNext30d}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Qualifications pending</span><span className="font-bold">{stats.qualificationsPending}</span></div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Secondary KPI row */}
+        <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/ip")}>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="p-3 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-bold">{stats.ipLotsExpiring60d}</p>
+                <p className="text-xs text-muted-foreground">IP lots expiring in 60d</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/communications")}>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="p-3 rounded-lg bg-primary/10"><Bell className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-bold">{stats.unreadCriticalNotifications}</p>
+                <p className="text-xs text-muted-foreground">Critical unread notifications</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/steering")}>
+            <CardContent className="flex items-center gap-4 p-4">
+              <div className="p-3 rounded-lg bg-primary/10"><Gavel className="h-5 w-5 text-primary" /></div>
+              <div>
+                <p className="text-2xl font-bold">{stats.pendingSteeringDecisions}</p>
+                <p className="text-xs text-muted-foreground">Pending steering decisions</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
             {stats.criticalFindings > 0 && (
               <Card className="border-destructive/50 bg-destructive/5">
                 <CardContent className="flex items-center gap-4 p-4">
