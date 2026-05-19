@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, Grid3X3, Upload, AlertTriangle, ArrowUpCircle } from "lucide-react";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
-import RiskIndicatorsTab from "@/components/risks/RiskIndicatorsTab";
+
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
