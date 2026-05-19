@@ -111,23 +111,23 @@ export default function Regulatory() {
   const [importType, setImportType] = useState<"submission" | "report">("submission");
 
   const submissionImportColumns: ColumnMapping[] = [
-    { excelHeader: "Type", dbColumn: "submission_type", required: true },
-    { excelHeader: "Status", dbColumn: "status", required: true },
-    { excelHeader: "Planned Date", dbColumn: "planned_date" },
-    { excelHeader: "Submission Date", dbColumn: "submission_date" },
-    { excelHeader: "Requirements", dbColumn: "has_requirements", transform: (v: any) => v?.toString().toLowerCase() === "yes" || v === true || v === 1 },
-    { excelHeader: "Requirement Deadline", dbColumn: "requirement_due_date" },
-    { excelHeader: "Requirement Submitted Date", dbColumn: "requirement_submitted_date" },
-    { excelHeader: "Approval Date", dbColumn: "approval_date" },
+    { excelHeader: "Type", dbColumn: "submission_type", required: true, example: "Initial" },
+    { excelHeader: "Status", dbColumn: "status", required: true, example: "submitted" },
+    { excelHeader: "Planned Date", dbColumn: "planned_date", type: "date", example: "15/01/2025" },
+    { excelHeader: "Submission Date", dbColumn: "submission_date", type: "date", example: "20/01/2025" },
+    { excelHeader: "Requirements", dbColumn: "has_requirements", type: "boolean", example: "No" },
+    { excelHeader: "Requirement Deadline", dbColumn: "requirement_due_date", type: "date" },
+    { excelHeader: "Requirement Submitted Date", dbColumn: "requirement_submitted_date", type: "date" },
+    { excelHeader: "Approval Date", dbColumn: "approval_date", type: "date" },
     { excelHeader: "Notes", dbColumn: "notes" },
   ];
 
   const reportImportColumns: ColumnMapping[] = [
-    { excelHeader: "Report Type", dbColumn: "report_type", required: true },
-    { excelHeader: "Status", dbColumn: "status", required: true },
-    { excelHeader: "Deadline", dbColumn: "due_date", required: true },
-    { excelHeader: "Submitted Date", dbColumn: "submitted_date" },
-    { excelHeader: "Approval Date", dbColumn: "approval_date" },
+    { excelHeader: "Report Type", dbColumn: "report_type", required: true, example: "DSUR" },
+    { excelHeader: "Status", dbColumn: "status", required: true, example: "submitted" },
+    { excelHeader: "Deadline", dbColumn: "due_date", required: true, type: "date", example: "31/03/2025" },
+    { excelHeader: "Submitted Date", dbColumn: "submitted_date", type: "date" },
+    { excelHeader: "Approval Date", dbColumn: "approval_date", type: "date" },
     { excelHeader: "Notes", dbColumn: "notes" },
   ];
 

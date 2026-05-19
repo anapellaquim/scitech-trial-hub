@@ -73,11 +73,11 @@ export default function Communications() {
   });
 
   const importColumns: ColumnMapping[] = [
-    { excelHeader: "Study ID", dbColumn: "project_id", required: true },
-    { excelHeader: "Title", dbColumn: "title", required: true },
-    { excelHeader: "Message", dbColumn: "message", required: true },
-    { excelHeader: "Severity", dbColumn: "severity", required: true },
-    { excelHeader: "Type", dbColumn: "type", required: true },
+    { excelHeader: "Study ID", dbColumn: "project_id", required: true, example: "uuid-of-project" },
+    { excelHeader: "Title", dbColumn: "title", required: true, example: "Visit scheduled" },
+    { excelHeader: "Message", dbColumn: "message", required: true, example: "Monitoring visit on 20/01/2025" },
+    { excelHeader: "Severity", dbColumn: "severity", required: true, type: "enum", enumValues: ["info", "warning", "critical"], example: "info" },
+    { excelHeader: "Type", dbColumn: "type", required: true, example: "visit" },
   ];
 
   const exportData = useMemo(() => notifications.map(n => ({
