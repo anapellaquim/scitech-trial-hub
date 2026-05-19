@@ -127,7 +127,13 @@ const Dashboard = () => {
     visitsNext7Days: 0, visitsNext30Days: 0, completedVisits: 0,
     openFindings: 0, criticalFindings: 0, totalPatients: 0, randomizedPatients: 0,
     findingsAging: [], siteChecklistCompletion: [],
+    regOpenSubmissions: 0, regUpcoming30d: 0, regReportsOverdue: 0,
+    budgetTotal: 0, paidAmount: 0, pendingPayments: 0, overduePayments: 0,
+    highRisks: 0, openChangeControls: 0, pendingSteeringDecisions: 0, ipLotsExpiring60d: 0,
+    qualificationsPending: 0, trainingsOverdue: 0, trainingsNext30d: 0,
+    unreadCriticalNotifications: 0,
   });
+  const [projectHealth, setProjectHealth] = useState<ProjectHealth[]>([]);
   const [upcomingItems, setUpcomingItems] = useState<UpcomingItem[]>([]);
 
   useEffect(() => { checkAuth(); }, []);
