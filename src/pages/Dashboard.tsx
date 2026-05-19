@@ -616,7 +616,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Risk & Quality */}
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/risk-management")}>
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/risks")}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <ShieldAlert className="h-4 w-4 text-primary" /> Risk & Quality
@@ -646,7 +646,7 @@ const Dashboard = () => {
 
         {/* Secondary KPI row */}
         <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/investigational-products")}>
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/ip")}>
             <CardContent className="flex items-center gap-4 p-4">
               <div className="p-3 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
               <div>
@@ -664,7 +664,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/steering-decisions")}>
+          <Card className="cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/steering")}>
             <CardContent className="flex items-center gap-4 p-4">
               <div className="p-3 rounded-lg bg-primary/10"><Gavel className="h-5 w-5 text-primary" /></div>
               <div>
