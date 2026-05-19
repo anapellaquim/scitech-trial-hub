@@ -88,12 +88,12 @@ export default function Committees() {
   const [typeForm, setTypeForm] = useState({ code: "", name: "", description: "", is_active: true });
 
   const importColumns: ColumnMapping[] = [
-    { excelHeader: "Committee Type", dbColumn: "committee_type", required: true, transform: (v: any) => v || "CEC" },
-    { excelHeader: "Meeting Number", dbColumn: "meeting_number", required: true, transform: (v: any) => parseInt(v) || 1 },
-    { excelHeader: "Meeting Date", dbColumn: "meeting_date", required: true },
+    { excelHeader: "Committee Type", dbColumn: "committee_type", required: true, example: "CEC" },
+    { excelHeader: "Meeting Number", dbColumn: "meeting_number", required: true, type: "integer", example: 1 },
+    { excelHeader: "Meeting Date", dbColumn: "meeting_date", required: true, type: "date", example: "15/01/2025" },
+    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: ["planned", "in_progress", "completed", "minutes_pending", "finalized", "cancelled"], example: "planned" },
     { excelHeader: "Agenda", dbColumn: "agenda" },
-    { excelHeader: "Status", dbColumn: "status", transform: (v: any) => v || "planned" },
-    { excelHeader: "Next Meeting Date", dbColumn: "next_meeting_date" },
+    { excelHeader: "Next Meeting Date", dbColumn: "next_meeting_date", type: "date", example: "15/04/2025" },
   ];
   const [typeFilter, setTypeFilter] = useState("all");
   const [form, setForm] = useState({ committee_type: "CEC", meeting_number: 1, meeting_date: "", agenda: "", status: "planned", next_meeting_date: "" });

@@ -74,16 +74,14 @@ export default function Qualifications() {
   const [importOpen, setImportOpen] = useState(false);
 
   const importColumns: ColumnMapping[] = [
-    { excelHeader: "Name", dbColumn: "name", required: true },
-    { excelHeader: "Vendor Type", dbColumn: "vendor_type", transform: (v: any) => v || "site" },
-    { excelHeader: "Qualification Status", dbColumn: "qualification_status", transform: (v: any) => v || "pending" },
-    { excelHeader: "Feasibility Date", dbColumn: "feasibility_date" },
-    { excelHeader: "Score", dbColumn: "score", transform: (v: any) => v ? parseFloat(v) : null },
-    { excelHeader: "Next Qualification Date", dbColumn: "next_qualification_date" },
-    { excelHeader: "Responsible", dbColumn: "responsible" },
-    { excelHeader: "Contract Status", dbColumn: "contract_status", transform: (v: any) => v || "negotiating" },
-    { excelHeader: "Documents URL", dbColumn: "documents_url" },
-    { excelHeader: "Notes", dbColumn: "notes" },
+    { excelHeader: "Name", dbColumn: "name", required: true, example: "Hospital Santa Marta" },
+    { excelHeader: "Vendor Type", dbColumn: "vendor_type", type: "enum", enumValues: ["site", "cro", "lab", "imaging", "other"], example: "site" },
+    { excelHeader: "Qualification Status", dbColumn: "qualification_status", type: "enum", enumValues: ["pending", "in_progress", "qualified", "disqualified"], example: "pending" },
+    { excelHeader: "Feasibility Date", dbColumn: "feasibility_date", type: "date", example: "15/01/2025" },
+    { excelHeader: "Score", dbColumn: "score", type: "number", example: 85 },
+    { excelHeader: "Next Qualification Date", dbColumn: "next_qualification_date", type: "date", example: "15/01/2026" },
+    { excelHeader: "Responsible", dbColumn: "responsible", example: "Dr. Silva" },
+    { excelHeader: "Contract Status", dbColumn: "contract_status", type: "enum", enumValues: ["negotiating", "signed", "expired", "terminated"], example: "negotiating" },
   ];
   const [typeFilter, setTypeFilter] = useState("all");
   const [form, setForm] = useState({

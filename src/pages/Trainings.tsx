@@ -94,16 +94,16 @@ export default function Trainings() {
   const [importOpen, setImportOpen] = useState(false);
 
   const importColumns: ColumnMapping[] = [
-    { excelHeader: "Title", dbColumn: "title", required: true },
+    { excelHeader: "Title", dbColumn: "title", required: true, example: "GCP Refresher 2025" },
+    { excelHeader: "Type", dbColumn: "training_type", type: "enum", enumValues: ["protocol", "gcp", "system", "safety", "other"], example: "protocol" },
+    { excelHeader: "Required", dbColumn: "is_required", type: "boolean", example: "Yes" },
+    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: ["planned", "in_progress", "completed", "cancelled"], example: "planned" },
+    { excelHeader: "Planned Date", dbColumn: "planned_date", type: "date", example: "15/01/2025" },
+    { excelHeader: "Due Date", dbColumn: "due_date", type: "date", example: "31/01/2025" },
+    { excelHeader: "Duration (h)", dbColumn: "duration_hours", type: "number", example: 2 },
+    { excelHeader: "Instructor", dbColumn: "instructor", example: "Dr. Silva" },
+    { excelHeader: "Delegate Role", dbColumn: "delegate_role", example: "Investigator" },
     { excelHeader: "Description", dbColumn: "description" },
-    { excelHeader: "Required", dbColumn: "is_required", transform: (v: any) => v === "Yes" || v === true || v === "true" },
-    { excelHeader: "Type", dbColumn: "training_type" },
-    { excelHeader: "Delegate Role", dbColumn: "delegate_role" },
-    { excelHeader: "Planned Date", dbColumn: "planned_date" },
-    { excelHeader: "Due Date", dbColumn: "due_date" },
-    { excelHeader: "Duration (h)", dbColumn: "duration_hours", transform: (v: any) => v ? Number(v) : null },
-    { excelHeader: "Instructor", dbColumn: "instructor" },
-    { excelHeader: "Status", dbColumn: "status" },
   ];
 
   const emptyForm = {
