@@ -191,10 +191,29 @@ const Dashboard = () => {
         patientsQuery = patientsQuery.eq("project_id", selectedProject);
       }
 
-      const [projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes, patientVisitsRes] = await Promise.all([
-        supabase.from("projects").select("id, status"),
+      const buildPid = <T extends { eq: (k: string, v: any) => T }>(q: T) =>
+        selectedProject !== "all" ? q.eq("project_id", selectedProject) : q;
+
+      const [
+        projectsRes, tasksRes, visitsRes, findingsRes, checklistRes, patientsRes, patientVisitsRes,
+        regSubsRes, regReportsRes, paymentsRes, budgetRes, risksRes, ccRes,
+        steeringRes, ipRes, trainingsRes, qualRes, notifRes, phasesRes,
+      ] = await Promise.all([
+        supabase.from("projects").select("id, title, protocol_number, status"),
         tasksQuery, visitsQuery, findingsQuery, checklistQuery, patientsQuery,
-        supabase.from("patient_visits").select("id, status")
+        supabase.from("patient_visits").select("id, status"),
+        buildPid(supabase.from("regulatory_submissions").select("id, project_id, status, planned_date, submission_date")),
+        supabase.from("regulatory_reports").select("id, status, due_date, submitted_date, submission_id, submission:regulatory_submissions(project_id)"),
+        buildPid(supabase.from("vendor_payments").select("id, project_id, amount, status, payment_date, paid_at")),
+        buildPid(supabase.from("project_budget_items").select("project_id, total_value")),
+        buildPid(supabase.from("risks").select("id, project_id, status, risk_score")),
+        buildPid(supabase.from("change_controls").select("id, project_id, status")),
+        buildPid(supabase.from("steering_decisions").select("id, project_id, status, deadline")),
+        buildPid(supabase.from("investigational_products").select("id, project_id, expiration_date")),
+        buildPid(supabase.from("trainings").select("id, project_id, status, due_date")),
+        buildPid(supabase.from("site_vendor_qualifications").select("id, project_id, qualification_status")),
+        supabase.from("notifications").select("id, severity, is_read, dismissed, project_id"),
+        buildPid(supabase.from("project_phases").select("project_id, status")),
       ]);
 
       let projectsData = projectsRes.data || [];
