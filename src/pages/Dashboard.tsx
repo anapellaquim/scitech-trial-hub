@@ -25,6 +25,16 @@ import {
   Filter,
   X,
   UserCheck,
+  FileText,
+  DollarSign,
+  ShieldAlert,
+  GitBranch,
+  Gavel,
+  Package,
+  GraduationCap,
+  Award,
+  Bell,
+  Activity,
 } from "lucide-react";
 import { format, addDays, differenceInDays, isAfter, isBefore, startOfToday, subDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
