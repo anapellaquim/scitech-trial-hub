@@ -1059,6 +1059,7 @@ export default function InvestigationalProducts() {
           open={importOpen}
           onOpenChange={setImportOpen}
           tableName="investigational_products"
+          entityLabel="Investigational Products"
           columns={IP_IMPORT_COLUMNS}
           onSuccess={loadRecords}
         />
@@ -1066,6 +1067,7 @@ export default function InvestigationalProducts() {
           open={supplyImportOpen}
           onOpenChange={setSupplyImportOpen}
           tableName="ip_supply"
+          entityLabel="IP Supply"
           columns={SUPPLY_IMPORT_COLUMNS}
           onSuccess={loadRecords}
         />

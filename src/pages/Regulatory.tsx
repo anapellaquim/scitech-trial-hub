@@ -648,6 +648,7 @@ export default function Regulatory() {
           open={importOpen}
           onOpenChange={setImportOpen}
           tableName={importType === "submission" ? "regulatory_submissions" : "regulatory_reports"}
+          entityLabel={importType === "submission" ? "Regulatory Submissions" : "Regulatory Reports"}
           projectId={projectFilter === "all" ? undefined : projectFilter}
           columns={importType === "submission" ? submissionImportColumns : reportImportColumns}
           onSuccess={fetchData}

@@ -584,6 +584,7 @@ export default function Communications() {
           open={importOpen}
           onOpenChange={setImportOpen}
           tableName="notifications"
+          entityLabel="Notifications"
           projectId={selectedProject === "all" ? undefined : selectedProject}
           columns={importColumns}
           onSuccess={refresh}
