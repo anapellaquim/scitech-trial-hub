@@ -539,7 +539,7 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 max-h-[420px] overflow-y-auto pr-1">
                 {projectHealth.map(p => {
                   const color = p.health === "red" ? "border-destructive/60 bg-destructive/5" : p.health === "yellow" ? "border-warning/60 bg-warning/5" : "border-success/60 bg-success/5";
                   const dot = p.health === "red" ? "bg-destructive" : p.health === "yellow" ? "bg-warning" : "bg-success";
@@ -547,16 +547,16 @@ const Dashboard = () => {
                     <button
                       key={p.id}
                       onClick={() => { setSelectedProject(p.id); }}
-                      className={cn("text-left rounded-lg border-2 p-3 transition-smooth hover:shadow-elevated", color)}
+                      className={cn("h-full flex flex-col text-left rounded-lg border-2 p-3 transition-smooth hover:shadow-elevated", color)}
                     >
-                      <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-start justify-between gap-2 mb-2 min-h-[42px]">
                         <div className="min-w-0">
                           <p className="font-semibold text-sm truncate">{p.protocol || p.title}</p>
                           <p className="text-xs text-muted-foreground truncate">{p.title}</p>
                         </div>
                         <span className={cn("h-3 w-3 rounded-full shrink-0 mt-1", dot)} />
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-1.5 mt-auto">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-muted-foreground">Schedule</span>
                           <span className="font-medium">{p.scheduleCompletion}%</span>
