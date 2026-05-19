@@ -498,32 +498,47 @@ const Dashboard = () => {
 
         {/* Alert Cards */}
         {(stats.overdueTasks > 0 || stats.overdueVisits > 0 || stats.criticalFindings > 0) && (
-          <div className="grid gap-4 md:grid-cols-3 mb-6 items-stretch">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6 items-stretch">
             {stats.overdueTasks > 0 && (
-              <Card className="border-destructive/50 bg-destructive/5">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="p-3 rounded-full bg-destructive/10">
+              <Card className="h-full border-destructive/50 bg-destructive/5">
+                <CardContent className="flex items-center gap-4 p-4 h-full">
+                  <div className="p-3 rounded-full bg-destructive/10 shrink-0">
                     <AlertCircle className="h-6 w-6 text-destructive" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-destructive">{stats.overdueTasks}</p>
-                    <p className="text-sm text-muted-foreground">Overdue Tasks</p>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold text-destructive tabular-nums leading-tight">{stats.overdueTasks}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide truncate">Overdue Tasks</p>
                   </div>
                 </CardContent>
               </Card>
             )}
             {stats.overdueVisits > 0 && (
-              <Card className="border-warning/50 bg-warning/5">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="p-3 rounded-full bg-warning/10">
+              <Card className="h-full border-warning/50 bg-warning/5">
+                <CardContent className="flex items-center gap-4 p-4 h-full">
+                  <div className="p-3 rounded-full bg-warning/10 shrink-0">
                     <CalendarClock className="h-6 w-6 text-warning" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-warning">{stats.overdueVisits}</p>
-                    <p className="text-sm text-muted-foreground">Overdue Visits</p>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold text-warning tabular-nums leading-tight">{stats.overdueVisits}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide truncate">Overdue Visits</p>
                   </div>
                 </CardContent>
               </Card>
+            )}
+            {stats.criticalFindings > 0 && (
+              <Card className="h-full border-destructive/50 bg-destructive/5">
+                <CardContent className="flex items-center gap-4 p-4 h-full">
+                  <div className="p-3 rounded-full bg-destructive/10 shrink-0">
+                    <AlertTriangle className="h-6 w-6 text-destructive" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold text-destructive tabular-nums leading-tight">{stats.criticalFindings}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide truncate">Critical Findings</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {/* Project Health Score */}
@@ -539,7 +554,7 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4 max-h-[420px] overflow-y-auto pr-1">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-h-[420px] overflow-y-auto pr-1 items-stretch">
                 {projectHealth.map(p => {
                   const color = p.health === "red" ? "border-destructive/60 bg-destructive/5" : p.health === "yellow" ? "border-warning/60 bg-warning/5" : "border-success/60 bg-success/5";
                   const dot = p.health === "red" ? "bg-destructive" : p.health === "yellow" ? "bg-warning" : "bg-success";
@@ -559,20 +574,20 @@ const Dashboard = () => {
                       <div className="space-y-1.5 mt-auto">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-muted-foreground">Schedule</span>
-                          <span className="font-medium">{p.scheduleCompletion}%</span>
+                          <span className="font-medium tabular-nums">{p.scheduleCompletion}%</span>
                         </div>
                         <Progress value={p.scheduleCompletion} className="h-1.5" />
                         <div className="grid grid-cols-3 gap-1 text-[11px] pt-1">
                           <div className="text-center">
-                            <p className={cn("font-bold", p.overdueTasks > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overdueTasks}</p>
+                            <p className={cn("font-bold tabular-nums", p.overdueTasks > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overdueTasks}</p>
                             <p className="text-muted-foreground">Tasks</p>
                           </div>
                           <div className="text-center">
-                            <p className={cn("font-bold", p.criticalFindings > 0 ? "text-destructive" : "text-muted-foreground")}>{p.criticalFindings}</p>
+                            <p className={cn("font-bold tabular-nums", p.criticalFindings > 0 ? "text-destructive" : "text-muted-foreground")}>{p.criticalFindings}</p>
                             <p className="text-muted-foreground">Crit.</p>
                           </div>
                           <div className="text-center">
-                            <p className={cn("font-bold", p.overduePayments > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overduePayments}</p>
+                            <p className={cn("font-bold tabular-nums", p.overduePayments > 0 ? "text-destructive" : "text-muted-foreground")}>{p.overduePayments}</p>
                             <p className="text-muted-foreground">Pay</p>
                           </div>
                         </div>
@@ -585,176 +600,111 @@ const Dashboard = () => {
           </Card>
         )}
 
+        {/* Primary Stats Grid — responsive 2/3/5 */}
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6 items-stretch">
+          {[
+            { label: "Patients", value: stats.totalPatients, hint: `${stats.randomizedPatients} Randomized`, icon: UserCheck },
+            { label: "Studies", value: stats.totalProjects, hint: `${stats.activeProjects} active`, icon: FlaskConical },
+            { label: "Visits Completed", value: stats.completedVisits, hint: `${stats.visitsNext7Days} in 7d`, icon: CalendarClock },
+            { label: "Pending Tasks", value: stats.totalTasks, hint: `${stats.overdueTasks} overdue · ${stats.tasksNext7Days} in 7d`, icon: ListChecks },
+            { label: "Open Findings", value: stats.openFindings, hint: `${stats.criticalFindings} critical`, icon: AlertTriangle },
+          ].map((kpi) => {
+            const Icon = kpi.icon;
+            return (
+              <Card key={kpi.label} className="h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-h-[44px]">
+                  <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground truncate">{kpi.label}</CardTitle>
+                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-2xl font-bold tabular-nums leading-tight">{kpi.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{kpi.hint}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
         {/* KPI Groups by Area */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6 items-stretch">
-          {/* Regulatory */}
-          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/regulatory")}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary" /> Regulatory
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div><p className="text-xs text-muted-foreground">Open submissions</p><p className="text-xl font-bold">{stats.regOpenSubmissions}</p></div>
-              <div><p className="text-xs text-muted-foreground">Due in 30d</p><p className="text-xl font-bold text-warning">{stats.regUpcoming30d}</p></div>
-              <div><p className="text-xs text-muted-foreground">Reports overdue</p><p className={cn("text-xl font-bold", stats.regReportsOverdue > 0 ? "text-destructive" : "")}>{stats.regReportsOverdue}</p></div>
-            </CardContent>
-          </Card>
-
-          {/* Financial */}
-          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/payments")}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-primary" /> Financial
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div><p className="text-xs text-muted-foreground">Budget total</p><p className="text-xl font-bold break-words">{stats.budgetTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</p></div>
-              <div><p className="text-xs text-muted-foreground">Paid</p><p className="text-xl font-bold text-success break-words">{stats.paidAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</p></div>
-              <div>
-                <p className="text-xs text-muted-foreground">Pending / Overdue</p>
-                <p className="text-xl font-bold">{stats.pendingPayments} / <span className={stats.overduePayments > 0 ? "text-destructive" : ""}>{stats.overduePayments}</span></p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Risk & Quality */}
-          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/risks")}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <ShieldAlert className="h-4 w-4 text-primary" /> Risk & Quality
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div><p className="text-xs text-muted-foreground">High risks</p><p className={cn("text-xl font-bold", stats.highRisks > 0 ? "text-warning" : "")}>{stats.highRisks}</p></div>
-              <div><p className="text-xs text-muted-foreground">Open change controls</p><p className="text-xl font-bold">{stats.openChangeControls}</p></div>
-              <div><p className="text-xs text-muted-foreground">Steering pending</p><p className="text-xl font-bold">{stats.pendingSteeringDecisions}</p></div>
-            </CardContent>
-          </Card>
-
-          {/* Operations */}
-          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/trainings")}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 text-primary" /> Operations
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div><p className="text-xs text-muted-foreground">Trainings overdue</p><p className={cn("text-xl font-bold", stats.trainingsOverdue > 0 ? "text-destructive" : "")}>{stats.trainingsOverdue}</p></div>
-              <div><p className="text-xs text-muted-foreground">Trainings in 30d</p><p className="text-xl font-bold">{stats.trainingsNext30d}</p></div>
-              <div><p className="text-xs text-muted-foreground">Qualifications pending</p><p className="text-xl font-bold">{stats.qualificationsPending}</p></div>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6 items-stretch">
+          {[
+            {
+              label: "Regulatory", icon: FileText, to: "/regulatory",
+              rows: [
+                { l: "Open submissions", v: stats.regOpenSubmissions },
+                { l: "Due in 30d", v: stats.regUpcoming30d, cls: stats.regUpcoming30d > 0 ? "text-warning" : "" },
+                { l: "Reports overdue", v: stats.regReportsOverdue, cls: stats.regReportsOverdue > 0 ? "text-destructive" : "" },
+              ],
+            },
+            {
+              label: "Financial", icon: DollarSign, to: "/payments",
+              rows: [
+                { l: "Budget total", v: stats.budgetTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }) },
+                { l: "Paid", v: stats.paidAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }), cls: "text-success" },
+                { l: "Pending / Overdue", v: `${stats.pendingPayments} / ${stats.overduePayments}`, cls: stats.overduePayments > 0 ? "text-destructive" : "" },
+              ],
+            },
+            {
+              label: "Risk & Quality", icon: ShieldAlert, to: "/risks",
+              rows: [
+                { l: "High risks", v: stats.highRisks, cls: stats.highRisks > 0 ? "text-warning" : "" },
+                { l: "Open change controls", v: stats.openChangeControls },
+                { l: "Steering pending", v: stats.pendingSteeringDecisions },
+              ],
+            },
+            {
+              label: "Operations", icon: GraduationCap, to: "/trainings",
+              rows: [
+                { l: "Trainings overdue", v: stats.trainingsOverdue, cls: stats.trainingsOverdue > 0 ? "text-destructive" : "" },
+                { l: "Trainings in 30d", v: stats.trainingsNext30d },
+                { l: "Qualifications pending", v: stats.qualificationsPending },
+              ],
+            },
+          ].map((g) => {
+            const Icon = g.icon;
+            return (
+              <Card key={g.label} className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate(g.to)}>
+                <CardHeader className="pb-2 min-h-[44px]">
+                  <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                    <Icon className="h-4 w-4 text-primary shrink-0" />
+                    <span className="truncate">{g.label}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-3">
+                  {g.rows.map((r, i) => (
+                    <div key={i} className="min-w-0">
+                      <p className="text-[11px] text-muted-foreground uppercase tracking-wide truncate">{r.l}</p>
+                      <p className={cn("text-lg font-bold tabular-nums leading-tight break-words", r.cls)}>{r.v}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Secondary KPI row */}
-        <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/ip")}>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="p-3 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-2xl font-bold">{stats.ipLotsExpiring60d}</p>
-                <p className="text-xs text-muted-foreground">IP lots expiring in 60d</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/communications")}>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="p-3 rounded-lg bg-primary/10"><Bell className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-2xl font-bold">{stats.unreadCriticalNotifications}</p>
-                <p className="text-xs text-muted-foreground">Critical unread notifications</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate("/steering")}>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="p-3 rounded-lg bg-primary/10"><Gavel className="h-5 w-5 text-primary" /></div>
-              <div>
-                <p className="text-2xl font-bold">{stats.pendingSteeringDecisions}</p>
-                <p className="text-xs text-muted-foreground">Pending steering decisions</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-            {stats.criticalFindings > 0 && (
-              <Card className="border-destructive/50 bg-destructive/5">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="p-3 rounded-full bg-destructive/10">
-                    <AlertTriangle className="h-6 w-6 text-destructive" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-destructive">{stats.criticalFindings}</p>
-                    <p className="text-sm text-muted-foreground">Critical Findings</p>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6 items-stretch">
+          {[
+            { label: "IP lots expiring in 60d", value: stats.ipLotsExpiring60d, icon: Package, to: "/ip" },
+            { label: "Critical unread notifications", value: stats.unreadCriticalNotifications, icon: Bell, to: "/communications" },
+            { label: "Pending steering decisions", value: stats.pendingSteeringDecisions, icon: Gavel, to: "/steering" },
+          ].map((kpi) => {
+            const Icon = kpi.icon;
+            return (
+              <Card key={kpi.label} className="h-full cursor-pointer transition-smooth hover:shadow-elevated" onClick={() => navigate(kpi.to)}>
+                <CardContent className="flex items-center gap-4 p-4 h-full">
+                  <div className="p-3 rounded-lg bg-primary/10 shrink-0"><Icon className="h-5 w-5 text-primary" /></div>
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold tabular-nums leading-tight">{kpi.value}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide truncate">{kpi.label}</p>
                   </div>
                 </CardContent>
               </Card>
-            )}
-          </div>
-        )}
-
-        {/* Main Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Patients</CardTitle>
-              <UserCheck className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalPatients}</div>
-              <p className="text-xs text-muted-foreground">{stats.randomizedPatients} Randomized</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Studies</CardTitle>
-              <FlaskConical className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalProjects}</div>
-              <p className="text-xs text-muted-foreground">{stats.activeProjects} active</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Visits in Period</CardTitle>
-              <CalendarClock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completedVisits}</div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-success">Visits Completed</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-warning">{stats.visitsNext7Days} in 7d</span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
-              <ListChecks className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalTasks}</div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-destructive">{stats.overdueTasks} overdue</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-warning">{stats.tasksNext7Days} in 7d</span>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Open Findings</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.openFindings}</div>
-              <p className="text-xs text-muted-foreground">{stats.criticalFindings} critical</p>
-            </CardContent>
-          </Card>
+            );
+          })}
         </div>
+
 
         {/* Site Checklist Completion */}
         {stats.siteChecklistCompletion.length > 0 && (
