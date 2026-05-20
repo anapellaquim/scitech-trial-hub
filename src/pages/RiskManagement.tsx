@@ -581,8 +581,8 @@ export default function RiskManagement() {
         </TabsList>
 
         <TabsContent value="list">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-            <Card className="xl:col-span-2">
+          <div className="space-y-4">
+            <Card>
               <CardHeader>
                 <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
                   <CardTitle>Risk Register</CardTitle>
@@ -666,54 +666,6 @@ export default function RiskManagement() {
                     </Table>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Side panel: action monitoring summary */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-base"><Activity className="h-4 w-4" />Mitigation Snapshot</CardTitle>
-                  {actionRiskFilter !== "all" && (
-                    <Button size="sm" variant="ghost" onClick={() => setActionRiskFilter("all")}>Clear</Button>
-                  )}
-                </div>
-                {actionRiskFilter !== "all" && (
-                  <p className="text-xs text-muted-foreground">Filtered by {riskByCode.get(actionRiskFilter)?.risk_code}</p>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">Total</div><div className="text-xl font-bold">{actionStats.total}</div></div>
-                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">In Progress</div><div className="text-xl font-bold text-blue-600">{actionStats.inProgress}</div></div>
-                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">Done</div><div className="text-xl font-bold text-green-600">{actionStats.done}</div></div>
-                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">Overdue</div><div className="text-xl font-bold text-red-600">{actionStats.overdue}</div></div>
-                </div>
-                <div className="max-h-[460px] overflow-y-auto space-y-2">
-                  {filteredActions.length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-4">No mitigation actions.</p>
-                  ) : filteredActions.slice(0, 30).map(a => {
-                    const r = riskByCode.get(a.risk_id);
-                    const overdue = a.deadline && a.deadline < todayDateOnly() && a.status !== "done" && a.status !== "cancelled";
-                    return (
-                      <div key={a.id} className="border rounded p-2 text-xs space-y-1">
-                        <div className="flex items-start justify-between gap-1">
-                          <span className="font-mono text-[10px] text-muted-foreground">{r?.risk_code}</span>
-                          <Badge variant="outline" className="text-[10px]">{a.action_type === "preventive" ? "Prev" : "Corr"}</Badge>
-                        </div>
-                        <p className="line-clamp-2">{a.action_description}</p>
-                        <div className="flex items-center justify-between text-[10px]">
-                          <span className="text-muted-foreground">{a.responsible || "—"}</span>
-                          <span className={overdue ? "text-red-600 font-medium" : "text-muted-foreground"}>{fmt(a.deadline)}</span>
-                        </div>
-                        <Select value={a.status} onValueChange={v => updateActionStatus(a.id, v)}>
-                          <SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger>
-                          <SelectContent>{ACTION_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                        </Select>
-                      </div>
-                    );
-                  })}
-                </div>
               </CardContent>
             </Card>
           </div>
