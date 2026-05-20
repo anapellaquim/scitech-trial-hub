@@ -581,8 +581,8 @@ export default function RiskManagement() {
         </TabsList>
 
         <TabsContent value="list">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-            <Card className="xl:col-span-2">
+          <div className="space-y-4">
+            <Card>
               <CardHeader>
                 <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
                   <CardTitle>Risk Register</CardTitle>
