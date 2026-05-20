@@ -1,4 +1,4 @@
-import { todayDateOnly, parseLocalDate, formatDateOnly } from "@/lib/dateUtils";
+import { todayDateOnly, parseLocalDate, formatDateOnly, formatInBrasilia } from "@/lib/dateUtils";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Grid3X3, Upload, AlertTriangle, ArrowUpCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Grid3X3, Upload, AlertTriangle, ArrowUpCircle, History, Activity } from "lucide-react";
 import BulkImportDialog, { ColumnMapping } from "@/components/shared/BulkImportDialog";
 import { usePersistedFilters } from "@/hooks/usePersistedFilters";
 
@@ -49,6 +49,39 @@ interface Risk {
   materialized_at: string | null;
 }
 
+interface MitigationAction {
+  id: string;
+  risk_id: string;
+  project_id: string;
+  action_type: "preventive" | "corrective";
+  action_description: string;
+  responsible: string | null;
+  deadline: string | null;
+  status: "pending" | "in_progress" | "done" | "cancelled";
+  completed_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ReviewHistoryEntry {
+  id: string;
+  risk_id: string;
+  reviewed_at: string;
+  previous_next_review_date: string | null;
+  new_next_review_date: string | null;
+  reviewer: string | null;
+  outcome: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+type ActionDraft = Omit<MitigationAction, "id" | "risk_id" | "project_id" | "created_at" | "updated_at" | "completed_at"> & {
+  id?: string;
+  _isNew?: boolean;
+  _deleted?: boolean;
+};
+
 // PCL019 §4 categories
 const CATEGORIES: { value: string; label: string }[] = [
   { value: "participant_safety", label: "Participant Safety" },
@@ -58,6 +91,7 @@ const CATEGORIES: { value: string; label: string }[] = [
   { value: "operational", label: "Operational / Timeline" },
   { value: "financial", label: "Financial" },
   { value: "vendor", label: "Vendor / Site" },
+  { value: "other", label: "Other" },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -68,9 +102,9 @@ const categoryColors: Record<string, string> = {
   operational: "bg-blue-100 text-blue-800",
   financial: "bg-amber-100 text-amber-800",
   vendor: "bg-teal-100 text-teal-800",
+  other: "bg-gray-100 text-gray-800",
 };
 
-// PCL019 §6 statuses
 const STATUSES: { value: string; label: string }[] = [
   { value: "open", label: "Open" },
   { value: "mitigating", label: "Mitigating" },
@@ -89,7 +123,20 @@ const statusColors: Record<string, string> = {
   closed: "bg-green-100 text-green-800",
 };
 
-// PCL019 §6.5 — 5-tier classification
+const ACTION_STATUSES = [
+  { value: "pending", label: "Pending" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "done", label: "Done" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+const actionStatusColors: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  in_progress: "bg-blue-100 text-blue-800",
+  done: "bg-green-100 text-green-800",
+  cancelled: "bg-gray-100 text-gray-800",
+};
+
 export const classifyRisk = (score: number) => {
   if (score >= 16) return { level: "Critical", color: "bg-red-500 text-white", cell: "bg-red-200" };
   if (score >= 10) return { level: "High", color: "bg-orange-500 text-white", cell: "bg-orange-200" };
@@ -118,11 +165,14 @@ const computeNextReview = (identified: string, freq: string) => {
   return addMonths(identified, m);
 };
 
+const fmt = (d?: string | null) => (d ? format(parseLocalDate(d), "dd/MM/yyyy", { locale: ptBR }) : "-");
+
 export default function RiskManagement() {
   const navigate = useNavigate();
   const { projectId: persistedProjectId, setProjectId } = usePersistedFilters();
   const [selectedProject, setSelectedProject] = useState(persistedProjectId || "");
   const [records, setRecords] = useState<Risk[]>([]);
+  const [actions, setActions] = useState<MitigationAction[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Risk | null>(null);
@@ -131,6 +181,15 @@ export default function RiskManagement() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
 
+  // Action monitoring panel filters
+  const [actionStatusFilter, setActionStatusFilter] = useState("all");
+  const [actionTypeFilter, setActionTypeFilter] = useState("all");
+  const [actionRiskFilter, setActionRiskFilter] = useState("all");
+
+  // Edit-dialog state
+  const [actionDrafts, setActionDrafts] = useState<ActionDraft[]>([]);
+  const [reviewHistory, setReviewHistory] = useState<ReviewHistoryEntry[]>([]);
+
   const blankForm = {
     risk_code: "",
     description: "",
@@ -138,9 +197,6 @@ export default function RiskManagement() {
     probability: 3,
     impact: 3,
     potential_impact: "",
-    mitigation_plan: "",
-    contingency_plan: "",
-    monitoring_method: "",
     responsible: "",
     escalation_owner: "",
     status: "open",
@@ -152,23 +208,10 @@ export default function RiskManagement() {
   };
   const [form, setForm] = useState(blankForm);
 
-  const importColumns: ColumnMapping[] = [
-    { excelHeader: "Risk Code", dbColumn: "risk_code", required: true, example: "RSK-001" },
-    { excelHeader: "Description", dbColumn: "description", required: true, example: "Low enrollment rate" },
-    { excelHeader: "Category", dbColumn: "category", type: "enum", enumValues: ["operational", "regulatory", "safety", "data", "financial", "other"], example: "operational" },
-    { excelHeader: "Probability", dbColumn: "probability", required: true, type: "integer", example: 3 },
-    { excelHeader: "Impact", dbColumn: "impact", required: true, type: "integer", example: 4 },
-    { excelHeader: "Potential Impact", dbColumn: "potential_impact" },
-    { excelHeader: "Mitigation Plan", dbColumn: "mitigation_plan" },
-    { excelHeader: "Contingency Plan", dbColumn: "contingency_plan" },
-    { excelHeader: "Monitoring Method", dbColumn: "monitoring_method" },
-    { excelHeader: "Responsible", dbColumn: "responsible", example: "Dr. Silva" },
-    { excelHeader: "Escalation Owner", dbColumn: "escalation_owner", example: "Sponsor PM" },
-    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: ["open", "mitigated", "materialized", "closed"], example: "open" },
-    { excelHeader: "Identified At", dbColumn: "identified_at", type: "date", example: "15/01/2025" },
-    { excelHeader: "Review Frequency", dbColumn: "review_frequency", type: "enum", enumValues: ["weekly", "monthly", "quarterly", "semiannual", "annual"], example: "quarterly" },
-    { excelHeader: "Next Review Date", dbColumn: "next_review_date", type: "date", example: "15/04/2025" },
-  ];
+  // Track original next_review_date to detect changes
+  const [originalReview, setOriginalReview] = useState<string | null>(null);
+  const [reviewerName, setReviewerName] = useState("");
+  const [reviewNote, setReviewNote] = useState("");
 
   useEffect(() => {
     const check = async () => {
@@ -179,13 +222,14 @@ export default function RiskManagement() {
   }, []);
 
   const loadData = useCallback(async () => {
+    if (!selectedProject) return;
     setLoading(true);
-    const { data } = await supabase
-      .from("risks")
-      .select("*")
-      .eq("project_id", selectedProject)
-      .order("risk_score", { ascending: false });
-    setRecords((data as any) || []);
+    const [risksRes, actionsRes] = await Promise.all([
+      supabase.from("risks").select("*").eq("project_id", selectedProject).order("risk_score", { ascending: false }),
+      supabase.from("risk_mitigation_actions" as any).select("*").eq("project_id", selectedProject).order("deadline", { ascending: true, nullsFirst: false }),
+    ]);
+    setRecords((risksRes.data as any) || []);
+    setActions((actionsRes.data as any) || []);
     setLoading(false);
   }, [selectedProject]);
 
@@ -202,12 +246,11 @@ export default function RiskManagement() {
     const score = form.probability * form.impact;
     const level = classifyRisk(score).level;
 
-    // PCL019 §6.7 — Critical/High require mitigation plan
-    if ((level === "Critical" || level === "High") && !form.mitigation_plan.trim()) {
-      toast.error(`${level} risks require a Mitigation Plan (SOP §6.7)`);
+    const hasMitigation = actionDrafts.some(a => !a._deleted && a.action_description.trim());
+    if ((level === "Critical" || level === "High") && !hasMitigation) {
+      toast.error(`${level} risks require at least one Mitigation Action (SOP §6.7)`);
       return;
     }
-    // PCL019 §6.8.3 — Critical/High need escalation owner
     if ((level === "Critical" || level === "High") && !form.escalation_owner.trim()) {
       toast.error(`${level} risks require an Escalation Owner (SOP §6.8.3)`);
       return;
@@ -215,7 +258,6 @@ export default function RiskManagement() {
 
     const nextReview = form.next_review_date || computeNextReview(form.identified_at, form.review_frequency);
 
-    // Auto-escalation for Critical or status=materialized
     let escalated_at: string | null = editing?.escalated_at || null;
     let escalation_reason = editing?.escalation_reason || null;
     if (level === "Critical" && !escalated_at) {
@@ -227,6 +269,12 @@ export default function RiskManagement() {
       escalation_reason = "Auto-escalated: Risk materialized per SOP §6.8.3";
     }
 
+    // Build a textual summary so the legacy mitigation_plan column stays in sync (used by exports/audit)
+    const summary = actionDrafts
+      .filter(a => !a._deleted && a.action_description.trim())
+      .map(a => `[${a.action_type === "preventive" ? "P" : "C"}] ${a.action_description}${a.responsible ? ` — ${a.responsible}` : ""}${a.deadline ? ` (${a.deadline})` : ""}`)
+      .join("\n");
+
     const payload: any = {
       project_id: selectedProject,
       risk_code: form.risk_code.trim(),
@@ -235,9 +283,7 @@ export default function RiskManagement() {
       probability: form.probability,
       impact: form.impact,
       potential_impact: form.potential_impact.trim() || null,
-      mitigation_plan: form.mitigation_plan.trim() || null,
-      contingency_plan: form.contingency_plan.trim() || null,
-      monitoring_method: form.monitoring_method.trim() || null,
+      mitigation_plan: summary || null,
       responsible: form.responsible.trim() || null,
       escalation_owner: form.escalation_owner.trim() || null,
       status: form.status,
@@ -252,14 +298,54 @@ export default function RiskManagement() {
       materialized_at: form.status === "materialized" ? (editing?.materialized_at || new Date().toISOString()) : editing?.materialized_at || null,
     };
 
+    let riskId = editing?.id;
     if (editing) {
-      await supabase.from("risks").update(payload).eq("id", editing.id);
-      toast.success("Risk updated");
+      const { error } = await supabase.from("risks").update(payload).eq("id", editing.id);
+      if (error) { toast.error(error.message); return; }
     } else {
-      await supabase.from("risks").insert(payload);
-      toast.success("Risk created");
+      const { data, error } = await supabase.from("risks").insert(payload).select("id").single();
+      if (error || !data) { toast.error(error?.message || "Failed to create"); return; }
+      riskId = (data as any).id;
     }
-    setDialogOpen(false); setEditing(null); setForm(blankForm); loadData();
+
+    // Persist mitigation action changes
+    for (const a of actionDrafts) {
+      if (a._deleted && a.id) {
+        await supabase.from("risk_mitigation_actions" as any).delete().eq("id", a.id);
+      } else if (a._isNew && !a._deleted && a.action_description.trim()) {
+        await supabase.from("risk_mitigation_actions" as any).insert({
+          risk_id: riskId, project_id: selectedProject,
+          action_type: a.action_type, action_description: a.action_description.trim(),
+          responsible: a.responsible || null, deadline: a.deadline || null, status: a.status,
+          notes: a.notes || null,
+        });
+      } else if (a.id && !a._deleted) {
+        await supabase.from("risk_mitigation_actions" as any).update({
+          action_type: a.action_type, action_description: a.action_description.trim(),
+          responsible: a.responsible || null, deadline: a.deadline || null, status: a.status,
+          completed_at: a.status === "done" ? new Date().toISOString() : null,
+          notes: a.notes || null,
+        }).eq("id", a.id);
+      }
+    }
+
+    // Persist review history entry if next_review_date changed (or reviewer/note provided)
+    if (editing && (originalReview !== nextReview || reviewerName.trim() || reviewNote.trim())) {
+      await supabase.from("risk_review_history" as any).insert({
+        risk_id: riskId, project_id: selectedProject,
+        reviewed_at: todayDateOnly(),
+        previous_next_review_date: originalReview,
+        new_next_review_date: nextReview,
+        reviewer: reviewerName.trim() || null,
+        outcome: originalReview === nextReview ? "no_change" : "updated",
+        notes: reviewNote.trim() || null,
+      });
+    }
+
+    toast.success(editing ? "Risk updated" : "Risk created");
+    setDialogOpen(false); setEditing(null); setForm(blankForm); setActionDrafts([]); setReviewHistory([]);
+    setOriginalReview(null); setReviewerName(""); setReviewNote("");
+    loadData();
   };
 
   const handleDelete = async (id: string) => {
@@ -267,8 +353,20 @@ export default function RiskManagement() {
     toast.success("Deleted"); loadData();
   };
 
-  const openNew = () => { setEditing(null); setForm(blankForm); setDialogOpen(true); };
-  const openEdit = (r: Risk) => {
+  // Inline status update for actions in the monitoring panel
+  const updateActionStatus = async (id: string, status: string) => {
+    await supabase.from("risk_mitigation_actions" as any).update({
+      status, completed_at: status === "done" ? new Date().toISOString() : null,
+    }).eq("id", id);
+    loadData();
+  };
+
+  const openNew = () => {
+    setEditing(null); setForm(blankForm); setActionDrafts([]); setReviewHistory([]);
+    setOriginalReview(null); setReviewerName(""); setReviewNote("");
+    setDialogOpen(true);
+  };
+  const openEdit = async (r: Risk) => {
     setEditing(r);
     setForm({
       risk_code: r.risk_code,
@@ -277,9 +375,6 @@ export default function RiskManagement() {
       probability: r.probability,
       impact: r.impact,
       potential_impact: r.potential_impact || "",
-      mitigation_plan: r.mitigation_plan || "",
-      contingency_plan: r.contingency_plan || "",
-      monitoring_method: r.monitoring_method || "",
       responsible: r.responsible || "",
       escalation_owner: r.escalation_owner || "",
       status: r.status,
@@ -289,8 +384,28 @@ export default function RiskManagement() {
       residual_probability: r.residual_probability || 0,
       residual_impact: r.residual_impact || 0,
     });
+    setOriginalReview(r.next_review_date || null);
+    setReviewerName(""); setReviewNote("");
+
+    const [aRes, hRes] = await Promise.all([
+      supabase.from("risk_mitigation_actions" as any).select("*").eq("risk_id", r.id).order("created_at"),
+      supabase.from("risk_review_history" as any).select("*").eq("risk_id", r.id).order("reviewed_at", { ascending: false }),
+    ]);
+    const acts: MitigationAction[] = (aRes.data as any) || [];
+    setActionDrafts(acts.map(a => ({
+      id: a.id, action_type: a.action_type, action_description: a.action_description,
+      responsible: a.responsible, deadline: a.deadline, status: a.status, notes: a.notes,
+    })));
+    setReviewHistory((hRes.data as any) || []);
     setDialogOpen(true);
   };
+
+  const addActionRow = () => setActionDrafts(d => [...d, {
+    _isNew: true, action_type: "preventive", action_description: "",
+    responsible: "", deadline: "", status: "pending", notes: "",
+  }]);
+  const updateDraft = (idx: number, patch: Partial<ActionDraft>) => setActionDrafts(d => d.map((a, i) => i === idx ? { ...a, ...patch } : a));
+  const removeDraft = (idx: number) => setActionDrafts(d => d.map((a, i) => i === idx ? { ...a, _deleted: true } : a).filter(a => !(a._deleted && a._isNew)));
 
   const filtered = records.filter(r => {
     const matchSearch = r.risk_code.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase());
@@ -299,7 +414,6 @@ export default function RiskManagement() {
     return matchSearch && matchStatus && matchLevel;
   });
 
-  // Summary stats
   const stats = useMemo(() => {
     const counts = { Critical: 0, High: 0, Medium: 0, Low: 0, Minimal: 0 };
     records.forEach(r => { counts[classifyRisk(r.risk_score).level as keyof typeof counts]++; });
@@ -309,21 +423,45 @@ export default function RiskManagement() {
   const overdueReviews = records.filter(r => r.next_review_date && r.next_review_date < todayDateOnly() && r.status !== "closed").length;
   const escalatedCount = records.filter(r => r.escalated_at && r.status !== "closed").length;
 
-  const exportData = filtered.map(r => ({
+  // Mitigation action stats
+  const actionStats = useMemo(() => {
+    const today = todayDateOnly();
+    return {
+      total: actions.length,
+      pending: actions.filter(a => a.status === "pending").length,
+      inProgress: actions.filter(a => a.status === "in_progress").length,
+      done: actions.filter(a => a.status === "done").length,
+      overdue: actions.filter(a => a.deadline && a.deadline < today && a.status !== "done" && a.status !== "cancelled").length,
+    };
+  }, [actions]);
+
+  const filteredActions = actions.filter(a => {
+    if (actionStatusFilter !== "all" && a.status !== actionStatusFilter) return false;
+    if (actionTypeFilter !== "all" && a.action_type !== actionTypeFilter) return false;
+    if (actionRiskFilter !== "all" && a.risk_id !== actionRiskFilter) return false;
+    return true;
+  });
+
+  const riskByCode = useMemo(() => {
+    const m = new Map<string, Risk>();
+    records.forEach(r => m.set(r.id, r));
+    return m;
+  }, [records]);
+
+  // Export — multiple sheets
+  const risksSheet = filtered.map(r => ({
     "Risk ID": r.risk_code,
     Description: r.description,
-    Category: r.category,
+    Category: CATEGORIES.find(c => c.value === r.category)?.label || r.category,
     Probability: r.probability,
     Impact: r.impact,
     "Risk Score": r.risk_score,
     "Risk Level": classifyRisk(r.risk_score).level,
     "Potential Impact": r.potential_impact || "",
-    "Mitigation Plan": r.mitigation_plan || "",
-    "Contingency Plan": r.contingency_plan || "",
-    "Monitoring Method": r.monitoring_method || "",
+    "Mitigation Summary": r.mitigation_plan || "",
     Responsible: r.responsible || "",
     "Escalation Owner": r.escalation_owner || "",
-    Status: r.status,
+    Status: STATUSES.find(s => s.value === r.status)?.label || r.status,
     "Identified At": r.identified_at,
     "Review Frequency": r.review_frequency,
     "Next Review": r.next_review_date || "",
@@ -331,8 +469,59 @@ export default function RiskManagement() {
     "Escalated": r.escalated_at ? "Yes" : "No",
     "Materialized": r.materialized_at ? "Yes" : "No",
   }));
+  const actionsSheet = actions.map(a => {
+    const r = riskByCode.get(a.risk_id);
+    return {
+      "Risk ID": r?.risk_code || "",
+      "Risk Description": r?.description || "",
+      "Action Type": a.action_type === "preventive" ? "Preventive" : "Corrective",
+      "Action Description": a.action_description,
+      Responsible: a.responsible || "",
+      Deadline: a.deadline || "",
+      Status: ACTION_STATUSES.find(s => s.value === a.status)?.label || a.status,
+      "Completed At": a.completed_at ? formatInBrasilia(a.completed_at, "dd/MM/yyyy HH:mm") : "",
+      Notes: a.notes || "",
+    };
+  });
 
-  // Visual matrix (PCL019 §6.6)
+  const exportData = { Risks: risksSheet, "Mitigation Actions": actionsSheet };
+
+  // Import — single sheet for Risks; actions imported via a separate template sheet
+  const importColumns: ColumnMapping[] = [
+    { excelHeader: "Risk Code", dbColumn: "risk_code", required: true, example: "RSK-001" },
+    { excelHeader: "Description", dbColumn: "description", required: true, example: "Low enrollment rate" },
+    { excelHeader: "Category", dbColumn: "category", type: "enum", enumValues: CATEGORIES.map(c => c.value), example: "operational" },
+    { excelHeader: "Probability", dbColumn: "probability", required: true, type: "integer", example: 3 },
+    { excelHeader: "Impact", dbColumn: "impact", required: true, type: "integer", example: 4 },
+    { excelHeader: "Potential Impact", dbColumn: "potential_impact" },
+    { excelHeader: "Responsible", dbColumn: "responsible", example: "Dr. Silva" },
+    { excelHeader: "Escalation Owner", dbColumn: "escalation_owner", example: "Sponsor PM" },
+    { excelHeader: "Status", dbColumn: "status", type: "enum", enumValues: STATUSES.map(s => s.value), example: "open" },
+    { excelHeader: "Identified At", dbColumn: "identified_at", type: "date", example: "15/01/2025" },
+    { excelHeader: "Review Frequency", dbColumn: "review_frequency", type: "enum", enumValues: ["monthly","quarterly","semiannual","ad_hoc"], example: "quarterly" },
+    { excelHeader: "Next Review Date", dbColumn: "next_review_date", type: "date", example: "15/04/2025" },
+  ];
+
+  const templateSheets = [
+    {
+      name: "Risks",
+      data: [{
+        "Risk Code": "RSK-001", "Description": "Low enrollment rate", "Category": "operational",
+        "Probability": "3", "Impact": "4", "Potential Impact": "Study timeline delay",
+        "Responsible": "Dr. Silva", "Escalation Owner": "Sponsor PM", "Status": "open",
+        "Identified At": "15/01/2025", "Review Frequency": "quarterly", "Next Review Date": "15/04/2025",
+      }],
+    },
+    {
+      name: "Mitigation Actions",
+      data: [{
+        "Risk Code": "RSK-001", "Action Type": "preventive",
+        "Action Description": "Add 2 backup sites", "Responsible": "CRA Lead",
+        "Deadline": "01/03/2025", "Status": "pending", "Notes": "",
+      }],
+    },
+  ];
+
   const matrixData = Array.from({ length: 5 }, (_, pi) =>
     Array.from({ length: 5 }, (_, ii) => {
       const prob = 5 - pi;
@@ -351,7 +540,7 @@ export default function RiskManagement() {
       subtitle="Clinical Trial Risk Management Plan — per SOP PCL019"
       selectedProject={selectedProject}
       onProjectChange={setSelectedProject}
-      exportData={exportData}
+      exportData={exportData as any}
       exportFileName="risks"
       actions={
         <div className="flex gap-2">
@@ -387,86 +576,209 @@ export default function RiskManagement() {
       <Tabs defaultValue="list">
         <TabsList className="mb-4">
           <TabsTrigger value="list">Risk Register</TabsTrigger>
+          <TabsTrigger value="actions"><Activity className="h-4 w-4 mr-1" />Mitigation Monitoring</TabsTrigger>
           <TabsTrigger value="matrix">Risk Matrix 5×5</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            <Card className="xl:col-span-2">
+              <CardHeader>
+                <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+                  <CardTitle>Risk Register</CardTitle>
+                  <div className="flex gap-2 flex-wrap">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 w-[180px]" />
+                    </div>
+                    <Select value={levelFilter} onValueChange={setLevelFilter}>
+                      <SelectTrigger className="w-[120px]"><SelectValue placeholder="Level" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Levels</SelectItem>
+                        <SelectItem value="Critical">Critical</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Minimal">Minimal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        {STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loading ? <p className="text-muted-foreground">Loading...</p> : filtered.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No risks found.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader><TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>P</TableHead>
+                        <TableHead>I</TableHead>
+                        <TableHead>Score</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Next Review</TableHead>
+                        <TableHead className="w-[90px]">Actions</TableHead>
+                      </TableRow></TableHeader>
+                      <TableBody>
+                        {filtered.map(r => {
+                          const lvl = classifyRisk(r.risk_score);
+                          const overdue = r.next_review_date && r.next_review_date < todayDateOnly() && r.status !== "closed";
+                          const actionCount = actions.filter(a => a.risk_id === r.id && a.status !== "cancelled").length;
+                          const doneActions = actions.filter(a => a.risk_id === r.id && a.status === "done").length;
+                          return (
+                            <TableRow key={r.id} className="cursor-pointer" onClick={() => setActionRiskFilter(r.id)}>
+                              <TableCell className="font-mono font-medium">
+                                <div className="flex items-center gap-1">
+                                  {r.risk_code}
+                                  {r.escalated_at && <ArrowUpCircle className="h-3 w-3 text-orange-500" />}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[220px] truncate" title={r.description}>
+                                {r.description}
+                                {actionCount > 0 && <div className="text-[10px] text-muted-foreground mt-0.5">{doneActions}/{actionCount} actions done</div>}
+                              </TableCell>
+                              <TableCell><Badge className={categoryColors[r.category] || ""}>{CATEGORIES.find(c => c.value === r.category)?.label || r.category}</Badge></TableCell>
+                              <TableCell>{r.probability}</TableCell>
+                              <TableCell>{r.impact}</TableCell>
+                              <TableCell><Badge className={lvl.color}>{r.risk_score} · {lvl.level}</Badge></TableCell>
+                              <TableCell><Badge className={statusColors[r.status] || ""}>{STATUSES.find(s => s.value === r.status)?.label || r.status}</Badge></TableCell>
+                              <TableCell className={overdue ? "text-red-600 font-medium" : ""}>{fmt(r.next_review_date)}</TableCell>
+                              <TableCell onClick={e => e.stopPropagation()}>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
+                                  <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Side panel: action monitoring summary */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-base"><Activity className="h-4 w-4" />Mitigation Snapshot</CardTitle>
+                  {actionRiskFilter !== "all" && (
+                    <Button size="sm" variant="ghost" onClick={() => setActionRiskFilter("all")}>Clear</Button>
+                  )}
+                </div>
+                {actionRiskFilter !== "all" && (
+                  <p className="text-xs text-muted-foreground">Filtered by {riskByCode.get(actionRiskFilter)?.risk_code}</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">Total</div><div className="text-xl font-bold">{actionStats.total}</div></div>
+                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">In Progress</div><div className="text-xl font-bold text-blue-600">{actionStats.inProgress}</div></div>
+                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">Done</div><div className="text-xl font-bold text-green-600">{actionStats.done}</div></div>
+                  <div className="rounded border p-2"><div className="text-[10px] text-muted-foreground uppercase">Overdue</div><div className="text-xl font-bold text-red-600">{actionStats.overdue}</div></div>
+                </div>
+                <div className="max-h-[460px] overflow-y-auto space-y-2">
+                  {filteredActions.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">No mitigation actions.</p>
+                  ) : filteredActions.slice(0, 30).map(a => {
+                    const r = riskByCode.get(a.risk_id);
+                    const overdue = a.deadline && a.deadline < todayDateOnly() && a.status !== "done" && a.status !== "cancelled";
+                    return (
+                      <div key={a.id} className="border rounded p-2 text-xs space-y-1">
+                        <div className="flex items-start justify-between gap-1">
+                          <span className="font-mono text-[10px] text-muted-foreground">{r?.risk_code}</span>
+                          <Badge variant="outline" className="text-[10px]">{a.action_type === "preventive" ? "Prev" : "Corr"}</Badge>
+                        </div>
+                        <p className="line-clamp-2">{a.action_description}</p>
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="text-muted-foreground">{a.responsible || "—"}</span>
+                          <span className={overdue ? "text-red-600 font-medium" : "text-muted-foreground"}>{fmt(a.deadline)}</span>
+                        </div>
+                        <Select value={a.status} onValueChange={v => updateActionStatus(a.id, v)}>
+                          <SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger>
+                          <SelectContent>{ACTION_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="actions">
           <Card>
             <CardHeader>
               <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
-                <CardTitle>Risk Register</CardTitle>
+                <CardTitle>Mitigation Actions Monitoring</CardTitle>
                 <div className="flex gap-2 flex-wrap">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 w-[200px]" />
-                  </div>
-                  <Select value={levelFilter} onValueChange={setLevelFilter}>
-                    <SelectTrigger className="w-[140px]"><SelectValue placeholder="Level" /></SelectTrigger>
+                  <Select value={actionRiskFilter} onValueChange={setActionRiskFilter}>
+                    <SelectTrigger className="w-[180px]"><SelectValue placeholder="Risk" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Levels</SelectItem>
-                      <SelectItem value="Critical">Critical</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Minimal">Minimal</SelectItem>
+                      <SelectItem value="all">All Risks</SelectItem>
+                      {records.map(r => <SelectItem key={r.id} value={r.id}>{r.risk_code}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                  <Select value={actionTypeFilter} onValueChange={setActionTypeFilter}>
+                    <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="preventive">Preventive</SelectItem>
+                      <SelectItem value="corrective">Corrective</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={actionStatusFilter} onValueChange={setActionStatusFilter}>
+                    <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
-                      {STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                      {ACTION_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              {loading ? <p className="text-muted-foreground">Loading...</p> : filtered.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No risks found.</p>
+              {filteredActions.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No mitigation actions.</p>
               ) : (
                 <Table>
                   <TableHeader><TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>P</TableHead>
-                    <TableHead>I</TableHead>
-                    <TableHead>Score / Level</TableHead>
-                    <TableHead>Residual</TableHead>
+                    <TableHead>Risk</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Responsible</TableHead>
+                    <TableHead>Deadline</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Next Review</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
-                    {filtered.map(r => {
-                      const lvl = classifyRisk(r.risk_score);
-                      const overdue = r.next_review_date && r.next_review_date < todayDateOnly() && r.status !== "closed";
+                    {filteredActions.map(a => {
+                      const r = riskByCode.get(a.risk_id);
+                      const overdue = a.deadline && a.deadline < todayDateOnly() && a.status !== "done" && a.status !== "cancelled";
                       return (
-                        <TableRow key={r.id}>
-                          <TableCell className="font-mono font-medium">
-                            <div className="flex items-center gap-1">
-                              {r.risk_code}
-                              {r.escalated_at && <span title="Escalated"><ArrowUpCircle className="h-3 w-3 text-orange-500" /></span>}
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-[220px] truncate" title={r.description}>{r.description}</TableCell>
-                          <TableCell><Badge className={categoryColors[r.category] || ""}>{CATEGORIES.find(c => c.value === r.category)?.label || r.category}</Badge></TableCell>
-                          <TableCell>{r.probability}</TableCell>
-                          <TableCell>{r.impact}</TableCell>
-                          <TableCell><Badge className={lvl.color}>{r.risk_score} · {lvl.level}</Badge></TableCell>
-                          <TableCell>{r.residual_risk_score ? <Badge variant="outline" className={classifyRisk(r.residual_risk_score).color}>{r.residual_risk_score}</Badge> : "-"}</TableCell>
-                          <TableCell><Badge className={statusColors[r.status] || ""}>{STATUSES.find(s => s.value === r.status)?.label || r.status}</Badge></TableCell>
-                          <TableCell className="text-xs">{r.responsible || "-"}</TableCell>
-                          <TableCell className={overdue ? "text-red-600 font-medium" : ""}>
-                            {r.next_review_date ? format(parseLocalDate(r.next_review_date), "dd/MM/yyyy", { locale: ptBR }) : "-"}
-                          </TableCell>
+                        <TableRow key={a.id}>
+                          <TableCell className="font-mono text-xs">{r?.risk_code || "-"}</TableCell>
+                          <TableCell><Badge variant="outline">{a.action_type === "preventive" ? "Preventive" : "Corrective"}</Badge></TableCell>
+                          <TableCell className="max-w-[300px]">{a.action_description}</TableCell>
+                          <TableCell className="text-xs">{a.responsible || "-"}</TableCell>
+                          <TableCell className={overdue ? "text-red-600 font-medium text-xs" : "text-xs"}>{fmt(a.deadline)}</TableCell>
                           <TableCell>
-                            <div className="flex gap-1">
-                              <Button variant="ghost" size="icon" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleDelete(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                            </div>
+                            <Select value={a.status} onValueChange={v => updateActionStatus(a.id, v)}>
+                              <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>{ACTION_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                            </Select>
                           </TableCell>
                         </TableRow>
                       );
@@ -490,9 +802,7 @@ export default function RiskManagement() {
                     <tr>
                       <th className="p-2 text-xs font-medium border bg-muted">Probability ↓ / Impact →</th>
                       {[1,2,3,4,5].map(i => (
-                        <th key={i} className="p-2 text-xs font-medium border bg-muted text-center">
-                          {i} – {impactLabels[i]}
-                        </th>
+                        <th key={i} className="p-2 text-xs font-medium border bg-muted text-center">{i} – {impactLabels[i]}</th>
                       ))}
                     </tr>
                   </thead>
@@ -501,9 +811,7 @@ export default function RiskManagement() {
                       const prob = 5 - pi;
                       return (
                         <tr key={pi}>
-                          <td className="p-2 text-xs font-medium border bg-muted text-center">
-                            {prob} – {probabilityLabels[prob].split(" ")[0]}
-                          </td>
+                          <td className="p-2 text-xs font-medium border bg-muted text-center">{prob} – {probabilityLabels[prob].split(" ")[0]}</td>
                           {row.map((risks, ii) => {
                             const score = prob * (ii + 1);
                             const cls = classifyRisk(score);
@@ -523,13 +831,6 @@ export default function RiskManagement() {
                     })}
                   </tbody>
                 </table>
-                <div className="flex flex-wrap gap-4 mt-4 text-xs">
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 bg-blue-50 border rounded" /> Minimal (1–2)</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 bg-green-100 border rounded" /> Low (3–5)</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 bg-yellow-100 border rounded" /> Medium (6–9)</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 bg-orange-200 border rounded" /> High (10–15)</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 bg-red-200 border rounded" /> Critical (16–25)</span>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -537,10 +838,10 @@ export default function RiskManagement() {
       </Tabs>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit" : "New"} Risk</DialogTitle>
-            <DialogDescription>Per SOP PCL019 — Critical/High risks require Mitigation Plan and Escalation Owner.</DialogDescription>
+            <DialogDescription>Per SOP PCL019 — Critical/High risks require at least one Mitigation Action and an Escalation Owner.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
@@ -552,8 +853,8 @@ export default function RiskManagement() {
                 </Select>
               </div>
             </div>
-            <div><Label>Risk Description</Label><Textarea rows={2} value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Describe the uncertain event/condition" /></div>
-            <div><Label>Potential Impact</Label><Textarea rows={2} value={form.potential_impact} onChange={e => setForm({...form, potential_impact: e.target.value})} placeholder="Consequences if it occurs (safety, data, regulatory, timeline...)" /></div>
+            <div><Label>Risk Description</Label><Textarea rows={2} value={form.description} onChange={e => setForm({...form, description: e.target.value})} /></div>
+            <div><Label>Potential Impact</Label><Textarea rows={2} value={form.potential_impact} onChange={e => setForm({...form, potential_impact: e.target.value})} /></div>
 
             <div className="grid grid-cols-3 gap-4 items-end">
               <div><Label>Probability (1–5)</Label>
@@ -574,20 +875,49 @@ export default function RiskManagement() {
               </div>
             </div>
 
-            <div><Label>Mitigation Plan {(currentLevel.level === "Critical" || currentLevel.level === "High") && <span className="text-destructive">*</span>}</Label>
-              <Textarea rows={3} value={form.mitigation_plan} onChange={e => setForm({...form, mitigation_plan: e.target.value})} placeholder="Preventive/corrective actions (required for Critical/High)" />
-            </div>
-            <div><Label>Contingency Plan</Label>
-              <Textarea rows={2} value={form.contingency_plan} onChange={e => setForm({...form, contingency_plan: e.target.value})} placeholder="Backup actions if mitigation fails" />
-            </div>
-            <div><Label>Monitoring Method</Label>
-              <Input value={form.monitoring_method} onChange={e => setForm({...form, monitoring_method: e.target.value})} placeholder="e.g., Weekly compliance reports, KRI dashboard..." />
+            {/* Mitigation Plan — list of preventive/corrective actions */}
+            <div className="border rounded-md p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">Mitigation Plan — Actions {(currentLevel.level === "Critical" || currentLevel.level === "High") && <span className="text-destructive">*</span>}</Label>
+                <Button type="button" size="sm" variant="outline" onClick={addActionRow}><Plus className="h-3 w-3 mr-1" />Add Action</Button>
+              </div>
+              {actionDrafts.filter(a => !a._deleted).length === 0 ? (
+                <p className="text-xs text-muted-foreground">No actions yet. Add preventive or corrective actions.</p>
+              ) : (
+                <div className="space-y-2">
+                  {actionDrafts.map((a, idx) => a._deleted ? null : (
+                    <div key={idx} className="grid grid-cols-12 gap-2 items-start border rounded p-2">
+                      <div className="col-span-2">
+                        <Select value={a.action_type} onValueChange={v => updateDraft(idx, { action_type: v as any })}>
+                          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="preventive">Preventive</SelectItem>
+                            <SelectItem value="corrective">Corrective</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Input className="col-span-4 h-8 text-xs" placeholder="Action description" value={a.action_description} onChange={e => updateDraft(idx, { action_description: e.target.value })} />
+                      <Input className="col-span-2 h-8 text-xs" placeholder="Responsible" value={a.responsible || ""} onChange={e => updateDraft(idx, { responsible: e.target.value })} />
+                      <Input type="date" className="col-span-2 h-8 text-xs" value={a.deadline || ""} onChange={e => updateDraft(idx, { deadline: e.target.value })} />
+                      <div className="col-span-1">
+                        <Select value={a.status} onValueChange={v => updateDraft(idx, { status: v as any })}>
+                          <SelectTrigger className="h-8 text-xs px-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>{ACTION_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <Button type="button" size="icon" variant="ghost" className="col-span-1 h-8 w-8" onClick={() => removeDraft(idx)}>
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Responsible</Label><Input value={form.responsible} onChange={e => setForm({...form, responsible: e.target.value})} placeholder="Action owner" /></div>
+              <div><Label>Responsible</Label><Input value={form.responsible} onChange={e => setForm({...form, responsible: e.target.value})} /></div>
               <div><Label>Escalation Owner {(currentLevel.level === "Critical" || currentLevel.level === "High") && <span className="text-destructive">*</span>}</Label>
-                <Input value={form.escalation_owner} onChange={e => setForm({...form, escalation_owner: e.target.value})} placeholder="Sponsor / Coordinator / PI" />
+                <Input value={form.escalation_owner} onChange={e => setForm({...form, escalation_owner: e.target.value})} />
               </div>
             </div>
 
@@ -610,6 +940,46 @@ export default function RiskManagement() {
               </div>
               <div><Label>Next Review Date</Label><Input type="date" value={form.next_review_date || computeNextReview(form.identified_at, form.review_frequency)} onChange={e => setForm({...form, next_review_date: e.target.value})} /></div>
             </div>
+
+            {/* Review history */}
+            {editing && (
+              <div className="border rounded-md p-3 space-y-2">
+                <Label className="text-sm font-semibold flex items-center gap-2"><History className="h-4 w-4" />Review History</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input className="h-8 text-xs" placeholder="Reviewer name (optional)" value={reviewerName} onChange={e => setReviewerName(e.target.value)} />
+                  <Input className="h-8 text-xs" placeholder="Review notes (optional)" value={reviewNote} onChange={e => setReviewNote(e.target.value)} />
+                </div>
+                <p className="text-[10px] text-muted-foreground">A history entry is recorded when Next Review Date changes or when a reviewer/note is provided on save.</p>
+                {reviewHistory.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No previous reviews.</p>
+                ) : (
+                  <div className="max-h-40 overflow-y-auto">
+                    <Table>
+                      <TableHeader><TableRow>
+                        <TableHead className="text-xs">Reviewed</TableHead>
+                        <TableHead className="text-xs">Previous</TableHead>
+                        <TableHead className="text-xs">New</TableHead>
+                        <TableHead className="text-xs">Reviewer</TableHead>
+                        <TableHead className="text-xs">Outcome</TableHead>
+                        <TableHead className="text-xs">Notes</TableHead>
+                      </TableRow></TableHeader>
+                      <TableBody>
+                        {reviewHistory.map(h => (
+                          <TableRow key={h.id}>
+                            <TableCell className="text-xs">{fmt(h.reviewed_at)}</TableCell>
+                            <TableCell className="text-xs">{fmt(h.previous_next_review_date)}</TableCell>
+                            <TableCell className="text-xs">{fmt(h.new_next_review_date)}</TableCell>
+                            <TableCell className="text-xs">{h.reviewer || "-"}</TableCell>
+                            <TableCell className="text-xs">{h.outcome || "-"}</TableCell>
+                            <TableCell className="text-xs">{h.notes || "-"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="border-t pt-4">
               <Label className="text-sm font-semibold">Residual Risk (after mitigation)</Label>
@@ -648,7 +1018,17 @@ export default function RiskManagement() {
         </DialogContent>
       </Dialog>
 
-      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} tableName="risks" entityLabel="Risks" projectId={selectedProject} columns={importColumns} onSuccess={loadData} />
+      <BulkImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        tableName="risks"
+        entityLabel="Risks"
+        projectId={selectedProject}
+        columns={importColumns}
+        templateSheets={templateSheets}
+        sheetName="Risks"
+        onSuccess={loadData}
+      />
     </ModulePageLayout>
   );
 }

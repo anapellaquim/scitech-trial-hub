@@ -8,7 +8,7 @@ interface ModulePageLayoutProps {
   subtitle?: string;
   selectedProject: string;
   onProjectChange: (value: string) => void;
-  exportData?: Record<string, any>[];
+  exportData?: Record<string, any>[] | Record<string, Record<string, any>[]>;
   exportFileName?: string;
   children: ReactNode;
   actions?: ReactNode;

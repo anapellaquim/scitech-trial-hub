@@ -3247,6 +3247,106 @@ export type Database = {
           },
         ]
       }
+      risk_mitigation_actions: {
+        Row: {
+          action_description: string
+          action_type: string
+          completed_at: string | null
+          created_at: string
+          deadline: string | null
+          id: string
+          notes: string | null
+          project_id: string
+          responsible: string | null
+          risk_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_description: string
+          action_type?: string
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          notes?: string | null
+          project_id: string
+          responsible?: string | null
+          risk_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string
+          responsible?: string | null
+          risk_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_mitigation_actions_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_review_history: {
+        Row: {
+          created_at: string
+          id: string
+          new_next_review_date: string | null
+          notes: string | null
+          outcome: string | null
+          previous_next_review_date: string | null
+          project_id: string
+          reviewed_at: string
+          reviewer: string | null
+          risk_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_next_review_date?: string | null
+          notes?: string | null
+          outcome?: string | null
+          previous_next_review_date?: string | null
+          project_id: string
+          reviewed_at?: string
+          reviewer?: string | null
+          risk_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_next_review_date?: string | null
+          notes?: string | null
+          outcome?: string | null
+          previous_next_review_date?: string | null
+          project_id?: string
+          reviewed_at?: string
+          reviewer?: string | null
+          risk_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_review_history_risk_id_fkey"
+            columns: ["risk_id"]
+            isOneToOne: false
+            referencedRelation: "risks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           category: string
